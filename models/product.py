@@ -21,12 +21,13 @@ class ProductModel(db.Model):
     # a json representation
     def json(self):
         return  {
-                        "productname" : self.productname,
-                        "price" : self.price,
-                        "quantity" : self.quantity,
-                        "category" : self.category,
-                        "store" : self.store.json()
-                        }
+                    "id" : self.id,
+                    "productname" : self.productname,
+                    "price" : self.price,
+                    "quantity" : self.quantity,
+                    "category" : self.category,
+                    "store" : self.store.json()
+                }
 
     def save_to_db(self):
         #connect to the database

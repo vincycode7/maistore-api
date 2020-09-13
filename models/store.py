@@ -19,10 +19,11 @@ class StoreModel(db.Model):
     # a json representation
     def json(self):
         return  {
-                        "storename" : self.storename,
-                        "user" : self.user.json(),
-                        "products" : [product.json() for product in self.products.all()]
-                        }
+                    "id" : self.id,
+                    "storename" : self.storename,
+                    "user" : self.user.json(),
+                    "products" : [product.json() for product in self.products.all()]
+                }
 
     def save_to_db(self):
         #connect to the database

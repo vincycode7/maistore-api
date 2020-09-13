@@ -19,7 +19,9 @@ class UserModel(db.Model):
 
     # a json representation
     def json(self):
-        return {"username" : self.username,
+        return {
+                "id" : self.id,
+                "username" : self.username,
                 "password" : self.password,
                 "email" : self.email,
                 "stores" : [store.json() for store in self.stores.all()]
