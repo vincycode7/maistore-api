@@ -14,7 +14,9 @@ class UserList(Resource):
 #class to register user
 class UserRegister(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument(name="username", type=str, required=True, help="username cannot be blank")
+    parser.add_argument(name="firstname", type=str, required=True, help="firstname cannot be blank",case_sensitive=False)
+    parser.add_argument(name="middlename", type=str, required=True, help="middlename cannot be blank",case_sensitive=False)
+    parser.add_argument(name="lastname", type=str, required=True, help="lastname cannot be blank",case_sensitive=False)
     parser.add_argument(name="password", type=str, required=True, help="password cannot be blank")
     parser.add_argument(name="email", type=str, required=True, help="email cannot be blank")
 

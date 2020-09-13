@@ -4,9 +4,9 @@ from models.store import StoreModel
 
 class Store(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument(name="storename", required=True, help="a store name is required to proceed", type=str)
-    parser.add_argument(name="user_id", required=True, help="only active users can create a store", type=str)
-    parser.add_argument(name="location", required=False, help="a store location is good for business")
+    parser.add_argument(name="storename", required=True, help="a store name is required to proceed", type=str,case_sensitive=False)
+    parser.add_argument(name="user_id", required=True, help="only active users can create a store", type=str,case_sensitive=False)
+    parser.add_argument(name="location", required=False, help="a store location is good for business",case_sensitive=False)
 
     def get(self, storename):
         store = StoreModel.find_by_name(storename=storename)
@@ -16,11 +16,12 @@ class Store(Resource):
             return {"message" : "store not found"}, 404
 
     def post(self, storename):
+        storename = storename.lower()
         if StoreModel.find_by_name(storename=storename):
             return {"message" : f"A store with name {storename} already exists"}, 400
 
         data = Store.parser.parse_args()
-        message = StoreModel.check_form_inegrity(storename=storename, data=data)
+        message = StoreModel.check_form_integrity(storename=storename, data=data)
         if message: return message
 
         store = StoreModel(**data)

@@ -59,7 +59,7 @@ class StoreModel(db.Model):
 
         #confirm the unique key to be same with the product route
         if storename != data['storename']:
-            return {"message" : f"product {storename} does not match {data['name']} in the form"}, 404
+            return {"message" : f"product {storename} does not match {data['storename']} in the form"}, 404
 
         return False
 
