@@ -5,15 +5,13 @@ Back-end for a web/mobile app store. Where each user has a store of list of pers
 
 ## Installation
 
-'''
-
+```
 cd maistore/
 
 pip install -r requirements.txt
 python3 app.py
 
-
-'''
+```
 
 ## Description
 
