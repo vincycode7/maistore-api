@@ -8,7 +8,7 @@ class ProductList(Resource):
     @jwt_required() #use for authentication before calling get
     def get(self):
 
-        products = ProductModels.find_all()
+        products = ProductModel.find_all()
         if products: return {"items" : [ product.json() for product in products]},201
         return {"message" : 'Items not found'}, 400
 
@@ -26,7 +26,7 @@ class Product(Resource):
     @jwt_required() #use for authentication before calling get
     def get(self, productname):
 
-        product = ProductModels.find_by_name(productname=productname)
+        product = ProductModel.find_by_name(productname=productname)
 
         if product: return {"item" : product.json()},201
         return {"message" : 'Item not found'}, 400
@@ -36,12 +36,12 @@ class Product(Resource):
         data = Product.parser.parse_args()
 
         #check form integrety
-        message = ProductModels.check_form_integrity(productname, data)
+        message = ProductModel.check_form_integrity(productname, data)
 
         if message:
             return message
         
-        product = ProductModels.instance_from_dict(dict_=data)
+        product = ProductModel.instance_from_dict(dict_=data)
 
         #insert
         try:
@@ -55,7 +55,7 @@ class Product(Resource):
 
     @jwt_required() #use for authentication before calling post
     def delete(self, productname, username=None, password=None):
-        product = ProductModels.find_by_name(productname=productname)
+        product = ProductModel.find_by_name(productname=productname)
         if product:
             product.delete_from_db()
             return {"message" : "Item deleted"}, 200 # 200 ok
@@ -67,11 +67,11 @@ class Product(Resource):
     def put(self, productname):
         
         data = Product.parser.parse_args()
-        message = ProductModels.check_form_integrity(productname, data)
+        message = ProductModel.check_form_integrity(productname, data)
 
         if message: return message
 
-        product = ProductModels.find_by_name(productname=data["productname"])
+        product = ProductModel.find_by_name(productname=data["productname"])
 
         if product:
             #update
@@ -80,7 +80,7 @@ class Product(Resource):
 
         else:
             #insert
-            product = ProductModels.instance_from_dict(dict_=data)
+            product = ProductModel.instance_from_dict(dict_=data)
             product.save_to_db()
 
         return product.json(), 201
