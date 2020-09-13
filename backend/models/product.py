@@ -8,7 +8,7 @@ class ProductModel(db.Model):
     price = db.Column(db.Float(precision=2))
     quantity = db.Column(db.Integer)
     category = db.Column(db.String(40))
-    store_id = db.Column(db.Interger, db.ForeignKey("store.id"))
+    store_id = db.Column(db.Integer, db.ForeignKey("store.id"))
     store = db.relationship("StoreModel")
 
     def __init__(self, productname, price, store_id, quantity=0, category=None):

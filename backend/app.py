@@ -1,6 +1,6 @@
 from resources.user import User, UserList, UserRegister
 from resources.product import Product, ProductList
-from resources.store import store, StoreList
+from resources.store import Store, StoreList
 from flask import Flask, request
 from flask_jwt import JWT, jwt_required
 from security import authenticate, identity

@@ -1,7 +1,7 @@
 import sqlite3
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
-from models.product import ProductModels
+from models.product import ProductModel
 
 #class to create user and get user
 class ProductList(Resource):
