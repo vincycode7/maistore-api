@@ -23,10 +23,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 api = Api(app=app)
 app.secret_key = "vcode" #always remember to get the apps's secret key, also this key should be hidden from the public.
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 jwt = JWT(app, authenticate, identity) #creates a new end point called */auth*
 
 class PaymentList(Resource):
