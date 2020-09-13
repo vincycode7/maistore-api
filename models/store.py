@@ -9,7 +9,7 @@ class StoreModel(db.Model):
     location = db.Column(db.String(200))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship("UserModel")
-    products = db.relationship("ProductModel", lazy="dynamic")
+    product = db.relationship("ProductModel", lazy="dynamic")
 
     def __init__(self, storename, user_id, location=None):
         self.storename = storename

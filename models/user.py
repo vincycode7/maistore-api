@@ -10,7 +10,7 @@ class UserModel(db.Model):
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
     email = db.Column(db.String(100))
-    stores = db.relationship("StoreModel", lazy="dynamic")
+    store = db.relationship("StoreModel", lazy="dynamic")
 
     def __init__(self, username, password, email):
         self.username = username
