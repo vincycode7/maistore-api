@@ -1,3 +1,4 @@
+import os
 from resources.store import Store, StoreList
 from resources.user import User, UserList, UserRegister
 from resources.product import Product, ProductList
@@ -18,7 +19,7 @@ from flask_restful import Resource, Api, reqparse
 #runner : reset && python app.py
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL','sqlite:///data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 api = Api(app=app)
 app.secret_key = "vcode" #always remember to get the apps's secret key, also this key should be hidden from the public.

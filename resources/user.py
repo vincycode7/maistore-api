@@ -23,13 +23,13 @@ class UserRegister(Resource):
     def post(self):
         data = UserRegister.parser.parse_args()
 
-        #check form integrety
-        message = UserModel.check_form_integrity(username=data['username'],data=data)
+        # #check form integrety
+        # message = UserModel.check_form_integrity(username=data['username'],data=data)
 
-        if message: return message
+        # if message: return message
 
         #check if data already exist
-        if UserModel.find_by_username(username=data["username"]): return {"message" : f"username {data['username']} already exists."},400 # 400 is for bad request
+        # if UserModel.find_by_username(username=data["username"]): return {"message" : f"username {data['username']} already exists."},400 # 400 is for bad request
         if UserModel.find_by_email(email=data["email"]): return {"message" : f"email {data['email']} already exists."},400 # 400 is for bad request
         
         # user = UserModel.instance_from_dict(dict_=data)
@@ -58,9 +58,9 @@ class User(Resource):
     def put(self, username):
         
         data = UserRegister.parser.parse_args()
-        message = UserModel.check_form_integrity(username, data)
+        # message = UserModel.check_form_integrity(username, data)
 
-        if message: return message
+        # if message: return message
 
         user = UserModel.find_by_username(username=username)
         email = UserModel.find_by_email(email=data["email"])

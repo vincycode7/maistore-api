@@ -7,9 +7,21 @@ class UserModel(db.Model):
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80))
+    firstname = db.Column(db.String(30))
+    middlename = db.Column(db.String(30))
+    lastname = db.Column(db.String(30))
     password = db.Column(db.String(80))
     email = db.Column(db.String(100))
+    phoneno = db.Column(db.String(15))
+    address = db.Column(db.String(300))
+
+    # joining with other database
+    # bankpayment_id = db.Column(db.Integer, db.ForeignKey('bankpayment.user_id'))
+    # bankpayment = db.relationship("BankPaymentModel")
+
+    # cryptopayment_id = db.Column(db.Integer, db.ForeignKey('cryptopayment.user_id'))
+    # cryptopayments = db.relationship("CryptoPaymentModel")
+
     stores = db.relationship("StoreModel", lazy="dynamic")
 
     def __init__(self, username, password, email):
@@ -62,8 +74,8 @@ class UserModel(db.Model):
         if data == None: return {"message" : "Invalid object type, use json."}, 404
 
         #confirm the unique key to be same with the product route
-        if username != data['username']:
-            return {"message" : f"user {username} does not match {data['username']} in the form"}, 40
+        # if username != data['username']:
+        #     return {"message" : f"user {username} does not match {data['username']} in the form"}, 40
         #implement later
 
         return False
