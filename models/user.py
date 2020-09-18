@@ -6,6 +6,7 @@ class UserModel(db.Model):
 
     __tablename__ = "user"
 
+    # columns
     id = db.Column(db.Integer, primary_key=True)
     firstname = db.Column(db.String(30))
     middlename = db.Column(db.String(30))
@@ -16,27 +17,38 @@ class UserModel(db.Model):
     address = db.Column(db.String(300))
 
     # joining with other database
-    # bankpayment_id = db.Column(db.Integer, db.ForeignKey('bankpayment.user_id'))
-    # bankpayment = db.relationship("BankPaymentModel")
-
-    # cryptopayment_id = db.Column(db.Integer, db.ForeignKey('cryptopayment.user_id'))
-    # cryptopayments = db.relationship("CryptoPaymentModel")
-
+    paymentmethods = db.relationship("PaymethodModel", lazy="dynamic")
+    purchased = db.relationship("PurchasedModel", lazy="dynamic")
+    carts = db.relationship("CartModel", lazy="dynamic")
     stores = db.relationship("StoreModel", lazy="dynamic")
+    favstores = db.relationship("FavstoreModel")
 
-    def __init__(self, username, password, email):
-        self.username = username
+    def __init__(self, firstname, password, phoneno, email, lastname=None, middlename=None, address=None):
+        self.firstname = firstname
+        self.lastname = lastname
+        self.middlename = middlename
         self.password = password
+        self.phoneno = phoneno
         self.email = email
+        self.address = address
 
     # a json representation
     def json(self):
         return {
                 "id" : self.id,
-                "username" : self.username,
+                "firstname" : self.username,
+                "lastname" : self.lastname,
+                "middlename" : self.middlename,
+                "phoneno" : self.phoneno,
+                "address" : self.address,
                 "password" : self.password,
                 "email" : self.email,
-                "stores" : [store.json() for store in self.stores.all()]
+                
+                "carts" : [purchase_detail.json() for purchase_detail in self.purchased.all()],
+                "purchased" : [cart.json() for cart in self.carts.all()],
+                "stores" : [store.json() for store in self.stores.all()],
+                "favstores" : [store.json() for store in self.favstores.all()],
+                "paymentmethods" : [methods.json() for methods in self.paymentmethods.all()]
                 }
         
 

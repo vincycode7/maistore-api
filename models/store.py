@@ -3,14 +3,17 @@ from db import db
 class StoreModel(db.Model):
     __tablename__ = "store"
 
+    # columns
     id = db.Column(db.Integer, primary_key=True)
     storename = db.Column(db.String(40))
-    userid = db.Column(db.String(40))
-    location = db.Column(db.String(200))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship("UserModel")
+    phonenos = db.relationship("StorephoneModel", lazy="dynamic")
+    emails = db.relationship("StoremailModel", lazy="dynamic")
     products = db.relationship("ProductModel", lazy="dynamic")
 
+    # merge from tables
+    locations = db.Column(db.String(200))
     def __init__(self, storename, user_id, location=None):
         self.storename = storename
         self.user_id = user_id
@@ -22,7 +25,9 @@ class StoreModel(db.Model):
                     "id" : self.id,
                     "storename" : self.storename,
                     "user" : self.user.json(),
-                    "products" : [product.json() for product in self.products.all()]
+                    "products" : [product.json() for product in self.products.all()],
+                    "phonenos" : [num.json() for num in self.phonenos.all()],
+                    "emails" : [email.json() for email in self.emails.all()],
                 }
 
     def save_to_db(self):
