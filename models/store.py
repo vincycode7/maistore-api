@@ -3,17 +3,19 @@ from db import db
 class StoreModel(db.Model):
     __tablename__ = "store"
 
-    # columns
-    id = db.Column(db.Integer, primary_key=True)
+    # class variable
+    id = db.Column(db.Integer, primary_key=True, unique=True)
     storename = db.Column(db.String(40))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship("UserModel")
-    phonenos = db.relationship("StorephoneModel", lazy="dynamic")
-    emails = db.relationship("StoremailModel", lazy="dynamic")
-    products = db.relationship("ProductModel", lazy="dynamic")
+    # location_id = db.Column(db.Integer, db.ForeignKey("location.id"))
 
-    # merge from tables
-    locations = db.Column(db.String(200))
+    #merge (for sqlalchemy to link tables)
+    user = db.relationship("UserModel")
+    products = db.relationship("ProductModel", lazy="dynamic")
+    customers = db.relationship("FavStoreModel", lazy="dynamic")
+    # phonenos = db.relationship("StorephoneModel", lazy="dynamic")
+    # emails = db.relationship("StoremailModel", lazy="dynamic")
+
     def __init__(self, storename, user_id, location=None):
         self.storename = storename
         self.user_id = user_id
@@ -24,10 +26,11 @@ class StoreModel(db.Model):
         return  {
                     "id" : self.id,
                     "storename" : self.storename,
-                    "user" : self.user.json(),
                     "products" : [product.json() for product in self.products.all()],
-                    "phonenos" : [num.json() for num in self.phonenos.all()],
-                    "emails" : [email.json() for email in self.emails.all()],
+                    "customers" : [customer.json()["email"] for customer in self.customers.all()],
+                    # "location" : self.location_id,
+                    # "phonenos" : [num.json() for num in self.phonenos.all()],
+                    # "emails" : [email.json() for email in self.emails.all()],
                 }
 
     def save_to_db(self):
@@ -67,11 +70,3 @@ class StoreModel(db.Model):
             return {"message" : f"product {storename} does not match {data['storename']} in the form"}, 404
 
         return False
-
-    @classmethod
-    def instance_from_dict(cls, dict_):
-        return cls(
-                        storename=dict_.get('storename'), 
-                        user_id=dict_.get('user_id'), 
-                        location=dict_.get('location', None), 
-                   )

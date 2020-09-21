@@ -1,5 +1,6 @@
 #import packages
 from db import db
+from datetime import datetime as dt
 
 #class to create user and get user
 class UserModel(db.Model):
@@ -7,23 +8,27 @@ class UserModel(db.Model):
     __tablename__ = "user"
 
     # columns
-    id = db.Column(db.Integer, primary_key=True)
-    firstname = db.Column(db.String(30))
-    middlename = db.Column(db.String(30))
-    lastname = db.Column(db.String(30))
-    password = db.Column(db.String(80))
-    email = db.Column(db.String(100))
-    phoneno = db.Column(db.String(15))
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    firstname = db.Column(db.String(30), index=False, unique=False, nullable=False)
+    middlename = db.Column(db.String(30), index=False, unique=False, nullable=False)
+    lastname = db.Column(db.String(30), index=False, unique=False, nullable=False)
+    password = db.Column(db.String(80), index=False, unique=False, nullable=False)
+    email = db.Column(db.String(100), index=False, unique=False, nullable=False)
+    phoneno = db.Column(db.String(15), index=False, unique=False, nullable=False)
+    created = db.Column(db.DateTime, index=False, unique=False, nullable=False)
     address = db.Column(db.String(300))
+    admin = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
-    # joining with other database
-    paymentmethods = db.relationship("PaymethodModel", lazy="dynamic")
-    purchased = db.relationship("PurchasedModel", lazy="dynamic")
-    carts = db.relationship("CartModel", lazy="dynamic")
+    #merge (for sqlalchemy to link tables)
     stores = db.relationship("StoreModel", lazy="dynamic")
-    favstores = db.relationship("FavstoreModel")
+    bitcoins = db.relationship("BitcoinPayModel", lazy="dynamic")
+    cards = db.relationship("CardpayModel",lazy="dynamic")
+    favstores = db.relationship("FavStoreModel", lazy="dynamic")
+    # purchased = db.relationship("PurchasedModel", lazy="dynamic") # one to many relationship
+    # carts = db.relationship("CartModel", lazy="dynamic")
+    # notifications = db.relationship("NoticeModel", lazy="dynamic")
 
-    def __init__(self, firstname, password, phoneno, email, lastname=None, middlename=None, address=None):
+    def __init__(self, firstname, password, phoneno, email, admin, created=None, lastname=None, middlename=None, address=None):
         self.firstname = firstname
         self.lastname = lastname
         self.middlename = middlename
@@ -31,24 +36,35 @@ class UserModel(db.Model):
         self.phoneno = phoneno
         self.email = email
         self.address = address
+        self.admin = admin
+        self.created = created if created else dt.now()
 
     # a json representation
     def json(self):
         return {
                 "id" : self.id,
-                "firstname" : self.username,
-                "lastname" : self.lastname,
-                "middlename" : self.middlename,
-                "phoneno" : self.phoneno,
-                "address" : self.address,
-                "password" : self.password,
-                "email" : self.email,
-                
-                "carts" : [purchase_detail.json() for purchase_detail in self.purchased.all()],
-                "purchased" : [cart.json() for cart in self.carts.all()],
-                "stores" : [store.json() for store in self.stores.all()],
-                "favstores" : [store.json() for store in self.favstores.all()],
-                "paymentmethods" : [methods.json() for methods in self.paymentmethods.all()]
+
+                "profile"      : {   
+                                    "firstname" : self.firstname,
+                                    "lastname" : self.lastname,
+                                    "middlename" : self.middlename,
+                                    "phoneno" : self.phoneno,
+                                    "address" : self.address,
+                                    "password" : self.password,
+                                    "email" : self.email
+                                    },
+
+                "mystores"       : [store.json() for store in self.stores.all()],
+
+                "paymentmethods" : {
+                                    "bitcoins" : [coins.json() for coins in self.bitcoins.all()],
+                                    "cards"    : [card.json() for card in self.cards.all()]
+                                    },
+
+                "favstores" : [fav.json()["storeid"] for fav in self.favstores.all()],
+                # "mycarts" : [purchase_detail.json() for purchase_detail in self.purchased.all()],
+                # "purchased" : [cart.json() for cart in self.carts.all()],
+                # "notifications" : [notice.json() for notice in self.notifications.all()],
                 }
         
 
@@ -92,10 +108,5 @@ class UserModel(db.Model):
 
         return False
 
-    @classmethod
-    def instance_from_dict(cls, dict_):
-        return cls(
-                        username=dict_.get('username'), 
-                        password=dict_.get('password'), 
-                        email=dict_.get('email')
-                   )
+    def __repr__(self):
+        return f"{self.email}"

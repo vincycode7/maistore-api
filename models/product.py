@@ -3,20 +3,23 @@ from db import db
 class ProductModel(db.Model):
     __tablename__ = "product"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
     productname = db.Column(db.String(40))
     price = db.Column(db.Float(precision=2))
     quantity = db.Column(db.Integer)
-    category = db.Column(db.String(40))
+    productcat_id = db.Column(db.Integer, db.ForeignKey('productcat.id'))
     store_id = db.Column(db.Integer, db.ForeignKey("store.id"))
-    store = db.relationship("StoreModel")
 
-    def __init__(self, productname, price, store_id, quantity=0, category=None):
+    # productcat = db.relationship("ProductCatModel")
+    store = db.relationship("StoreModel")
+    # sizes = db.relationship("ProductSizeModel", lazy="dynamic")
+
+    def __init__(self, productname, price, store_id, category, quantity=0):
         self.productname = productname
         self.price = price
-        self.quantity = quantity
-        self.category = category
         self.store_id = store_id
+        self.productcat_id = category
+        self.quantity = quantity
 
     # a json representation
     def json(self):
@@ -25,8 +28,7 @@ class ProductModel(db.Model):
                     "productname" : self.productname,
                     "price" : self.price,
                     "quantity" : self.quantity,
-                    "category" : self.category,
-                    "store" : self.store.json()
+                    "store" : self.store
                 }
 
     def save_to_db(self):
@@ -66,13 +68,3 @@ class ProductModel(db.Model):
             return {"message" : f"product {productname} does not match {data['name']} in the form"}, 404
 
         return False
-
-    @classmethod
-    def instance_from_dict(cls, dict_):
-        return cls(
-                        productname=dict_.get('productname'), 
-                        price=dict_.get('price'), 
-                        quantity=dict_.get('quantity', None), 
-                        category=dict_.get('category', None), 
-                        store_id=dict_.get('store_id')
-                   )

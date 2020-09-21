@@ -16,30 +16,27 @@ class UserRegister(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument(name="firstname", type=str, required=True, help="firstname cannot be blank",case_sensitive=False)
     parser.add_argument(name="middlename", type=str, required=True, help="middlename cannot be blank",case_sensitive=False)
-    parser.add_argument(name="lastname", type=str, required=True, help="lastname cannot be blank",case_sensitive=False)
+    parser.add_argument(name="lastname", type=str, required=True, help="lastname cannot be blank", case_sensitive=False)
     parser.add_argument(name="password", type=str, required=True, help="password cannot be blank")
     parser.add_argument(name="email", type=str, required=True, help="email cannot be blank")
+    parser.add_argument(name="phoneno", type=str, required=True, help="phone number cannot be blank")
+    parser.add_argument(name="address", type=str, required=False, help="Home address of user")
+    parser.add_argument(name="admin", type=bool, default=False, required=False, help="phone number cannot be blank")
 
     def post(self):
         data = UserRegister.parser.parse_args()
-
-        # #check form integrety
-        # message = UserModel.check_form_integrity(username=data['username'],data=data)
-
-        # if message: return message
 
         #check if data already exist
         # if UserModel.find_by_username(username=data["username"]): return {"message" : f"username {data['username']} already exists."},400 # 400 is for bad request
         if UserModel.find_by_email(email=data["email"]): return {"message" : f"email {data['email']} already exists."},400 # 400 is for bad request
         
-        # user = UserModel.instance_from_dict(dict_=data)
         user = UserModel(**data)
 
         #insert
         try:
             user.save_to_db()
         except Exception as e:
-            print(e)
+            print(f"error is ----> {e}")
             return {"message" : "An error occured inserting the item"}, 500 #Internal server error
 
         return user.json(), 201

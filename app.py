@@ -1,11 +1,9 @@
 import os
-from resources.store import Store, StoreList
-from resources.user import User, UserList, UserRegister
-from resources.product import Product, ProductList
 from flask import Flask, request
 from flask_jwt import JWT, jwt_required
 from security import authenticate, identity
 from flask_restful import Resource, Api, reqparse
+from routes import route_path
 
 """
 
@@ -18,49 +16,29 @@ from flask_restful import Resource, Api, reqparse
 #export PATH="$PATH:/home/vcode/.local/bin"
 #runner : reset && python app.py
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL','sqlite:///data.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PROPAGATE_EXCEPTIONS'] = True
-api = Api(app=app)
-app.secret_key = "vcode" #always remember to get the apps's secret key, also this key should be hidden from the public.
+def create_app(secret_key):
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL','sqlite:///data.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['PROPAGATE_EXCEPTIONS'] = True
+    app.secret_key = secret_key #always remember to get the apps's secret key, also this key should be hidden from the public.
+    
+    return app
 
-jwt = JWT(app, authenticate, identity) #creates a new end point called */auth*
+def create_api(app):
+    api = Api(app=app)
+    return api
+    
+def create_jwt(app, auth, identity):
+    jwt = JWT(app, auth, identity) #creates a new end point called */auth*
+    return jwt
 
-class PaymentList(Resource):
-    def get(self):
-        return [], 200 #return the product
+def link_route_path(api):
+    for route, path in route_path: api.add_resource(route, path)
+    return api
 
-class Payment(Resource):
-    def get(self, paymentid):
-        return {'payment' : paymentid} #returns the list of payments
-
-    def post(self, paymentid):
-        data = request.get_json(silent=True)
-        if data == None: return {"message" : "Invalid object type, use json."}, 404
-        
-
-#User
-api.add_resource(UserRegister, "/register") #https://mistore.com/register
-api.add_resource(User, '/user/<string:username>') #https://mistore.com/gbenga
-# api.add_resource(Users, '/user/<string:name>?<string:password>') #https://mistore.com/gbenga
-api.add_resource(UserList , "/users") #https://mistore.com//student
-
-#store
-api.add_resource(Store, "/store/<string:storename>") #https://maistore.com/store/shoprite
-api.add_resource(StoreList, "/stores") #https://maistore.com/store
-
-#product
-api.add_resource(ProductList, "/products") #https://mistore.com/product
-api.add_resource(Product, '/product/<string:productname>') #https://mistore.com/product/bags
-
-
-#payment
-# api.add_resource(Payment, '/payment/<string:paymentid>') #https://mistore.com/payment/h47j32U89
-# api.add_resource(PaymentList, "/payment") #https://mistore.com/product
-
-if __name__ == "__main__":
-    from db import db
-
-    db.init_app(app)
-    app.run(port=5000, debug=True)
+# create app
+app = create_app(secret_key="vcode")
+api = create_api(app)
+jwt = create_jwt(app, authenticate, identity)
+link_route_path(api=api)
