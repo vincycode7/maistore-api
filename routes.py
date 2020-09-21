@@ -7,6 +7,9 @@ from resources.productcol import ProductColorList
 from resources.bitcoin import BitcoinList
 from resources.cardpay import CardPayList
 from resources.favoritestore import FavStoreList
+from resources.cartstatus import CartStatusList
+from resources.cartsystem import CartSystemList
+from resources.cartproduct import CartProductList
 
 route_path = [
                 [UserRegister, "/register"], #https://mistore.com/register

@@ -20,8 +20,11 @@ class UserRegister(Resource):
     parser.add_argument(name="password", type=str, required=True, help="password cannot be blank")
     parser.add_argument(name="email", type=str, required=True, help="email cannot be blank")
     parser.add_argument(name="phoneno", type=str, required=True, help="phone number cannot be blank")
-    parser.add_argument(name="address", type=str, required=False, help="Home address of user")
+    parser.add_argument(name="address", type=str, required=False, help="Home address of user",case_sensitive=False)
     parser.add_argument(name="admin", type=bool, default=False, required=False, help="phone number cannot be blank")
+    parser.add_argument(name="country", type=str, default=False, required=True, help="user's country",case_sensitive=False)
+    parser.add_argument(name="lga", type=str, default=False, required=True, help="user's lga",case_sensitive=False)
+    parser.add_argument(name="state", type=str, default=False, required=True, help="user's state",case_sensitive=False) 
 
     def post(self):
         data = UserRegister.parser.parse_args()

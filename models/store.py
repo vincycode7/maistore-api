@@ -1,4 +1,5 @@
 from db import db
+from datetime import datetime as dt
 
 class StoreModel(db.Model):
     __tablename__ = "store"
@@ -7,8 +8,10 @@ class StoreModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     storename = db.Column(db.String(40))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created = db.Column(db.DateTime, index=False, unique=False, nullable=False)
+    country = db.Column(db.String(30), nullable=False)
     # location_id = db.Column(db.Integer, db.ForeignKey("location.id"))
-
+    
     #merge (for sqlalchemy to link tables)
     user = db.relationship("UserModel")
     products = db.relationship("ProductModel", lazy="dynamic")
@@ -16,16 +19,19 @@ class StoreModel(db.Model):
     # phonenos = db.relationship("StorephoneModel", lazy="dynamic")
     # emails = db.relationship("StoremailModel", lazy="dynamic")
 
-    def __init__(self, storename, user_id, location=None):
+    def __init__(self, storename, user_id, country, created=None, location=None):
         self.storename = storename
         self.user_id = user_id
         self.location = location
+        self.country = country
+        self.created = created if created else dt.now()
 
     # a json representation
     def json(self):
         return  {
                     "id" : self.id,
                     "storename" : self.storename,
+                    "country" : self.country,
                     "products" : [product.json() for product in self.products.all()],
                     "customers" : [customer.json()["email"] for customer in self.customers.all()],
                     # "location" : self.location_id,

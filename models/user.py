@@ -9,6 +9,8 @@ class UserModel(db.Model):
 
     # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
+    lga = db.Column(db.String(30), nullable=False)
+    country = db.Column(db.String(30), nullable=False)
     firstname = db.Column(db.String(30), index=False, unique=False, nullable=False)
     middlename = db.Column(db.String(30), index=False, unique=False, nullable=False)
     lastname = db.Column(db.String(30), index=False, unique=False, nullable=False)
@@ -24,11 +26,17 @@ class UserModel(db.Model):
     bitcoins = db.relationship("BitcoinPayModel", lazy="dynamic")
     cards = db.relationship("CardpayModel",lazy="dynamic")
     favstores = db.relationship("FavStoreModel", lazy="dynamic")
+    carts = db.relationship("CartSystemModel", lazy="dynamic")
     # purchased = db.relationship("PurchasedModel", lazy="dynamic") # one to many relationship
-    # carts = db.relationship("CartModel", lazy="dynamic")
     # notifications = db.relationship("NoticeModel", lazy="dynamic")
 
-    def __init__(self, firstname, password, phoneno, email, admin, created=None, lastname=None, middlename=None, address=None):
+    def __init__(
+                    self, firstname, password, phoneno, 
+                    email, admin, country, state, 
+                    lga, created=None, lastname=None, 
+                    middlename=None, address=None
+                ):
+
         self.firstname = firstname
         self.lastname = lastname
         self.middlename = middlename
@@ -37,6 +45,9 @@ class UserModel(db.Model):
         self.email = email
         self.address = address
         self.admin = admin
+        self.country = country
+        self.state = state
+        self.lga = lga
         self.created = created if created else dt.now()
 
     # a json representation
@@ -51,7 +62,10 @@ class UserModel(db.Model):
                                     "phoneno" : self.phoneno,
                                     "address" : self.address,
                                     "password" : self.password,
-                                    "email" : self.email
+                                    "email" : self.email,
+                                    "lga" : self.lga,
+                                    "state": self.state,
+                                    "country" : self.country
                                     },
 
                 "mystores"       : [store.json() for store in self.stores.all()],
