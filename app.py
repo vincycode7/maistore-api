@@ -42,3 +42,14 @@ app = create_app(secret_key="vcode")
 api = create_api(app)
 jwt = create_jwt(app, authenticate, identity)
 link_route_path(api=api)
+
+if __name__ == "__main__":
+    from db import db
+
+    db.init_app(app)
+
+    @app.before_first_request
+    def create_tables():
+        db.create_all()
+
+    app.run(port=5000, debug=True)
