@@ -33,19 +33,22 @@ class UserModel(db.Model):
     # notifications = db.relationship("NoticeModel", lazy="dynamic")
 
     def __init__(
-                    self, firstname, password, phoneno, 
-                    email, admin, country, state, 
-                    lga, created=None, lastname=None, 
-                    middlename=None, address=None,
+                    self, password, phoneno, email, 
+                    admin=False, country=None, state=None, 
+                    lga=None, created=None, lastname=None, 
+                    middlename=None, firstname=None, address=None,
                     profilepic=None
                 ):
 
-        self.firstname = firstname
-        self.lastname = lastname
-        self.middlename = middlename
+        # Required 
         self.password = password
         self.phoneno = phoneno
         self.email = email
+
+        #optional
+        self.firstname = firstname
+        self.lastname = lastname
+        self.middlename = middlename
         self.address = address
         self.profilepic = profilepic
         self.admin = admin
