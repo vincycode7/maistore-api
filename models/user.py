@@ -84,7 +84,7 @@ class UserModel(db.Model):
                                     },
 
                 "favstores" : [fav.json()["storeid"] for fav in self.favstores.all()],
-                # "mycarts" : [purchase_detail.json() for purchase_detail in self.purchased.all()],
+                "mycarts" : [purchase_detail.json() for purchase_detail in self.purchased.all()],
                 # "purchased" : [cart.json() for cart in self.carts.all()],
                 # "notifications" : [notice.json() for notice in self.notifications.all()],
                 }

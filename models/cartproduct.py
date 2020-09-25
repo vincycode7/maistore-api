@@ -1,4 +1,4 @@
-# This table will hold the products added to a card from a store
+# This table will hold the products added to a cart from a store
 # Note more than one products in a cart must all be from the same store
 
 from db import db
