@@ -12,12 +12,11 @@ from resources.cartsystem import CartSystemList
 from resources.cartproduct import CartProductList
 
 route_path = [
-                [UserRegister, "/register"], #https://mistore.com/register
-                [User, '/user/<string:username>'], #https://mistore.com/gbenga
-                #[Users, '/user/<string:name>?<string:password>'], #https://mistore.com/gbenga
-                [UserList , "/users"], #https://mistore.com//student
-                [Store, "/store/<string:storename>"], #https://maistore.com/store/shoprite
-                [StoreList, "/stores"], #https://maistore.com/store
-                [ProductList, "/products"], #https://mistore.com/product
-                [Product, '/product/<string:productname>'] #https://mistore.com/product/bags
+                [UserRegister, ["/register"]], #https://mistore.com/register
+                [User, ['/user/<int:userid>']], #https://mistore.com/user/1
+                [UserList , ["/users"]], #https://mistore.com/users
+                [Store, ["/store/<string:storename>"]], #https://maistore.com/store/shoprite
+                [StoreList, ["/stores"]], #https://maistore.com/store
+                [ProductList, ["/products"]], #https://mistore.com/product
+                [Product, ['/product/<string:productname>']] #https://mistore.com/product/bags
             ]

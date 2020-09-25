@@ -11,6 +11,7 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     lga = db.Column(db.String(30), nullable=False)
     country = db.Column(db.String(30), nullable=False)
+    state = db.Column(db.String(30), nullable=False)
     firstname = db.Column(db.String(30), index=False, unique=False, nullable=False)
     middlename = db.Column(db.String(30), index=False, unique=False, nullable=False)
     lastname = db.Column(db.String(30), index=False, unique=False, nullable=False)
@@ -19,6 +20,7 @@ class UserModel(db.Model):
     phoneno = db.Column(db.String(15), index=False, unique=False, nullable=False)
     created = db.Column(db.DateTime, index=False, unique=False, nullable=False)
     address = db.Column(db.String(300))
+    profilepic = db.Column(db.String(300))
     admin = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     #merge (for sqlalchemy to link tables)
@@ -34,7 +36,8 @@ class UserModel(db.Model):
                     self, firstname, password, phoneno, 
                     email, admin, country, state, 
                     lga, created=None, lastname=None, 
-                    middlename=None, address=None
+                    middlename=None, address=None,
+                    profilepic=None
                 ):
 
         self.firstname = firstname
@@ -44,6 +47,7 @@ class UserModel(db.Model):
         self.phoneno = phoneno
         self.email = email
         self.address = address
+        self.profilepic = profilepic
         self.admin = admin
         self.country = country
         self.state = state
@@ -61,6 +65,7 @@ class UserModel(db.Model):
                                     "middlename" : self.middlename,
                                     "phoneno" : self.phoneno,
                                     "address" : self.address,
+                                    "profilepic" : self.profilepic,
                                     "password" : self.password,
                                     "email" : self.email,
                                     "lga" : self.lga,
@@ -96,11 +101,6 @@ class UserModel(db.Model):
         return results 
 
     @classmethod
-    def find_by_username(cls, username=None):
-        result = cls.query.filter_by(username=username).first()
-        return result 
-
-    @classmethod
     def find_by_email(cls, email=None):
         result = cls.query.filter_by(email=email).first()
         return result 
@@ -109,18 +109,6 @@ class UserModel(db.Model):
     def find_by_id(cls, id):
         result = cls.query.filter_by(id=id).first()
         return result 
-
-    @classmethod
-    def check_form_integrity(cls,username=None, data=None):
-        #check if form is empty
-        if data == None: return {"message" : "Invalid object type, use json."}, 404
-
-        #confirm the unique key to be same with the product route
-        # if username != data['username']:
-        #     return {"message" : f"user {username} does not match {data['username']} in the form"}, 40
-        #implement later
-
-        return False
 
     def __repr__(self):
         return f"{self.email}"

@@ -4,7 +4,6 @@ from models.user import UserModel
 
 #class to list all user
 class UserList(Resource):
-    @jwt_required()
     def get(self):        
         users = UserModel.find_all()
         if users: return {"users" : [ user.json() for user in users]},201
@@ -30,7 +29,6 @@ class UserRegister(Resource):
         data = UserRegister.parser.parse_args()
 
         #check if data already exist
-        # if UserModel.find_by_username(username=data["username"]): return {"message" : f"username {data['username']} already exists."},400 # 400 is for bad request
         if UserModel.find_by_email(email=data["email"]): return {"message" : f"email {data['email']} already exists."},400 # 400 is for bad request
         
         user = UserModel(**data)
@@ -47,22 +45,17 @@ class UserRegister(Resource):
 
 #class to create user and get user
 class User(Resource):
-    @jwt_required()
-    def get(self, username):
-        user = UserModel.find_by_username(username=username)
+    def get(self, userid=None):
+        user = UserModel.find_by_id(id=userid)
 
         if user: return {"user" : user.json()},201
         return {"message" : 'user not found'}, 400
 
-    @jwt_required() #use for authentication before calling post
-    def put(self, username):
+    #use for authentication before calling post
+    def put(self, userid):
         
         data = UserRegister.parser.parse_args()
-        # message = UserModel.check_form_integrity(username, data)
-
-        # if message: return message
-
-        user = UserModel.find_by_username(username=username)
+        user = UserModel.find_by_id(id=id)
         email = UserModel.find_by_email(email=data["email"])
         
         if user:
@@ -92,9 +85,9 @@ class User(Resource):
 
 
 
-    @jwt_required() #use for authentication before calling post
-    def delete(self, username, password=None):
-        user = UserModel.find_by_username(username=username)
+    #use for authentication before calling post
+    def delete(self, id):
+        user = UserModel.find_by_id(id=id,)
         if user:
             user.delete_from_db()
             return {"message" : "User deleted"}, 200 # 200 ok 

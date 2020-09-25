@@ -34,7 +34,7 @@ def create_jwt(app, auth, identity):
     return jwt
 
 def link_route_path(api):
-    for route, path in route_path: api.add_resource(route, path)
+    for route, path in route_path: api.add_resource(route, *path)
     return api
 
 # create app
