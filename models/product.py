@@ -7,19 +7,28 @@ class ProductModel(db.Model):
     productname = db.Column(db.String(40))
     price = db.Column(db.Float(precision=2))
     quantity = db.Column(db.Integer)
-    productcat_id = db.Column(db.Integer, db.ForeignKey('productcat.id'))
-    store_id = db.Column(db.Integer, db.ForeignKey("store.id"))
+    desc = db.Column(db.String(200))
+    productcat_id = db.Column(db.Integer, db.ForeignKey('productcat.id'), index=False, unique=False, nullable=False)
+    store_id = db.Column(db.Integer, db.ForeignKey("store.id"), index=False, unique=False, nullable=False)
+    is_available = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
-    # productcat = db.relationship("ProductCatModel")
+    productcat = db.relationship("ProductCatModel")
     store = db.relationship("StoreModel")
-    # sizes = db.relationship("ProductSizeModel", lazy="dynamic")
+    reviews = db.relationship("ReviewModel", lazy="dynamic")
+    sizes = db.relationship("ProductSizeModel", lazy="dynamic")
+    colors = db.relationship("ProductColorModel", lazy="dynamic")
 
-    def __init__(self, productname, price, store_id, category, quantity=0):
+    def __init__(self, productname, price, store_id, category, desc=None, is_available=False, quantity=0):
         self.productname = productname
         self.price = price
         self.store_id = store_id
         self.productcat_id = category
         self.quantity = quantity
+        self.desc = desc
+        if is_available or self.quantity > 0:
+            self.is_available = True 
+        else:
+            self.is_available = False
 
     # a json representation
     def json(self):
@@ -28,7 +37,13 @@ class ProductModel(db.Model):
                     "productname" : self.productname,
                     "price" : self.price,
                     "quantity" : self.quantity,
-                    "store" : self.store
+                    "store_id" : self.store_id,
+                    "is_available" : self.is_available,
+                    "category_id" : self.productcat_id,
+                    "desc" : self.desc,
+                    "reviews" : [review.json() for review in self.reviews.all()],
+                    "sizes" : [size.json() for size in self.sizes.all()],
+                    "colors" : [color.json() for color in self.colors.all()]
                 }
 
     def save_to_db(self):
@@ -51,20 +66,6 @@ class ProductModel(db.Model):
         return result    
 
     @classmethod
-    def find_by_id(cls, _id):
-        result = cls.query.filter_by(id=id).first()
+    def find_by_id(cls, productid):
+        result = cls.query.filter_by(id=productid).first()
         return result    
-
-    @classmethod
-    def check_form_integrity(cls,productname, data):
-        #check if form is empty
-        if data == None: return {"message" : "Invalid object type, use json."}, 404
-
-        #check if   user posted it
-        #implement later
-
-        #confirm the unique key to be same with the product route
-        if productname != data['productname']:
-            return {"message" : f"product {productname} does not match {data['name']} in the form"}, 404
-
-        return False

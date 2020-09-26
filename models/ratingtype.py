@@ -1,14 +1,14 @@
 from db import db
 
-class ProductCatModel(db.Model):
-    __tablename__ = "productcat"
+class RatingTypeModel(db.Model):
+    __tablename__ = "ratingtype"
 
-    # columns
-    id = db.Column(db.Integer, primary_key=True,  unique=True)
+    # class variables
+    id = db.Column(db.Integer, primary_key=True, unique=True)
     desc = db.Column(db.String(256))
 
     # merge
-    products = db.relationship("ProductModel", lazy="dynamic")
+    reviews = db.relationship("ReviewModel", lazy="dynamic")
 
     def __init__(self, desc):
         self.desc = desc
@@ -17,7 +17,7 @@ class ProductCatModel(db.Model):
         return {
                     "id" : self.id,
                     "desc" : self.desc,
-                    "products" : [product.json() for product in self.products.all()],
+                    "products" : [review.json() for review in self.reviews.all()],
         }
 
     def save_to_db(self):
@@ -32,11 +32,6 @@ class ProductCatModel(db.Model):
     @classmethod
     def find_all(cls):
         result = cls.query.all()
-        return result    
-
-    @classmethod
-    def find_by_productid(cls, productid=None):
-        result = cls.query.filter_by(productid=productid).first()
         return result    
 
     @classmethod

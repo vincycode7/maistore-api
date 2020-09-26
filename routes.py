@@ -13,15 +13,17 @@ from resources.cartproduct import CartProductList
 from resources.storeemail import StoreemailList
 from resources.storelocation import StorelocList
 from resources.storephone import StorephoneList
+from resources.ratingtype import RatingTypeList
+from resources.review import ReviewList
 
 route_path = [
                 [UserRegister, ["/register"]], #https://mistore.com/register
                 [User, ['/user/<int:userid>']], #https://mistore.com/user/1
                 [UserList , ["/users"]], #https://mistore.com/users
 
-                [Store, ["/store/<string:storeid>", "/store"]], #https://maistore.com/store/1
+                [Store, ["/store/<int:storeid>", "/store"]], #https://maistore.com/store/1
                 [StoreList, ["/stores"]], #https://maistore.com/store
                 
                 [ProductList, ["/products"]], #https://mistore.com/product
-                [Product, ['/product/<string:productname>']] #https://mistore.com/product/bags
+                [Product, ['/product/<int:productid>','/product']] #https://mistore.com/product/bags
             ]
