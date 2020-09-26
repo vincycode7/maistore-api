@@ -13,6 +13,9 @@ class CartSystemModel(db.Model):
     store_id = db.Column(db.Integer, db.ForeignKey("store.id"), nullable=False)
     status = db.Column(db.Integer, db.ForeignKey("cartstatus.id"), nullable=False)
 
+    #merge
+    user = db.relationship("UserModel")
+    products = db.relationship("CartProductModel", lazy="dynamic")
 
     def __init__(self, user_id, store_id, status, statustime):
         self.user_id = user_id
@@ -27,6 +30,7 @@ class CartSystemModel(db.Model):
                 "statustime" : self.statustime,
                 "user_id" : self.user_id,
                 "store_id" : self.store_id,
+                "ordered_products" : [product.json() for product in self.products.all()],
                 "status" : self.status
         }
 

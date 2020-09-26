@@ -20,7 +20,7 @@ class UserModel(db.Model):
     phoneno = db.Column(db.String(15), index=False, unique=False, nullable=False)
     created = db.Column(db.DateTime, index=False, unique=False, nullable=False)
     address = db.Column(db.String(300))
-    profilepic = db.Column(db.String(300))
+    image = db.Column(db.String(300))
     admin = db.Column(db.Boolean, index=False, unique=False, nullable=False)
 
     #merge (for sqlalchemy to link tables)
@@ -29,15 +29,13 @@ class UserModel(db.Model):
     cards = db.relationship("CardpayModel",lazy="dynamic")
     favstores = db.relationship("FavStoreModel", lazy="dynamic")
     carts = db.relationship("CartSystemModel", lazy="dynamic")
-    # purchased = db.relationship("PurchasedModel", lazy="dynamic") # one to many relationship
-    # notifications = db.relationship("NoticeModel", lazy="dynamic")
 
     def __init__(
                     self, password, phoneno, email, 
                     admin=False, country=None, state=None, 
                     lga=None, created=None, lastname=None, 
                     middlename=None, firstname=None, address=None,
-                    profilepic=None
+                    image=None
                 ):
 
         # Required 
@@ -50,7 +48,7 @@ class UserModel(db.Model):
         self.lastname = lastname
         self.middlename = middlename
         self.address = address
-        self.profilepic = profilepic
+        self.image = image
         self.admin = admin
         self.country = country
         self.state = state
@@ -68,7 +66,7 @@ class UserModel(db.Model):
                                     "middlename" : self.middlename,
                                     "phoneno" : self.phoneno,
                                     "address" : self.address,
-                                    "profilepic" : self.profilepic,
+                                    "image" : self.image,
                                     "password" : self.password,
                                     "email" : self.email,
                                     "lga" : self.lga,
@@ -84,9 +82,7 @@ class UserModel(db.Model):
                                     },
 
                 "favstores" : [fav.json()["storeid"] for fav in self.favstores.all()],
-                "mycarts" : [purchase_detail.json() for purchase_detail in self.purchased.all()],
-                # "purchased" : [cart.json() for cart in self.carts.all()],
-                # "notifications" : [notice.json() for notice in self.notifications.all()],
+                "mycarts" : [cart.json() for cart in self.carts.all()],
                 }
         
 

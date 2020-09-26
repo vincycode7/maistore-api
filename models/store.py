@@ -9,20 +9,20 @@ class StoreModel(db.Model):
     storename = db.Column(db.String(40))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created = db.Column(db.DateTime, index=False, unique=False, nullable=False)
-    country = db.Column(db.String(30), nullable=False)
-    # location_id = db.Column(db.Integer, db.ForeignKey("location.id"))
+    country = db.Column(db.String(30))
     
     #merge (for sqlalchemy to link tables)
     user = db.relationship("UserModel")
     products = db.relationship("ProductModel", lazy="dynamic")
     customers = db.relationship("FavStoreModel", lazy="dynamic")
-    # phonenos = db.relationship("StorephoneModel", lazy="dynamic")
-    # emails = db.relationship("StoremailModel", lazy="dynamic")
+    orders = db.relationship("CartSystemModel", lazy="dynamic")
+    locations = db.relationship("StorelocModel", lazy="dynamic")
+    phonenos = db.relationship("StorephoneModel", lazy="dynamic")
+    emails = db.relationship("StoreemailModel", lazy="dynamic")
 
-    def __init__(self, storename, user_id, country, created=None, location=None):
+    def __init__(self, storename, user_id, country=None, created=None):
         self.storename = storename
         self.user_id = user_id
-        self.location = location
         self.country = country
         self.created = created if created else dt.now()
 
@@ -31,12 +31,12 @@ class StoreModel(db.Model):
         return  {
                     "id" : self.id,
                     "storename" : self.storename,
+                    "userid" : self.user_id,
                     "country" : self.country,
                     "products" : [product.json() for product in self.products.all()],
                     "customers" : [customer.json()["email"] for customer in self.customers.all()],
-                    # "location" : self.location_id,
-                    # "phonenos" : [num.json() for num in self.phonenos.all()],
-                    # "emails" : [email.json() for email in self.emails.all()],
+                    "phonenos" : [num.json() for num in self.phonenos.all()],
+                    "emails" : [email.json() for email in self.emails.all()],
                 }
 
     def save_to_db(self):
@@ -59,20 +59,6 @@ class StoreModel(db.Model):
         return result    
 
     @classmethod
-    def find_by_id(cls, _id):
-        result = cls.query.filter_by(id=id).first()
+    def find_by_id(cls, storeid):
+        result = cls.query.filter_by(id=storeid).first()
         return result    
-
-    @classmethod
-    def check_form_integrity(cls,storename, data):
-        #check if form is empty
-        if data == None: return {"message" : "Invalid object type, use json."}, 404
-
-        #check if   user posted it
-        #implement later
-
-        #confirm the unique key to be same with the product route
-        if storename != data['storename']:
-            return {"message" : f"product {storename} does not match {data['storename']} in the form"}, 404
-
-        return False

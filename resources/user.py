@@ -18,6 +18,7 @@ class UserRegister(Resource):
     parser.add_argument(name="lastname", type=str, required=True, help="lastname cannot be blank", case_sensitive=False)
     parser.add_argument(name="password", type=str, required=True, help="password cannot be blank")
     parser.add_argument(name="email", type=str, required=True, help="email cannot be blank")
+    parser.add_argument(name="image", type=str, required=False, help="user image")
     parser.add_argument(name="phoneno", type=str, required=True, help="phone number cannot be blank")
     parser.add_argument(name="address", type=str, required=False, help="Home address of user",case_sensitive=False)
     parser.add_argument(name="admin", type=bool, default=False, required=False, help="phone number cannot be blank")
@@ -45,6 +46,19 @@ class UserRegister(Resource):
 
 #class to create user and get user
 class User(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument(name="firstname",  type=str,   required=False, help="firstname cannot be blank",case_sensitive=False)
+    parser.add_argument(name="middlename", type=str,   required=False, help="middlename cannot be blank",case_sensitive=False)
+    parser.add_argument(name="lastname",   type=str,   required=False, help="lastname cannot be blank", case_sensitive=False)
+    parser.add_argument(name="password",   type=str,   required=False, help="password cannot be blank")
+    parser.add_argument(name="email",      type=str,   required=True, help="email cannot be blank")
+    parser.add_argument(name="image",      type=str,   required=False, help="user image")
+    parser.add_argument(name="phoneno",    type=str,   required=True, help="phone number cannot be blank")
+    parser.add_argument(name="address",    type=str,   required=False, help="Home address of user",case_sensitive=False)
+    parser.add_argument(name="country",    type=str,   required=False, help="user's country",case_sensitive=False)
+    parser.add_argument(name="lga",        type=str,   required=False, help="user's lga",case_sensitive=False)
+    parser.add_argument(name="state",      type=str,   required=False, help="user's state",case_sensitive=False) 
+
     def get(self, userid=None):
         user = UserModel.find_by_id(id=userid)
 
@@ -54,8 +68,8 @@ class User(Resource):
     #use for authentication before calling post
     def put(self, userid):
         
-        data = UserRegister.parser.parse_args()
-        user = UserModel.find_by_id(id=id)
+        data = User.parser.parse_args()
+        user = UserModel.find_by_id(id=userid)
         email = UserModel.find_by_email(email=data["email"])
         
         if user:
@@ -71,9 +85,7 @@ class User(Resource):
 
         #confirm the unique key to be same with the product route
         else:
-            # user = UserModel.instance_from_dict(dict_=data)
             user = UserModel(**data)
-            #insert
             try:
                 if email: return {"message" : f"email {data['email']} already exists."},400 # 400 is for bad request
                 user.save_to_db()
@@ -86,8 +98,8 @@ class User(Resource):
 
 
     #use for authentication before calling post
-    def delete(self, id):
-        user = UserModel.find_by_id(id=id,)
+    def delete(self, userid):
+        user = UserModel.find_by_id(id=userid,)
         if user:
             user.delete_from_db()
             return {"message" : "User deleted"}, 200 # 200 ok 

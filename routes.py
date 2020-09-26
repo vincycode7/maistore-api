@@ -10,13 +10,18 @@ from resources.favoritestore import FavStoreList
 from resources.cartstatus import CartStatusList
 from resources.cartsystem import CartSystemList
 from resources.cartproduct import CartProductList
+from resources.storeemail import StoreemailList
+from resources.storelocation import StorelocList
+from resources.storephone import StorephoneList
 
 route_path = [
                 [UserRegister, ["/register"]], #https://mistore.com/register
                 [User, ['/user/<int:userid>']], #https://mistore.com/user/1
                 [UserList , ["/users"]], #https://mistore.com/users
-                [Store, ["/store/<string:storename>"]], #https://maistore.com/store/shoprite
+
+                [Store, ["/store/<string:storeid>", "/store"]], #https://maistore.com/store/1
                 [StoreList, ["/stores"]], #https://maistore.com/store
+                
                 [ProductList, ["/products"]], #https://mistore.com/product
                 [Product, ['/product/<string:productname>']] #https://mistore.com/product/bags
             ]
