@@ -59,14 +59,16 @@ class User(Resource):
     parser.add_argument(name="lga",        type=str,   required=False, help="user's lga",case_sensitive=False)
     parser.add_argument(name="state",      type=str,   required=False, help="user's state",case_sensitive=False) 
 
-    def get(self, userid=None):
+    @classmethod
+    def get(userid=None):
         user = UserModel.find_by_id(id=userid)
 
         if user: return {"user" : user.json()},201
         return {"message" : 'user not found'}, 400
 
     #use for authentication before calling post
-    def put(self, userid):
+    @classmethod
+    def put(userid):
         
         data = User.parser.parse_args()
         user = UserModel.find_by_id(id=userid)
@@ -98,7 +100,8 @@ class User(Resource):
 
 
     #use for authentication before calling post
-    def delete(self, userid):
+    @classmethod
+    def delete(userid):
         user = UserModel.find_by_id(id=userid,)
         if user:
             user.delete_from_db()
