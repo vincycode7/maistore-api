@@ -3,17 +3,18 @@
 from db import db
 from datetime import datetime as dt
 
+
 class CartSystemModel(db.Model):
     __tablename__ = "cartsystem"
 
-    #columns
+    # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
     statustime = db.Column(db.DateTime, index=False, unique=False, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     store_id = db.Column(db.Integer, db.ForeignKey("store.id"), nullable=False)
     status = db.Column(db.Integer, db.ForeignKey("cartstatus.id"), nullable=False)
 
-    #merge
+    # merge
     user = db.relationship("UserModel")
     products = db.relationship("CartProductModel", lazy="dynamic")
 
@@ -26,16 +27,16 @@ class CartSystemModel(db.Model):
     def json(self):
 
         return {
-                "id" : self.id,
-                "statustime" : self.statustime,
-                "user_id" : self.user_id,
-                "store_id" : self.store_id,
-                "ordered_products" : [product.json() for product in self.products.all()],
-                "status" : self.status
+            "id": self.id,
+            "statustime": self.statustime,
+            "user_id": self.user_id,
+            "store_id": self.store_id,
+            "ordered_products": [product.json() for product in self.products.all()],
+            "status": self.status,
         }
 
     def save_to_db(self):
-        #connect to the database
+        # connect to the database
         db.session.add(self)
         db.session.commit()
 
@@ -46,14 +47,14 @@ class CartSystemModel(db.Model):
     @classmethod
     def find_all(cls):
         result = cls.query.all()
-        return result    
+        return result
 
     @classmethod
     def find_by_store_id(cls, productid=None):
         result = cls.query.filter_by(productid=productid).first()
-        return result    
+        return result
 
     @classmethod
     def find_by_id(cls, id):
         result = cls.query.filter_by(id=id).first()
-        return result    
+        return result

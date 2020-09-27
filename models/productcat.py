@@ -1,10 +1,11 @@
 from db import db
 
+
 class ProductCatModel(db.Model):
     __tablename__ = "productcat"
 
     # columns
-    id = db.Column(db.Integer, primary_key=True,  unique=True)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
     desc = db.Column(db.String(256))
 
     # merge
@@ -15,13 +16,13 @@ class ProductCatModel(db.Model):
 
     def json(self):
         return {
-                    "id" : self.id,
-                    "desc" : self.desc,
-                    "products" : [product.json() for product in self.products.all()],
+            "id": self.id,
+            "desc": self.desc,
+            "products": [product.json() for product in self.products.all()],
         }
 
     def save_to_db(self):
-        #connect to the database
+        # connect to the database
         db.session.add(self)
         db.session.commit()
 
@@ -32,14 +33,14 @@ class ProductCatModel(db.Model):
     @classmethod
     def find_all(cls):
         result = cls.query.all()
-        return result    
+        return result
 
     @classmethod
     def find_by_productid(cls, productid=None):
         result = cls.query.filter_by(productid=productid).first()
-        return result    
+        return result
 
     @classmethod
     def find_by_id(cls, id):
         result = cls.query.filter_by(id=id).first()
-        return result    
+        return result

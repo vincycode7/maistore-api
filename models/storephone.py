@@ -1,5 +1,6 @@
 from db import db
 
+
 class StorephoneModel(db.Model):
     __tablename__ = "storephone"
 
@@ -13,7 +14,7 @@ class StorephoneModel(db.Model):
 
     def json(self):
         return {
-                "id" : self.id,
-                "store_id" : self.store_id,
-                "store_address" : self.store_phoneno
+            "id": self.id,
+            "store_id": self.store_id,
+            "store_address": self.store_phoneno,
         }

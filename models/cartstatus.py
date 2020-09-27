@@ -3,10 +3,11 @@
 from db import db
 from datetime import datetime as dt
 
+
 class CartStatusModel(db.Model):
     __tablename__ = "cartstatus"
 
-    #columns
+    # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
     desc = db.Column(db.String(20))
 
@@ -15,13 +16,10 @@ class CartStatusModel(db.Model):
 
     def json(self):
 
-        return {
-                "id" : self.id,
-                "desc" : self.desc
-                }
+        return {"id": self.id, "desc": self.desc}
 
     def save_to_db(self):
-        #connect to the database
+        # connect to the database
         db.session.add(self)
         db.session.commit()
 
@@ -32,12 +30,12 @@ class CartStatusModel(db.Model):
     @classmethod
     def find_all(cls):
         result = cls.query.all()
-        return result    
+        return result
 
     @classmethod
     def find_by_productid(cls, productid=None):
         result = cls.query.filter_by(productid=productid).first()
-        return result    
+        return result
 
     @classmethod
     def find_by_id(cls, id):

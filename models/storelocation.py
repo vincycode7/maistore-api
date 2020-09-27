@@ -1,5 +1,6 @@
 from db import db
 
+
 class StorelocModel(db.Model):
 
     __tablename__ = "storelocation"
@@ -14,7 +15,7 @@ class StorelocModel(db.Model):
 
     def json(self):
         return {
-                "id" : self.id,
-                "store_id" : self.store_id,
-                "store_address" : self.store_address
+            "id": self.id,
+            "store_id": self.store_id,
+            "store_address": self.store_address,
         }

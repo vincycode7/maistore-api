@@ -14,6 +14,6 @@ class PaytypeModel(db.Model):
 
     def json(self):
         return {
-                    "id" : self.id,
-                    "desc" : self.desc,
+            "id": self.id,
+            "desc": self.desc,
         }

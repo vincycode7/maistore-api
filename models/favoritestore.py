@@ -1,5 +1,6 @@
 from db import db
 
+
 class FavStoreModel(db.Model):
 
     __tablename__ = "favstore"
@@ -7,9 +8,9 @@ class FavStoreModel(db.Model):
     # class variable
     id = db.Column(db.Integer, primary_key=True, unique=True)
     store_id = db.Column(db.Integer, db.ForeignKey("store.id"))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
-    #merge (for sqlalchemy to link tables)
+    # merge (for sqlalchemy to link tables)
     user = db.relationship("UserModel")
     store = db.relationship("UserModel")
 
@@ -19,14 +20,10 @@ class FavStoreModel(db.Model):
 
     # a json representation
     def json(self):
-        return  {
-                    "id" : self.id,
-                    "storeid" : self.store.id,
-                    "user" : self.user.email
-                }
+        return {"id": self.id, "storeid": self.store.id, "user": self.user.email}
 
     def save_to_db(self):
-        #connect to the database
+        # connect to the database
         db.session.add(self)
         db.session.commit()
 
@@ -37,19 +34,21 @@ class FavStoreModel(db.Model):
     @classmethod
     def find_all(cls):
         result = cls.query.all()
-        return result    
+        return result
 
     @classmethod
     def find_by_store_id(cls, store_id=None):
-        result = cls.query.filter_by(store_id=store_id,).first()
-        return result    
+        result = cls.query.filter_by(
+            store_id=store_id,
+        ).first()
+        return result
 
     @classmethod
     def find_by_user_id(cls, user_id=None):
         result = cls.query.filter_by(user_id=user_id).first()
-        return result    
+        return result
 
     @classmethod
     def find_by_id(cls, _id):
         result = cls.query.filter_by(id=id).first()
-        return result    
+        return result

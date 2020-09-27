@@ -1,5 +1,6 @@
 from db import db
 
+
 class ProductSizeModel(db.Model):
     __tablename__ = "productsize"
 
@@ -17,12 +18,12 @@ class ProductSizeModel(db.Model):
 
     def json(self):
         return {
-                    "id" : self.id,
-                    "desc" : self.desc,
+            "id": self.id,
+            "desc": self.desc,
         }
 
     def save_to_db(self):
-        #connect to the database
+        # connect to the database
         db.session.add(self)
         db.session.commit()
 
@@ -33,14 +34,14 @@ class ProductSizeModel(db.Model):
     @classmethod
     def find_all(cls):
         result = cls.query.all()
-        return result    
+        return result
 
     @classmethod
     def find_by_productid(cls, productid=None):
         result = cls.query.filter_by(productid=productid).first()
-        return result    
+        return result
 
     @classmethod
     def find_by_id(cls, id):
         result = cls.query.filter_by(id=id).first()
-        return result    
+        return result

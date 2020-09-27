@@ -1,5 +1,6 @@
 from db import db
 
+
 class RatingTypeModel(db.Model):
     __tablename__ = "ratingtype"
 
@@ -15,13 +16,13 @@ class RatingTypeModel(db.Model):
 
     def json(self):
         return {
-                    "id" : self.id,
-                    "desc" : self.desc,
-                    "products" : [review.json() for review in self.reviews.all()],
+            "id": self.id,
+            "desc": self.desc,
+            "products": [review.json() for review in self.reviews.all()],
         }
 
     def save_to_db(self):
-        #connect to the database
+        # connect to the database
         db.session.add(self)
         db.session.commit()
 
@@ -32,9 +33,9 @@ class RatingTypeModel(db.Model):
     @classmethod
     def find_all(cls):
         result = cls.query.all()
-        return result    
+        return result
 
     @classmethod
     def find_by_id(cls, id):
         result = cls.query.filter_by(id=id).first()
-        return result    
+        return result
