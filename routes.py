@@ -1,5 +1,5 @@
 from resources.store import Store, StoreList
-from resources.user import User, UserList, UserRegister
+from resources.user import User, UserList, UserRegister, UserLogin
 from resources.product import Product, ProductList
 from resources.productcat import ProductCatList
 from resources.productsize import ProductSizeList
@@ -18,6 +18,7 @@ from resources.review import ReviewList
 
 route_path = [
                 [UserRegister, ["/register"]], #https://mistore.com/register
+                [UserLogin, ["/login"]], #https://mistore.com/register
                 [User, ['/user/<int:userid>']], #https://mistore.com/user/1
                 [UserList , ["/users"]], #https://mistore.com/users
 

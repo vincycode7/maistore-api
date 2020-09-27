@@ -1,6 +1,8 @@
 from db import db
+from models.models_helper import ModelsHelper
+from models.store import StoreModel
 
-class ProductModel(db.Model):
+class ProductModel(db.Model, ModelsHelper):
     __tablename__ = "product"
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
@@ -17,6 +19,8 @@ class ProductModel(db.Model):
     reviews = db.relationship("ReviewModel", lazy="dynamic")
     sizes = db.relationship("ProductSizeModel", lazy="dynamic")
     colors = db.relationship("ProductColorModel", lazy="dynamic")
+
+    _childrelations = ['reviews', 'sizes', 'colors']
 
     def __init__(self, productname, price, store_id, category, desc=None, is_available=False, quantity=0):
         self.productname = productname
@@ -38,6 +42,7 @@ class ProductModel(db.Model):
                     "price" : self.price,
                     "quantity" : self.quantity,
                     "store_id" : self.store_id,
+                    "user_id" : self.store.user_id,
                     "is_available" : self.is_available,
                     "category_id" : self.productcat_id,
                     "desc" : self.desc,
@@ -45,15 +50,6 @@ class ProductModel(db.Model):
                     "sizes" : [size.json() for size in self.sizes.all()],
                     "colors" : [color.json() for color in self.colors.all()]
                 }
-
-    def save_to_db(self):
-        #connect to the database
-        db.session.add(self)
-        db.session.commit()
-
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
 
     @classmethod
     def find_all(cls):
@@ -69,3 +65,7 @@ class ProductModel(db.Model):
     def find_by_id(cls, productid):
         result = cls.query.filter_by(id=productid).first()
         return result    
+
+    @staticmethod
+    def store_queryby_id(store_id):
+        return StoreModel.find_by_id(storeid=store_id)

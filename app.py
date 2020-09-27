@@ -1,9 +1,8 @@
 import os
 from flask import Flask, request
-from flask_jwt import JWT, jwt_required
-from security import authenticate, identity
+from flask_jwt_extended import JWTManager
 from flask_restful import Resource, Api, reqparse
-from routes import *
+from routes import route_path
 
 """
 
@@ -29,9 +28,8 @@ def create_api(app):
     api = Api(app=app)
     return api
     
-def create_jwt(app, auth, identity):
-    jwt = JWT(app, auth, identity) #creates a new end point called */auth*
-    return jwt
+def link_jwt(app):
+    return JWTManager(app) #creates a new end point called */auth*
 
 def link_route_path(api):
     for route, path in route_path: api.add_resource(route, *path)
@@ -40,7 +38,14 @@ def link_route_path(api):
 # create app
 app = create_app(secret_key="vcode")
 api = create_api(app)
-jwt = create_jwt(app, authenticate, identity)
+jwt = link_jwt(app)
+
+@jwt.user_claims_loader
+def add_claims_to_jwt(identity):
+    if identity == 1:
+        return {"userid" : 1, "is_admin" : True}
+    return {"userid" : identity, "is_admin" : False}
+
 link_route_path(api=api)
 
 if __name__ == "__main__":

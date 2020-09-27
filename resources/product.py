@@ -1,6 +1,6 @@
 import sqlite3
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 from models.product import ProductModel
 
 #class to create user and get user
@@ -32,8 +32,16 @@ class Product(Resource):
         return {"message" : 'Item not found'}, 400
 
     #use for authentication before calling post
+    @jwt_required
     def post(self):
+        claim = get_jwt_claims()
         data = Product.parser.parse_args()
+        store = ProductModel.store_queryby_id(store_id=data["store_id"])
+        
+        if not store:
+            return {"message" : "Store does not exist"}, 401
+        elif not claim["is_admin"] and store.user_id != claim["userid"]: 
+            return {"message" : "Admin priviledge required."}, 401
         
         product = ProductModel(**data)
 
@@ -46,16 +54,24 @@ class Product(Resource):
         return product.json(), 201
 
     #use for authentication before calling post
+    @jwt_required
     def delete(self, productid, userid=None, password=None):
         product = ProductModel.find_by_id(productid=productid)
+        claim = get_jwt_claims()
+            
         if product:
+            if not claim["is_admin"]  and product.json().get("user_id") != claim["userid"]: 
+                return {"message" : "Admin priviledge required."}, 401
             product.delete_from_db()
             return {"message" : "Item deleted"}, 200 # 200 ok
-            
+        elif not claim["is_admin"]:
+            return {"message" : "Admin priviledge required."}, 401
+
         return {"message" : "Item Not in database"}, 401 # 400 is for bad request
 
 
     #use for authentication before calling post
+    @jwt_required
     def put(self, productid):
         
         data = Product.parser.parse_args()
@@ -73,3 +89,6 @@ class Product(Resource):
             product.save_to_db()
 
         return product.json(), 201
+
+
+        #TODO -- EDIT THE JSON FILE FOR STORE, PRODUCT TO RETURN USER_ID AND STORE_ID

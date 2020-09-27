@@ -1,9 +1,10 @@
 #import packages
 from db import db
 from datetime import datetime as dt
+from models.models_helper import ModelsHelper
 
 #class to create user and get user
-class UserModel(db.Model):
+class UserModel(db.Model, ModelsHelper):
 
     __tablename__ = "user"
 
@@ -29,6 +30,9 @@ class UserModel(db.Model):
     cards = db.relationship("CardpayModel",lazy="dynamic")
     favstores = db.relationship("FavStoreModel", lazy="dynamic")
     carts = db.relationship("CartSystemModel", lazy="dynamic")
+
+    # set children
+    _childrelations = ['stores', 'bitcoins', 'cards', 'favstores', 'carts']
 
     def __init__(
                     self, password, phoneno, email, 
@@ -77,22 +81,13 @@ class UserModel(db.Model):
                 "mystores"       : [store.json() for store in self.stores.all()],
 
                 "paymentmethods" : {
-                                    "bitcoins" : [coins.json() for coins in self.bitcoins.all()],
+                                    "bitcoins" : [coin.json() for coin in self.bitcoins.all()],
                                     "cards"    : [card.json() for card in self.cards.all()]
                                     },
 
                 "favstores" : [fav.json()["storeid"] for fav in self.favstores.all()],
                 "mycarts" : [cart.json() for cart in self.carts.all()],
                 }
-        
-
-    def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
 
     @classmethod
     def find_all(cls):

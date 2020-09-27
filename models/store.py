@@ -1,7 +1,8 @@
 from db import db
 from datetime import datetime as dt
+from models.models_helper import ModelsHelper
 
-class StoreModel(db.Model):
+class StoreModel(db.Model, ModelsHelper):
     __tablename__ = "store"
 
     # class variable
@@ -20,6 +21,11 @@ class StoreModel(db.Model):
     phonenos = db.relationship("StorephoneModel", lazy="dynamic")
     emails = db.relationship("StoreemailModel", lazy="dynamic")
 
+        #set children
+    _childrelations = [ 'products', 'customers', 'orders', 
+                        'locations', 'phonenos', 'emails'
+                      ]
+    
     def __init__(self, storename, user_id, country=None, created=None):
         self.storename = storename
         self.user_id = user_id
@@ -38,15 +44,6 @@ class StoreModel(db.Model):
                     "phonenos" : [num.json() for num in self.phonenos.all()],
                     "emails" : [email.json() for email in self.emails.all()],
                 }
-
-    def save_to_db(self):
-        #connect to the database
-        db.session.add(self)
-        db.session.commit()
-
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
 
     @classmethod
     def find_all(cls):
