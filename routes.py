@@ -1,5 +1,4 @@
 from resources.store import Store, StoreList
-from resources.user import User, UserList, UserRegister, UserLogin
 from resources.product import Product, ProductList
 from resources.productcat import ProductCatList
 from resources.productsize import ProductSizeList
@@ -15,10 +14,17 @@ from resources.storelocation import StorelocList
 from resources.storephone import StorephoneList
 from resources.ratingtype import RatingTypeList
 from resources.review import ReviewList
+from resources.user import (
+                                User, UserList, UserRegister, 
+                                UserLogin, TokenRefresh, UserLogout
+                            )
+
 
 route_path = [
+                [TokenRefresh, ["/refresh"]], #https://mistore.com/refresh
                 [UserRegister, ["/register"]], #https://mistore.com/register
                 [UserLogin, ["/login"]], #https://mistore.com/register
+                [UserLogout, ["/logout"]], #https://mistore.com/register
                 [User, ['/user/<int:userid>']], #https://mistore.com/user/1
                 [UserList , ["/users"]], #https://mistore.com/users
 

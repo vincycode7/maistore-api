@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from flask_jwt_extended import jwt_required, get_jwt_claims
+from flask_jwt_extended import jwt_required, get_jwt_claims, fresh_jwt_required
 from models.store import StoreModel
 
 class Store(Resource):
@@ -71,7 +71,7 @@ class Store(Resource):
     
         return store_byid.json(), 201
 
-    @jwt_required
+    @fresh_jwt_required
     def delete(self, storeid):
         claim = get_jwt_claims()
         store = StoreModel.find_by_id(storeid)
