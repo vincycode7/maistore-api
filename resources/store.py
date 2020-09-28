@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_claims, fresh_jwt_required
 from models.store import StoreModel
+from error_messages import *
 
 
 class Store(Resource):
@@ -8,14 +9,14 @@ class Store(Resource):
     parser.add_argument(
         name="storename",
         required=True,
-        help="a store name is required to proceed",
+        help=BLANK_ERROR.format("storename"),
         type=str,
         case_sensitive=False,
     )
     parser.add_argument(
         name="user_id",
         required=True,
-        help="only active users can create a store",
+        help=BLANK_ERROR.format("user_id"),
         type=int,
         case_sensitive=False,
     )
@@ -27,43 +28,44 @@ class Store(Resource):
         case_sensitive=False,
     )
 
+    @classmethod
     @jwt_required
-    def get(self, storeid):
+    def get(cls, storeid):
         store = StoreModel.find_by_id(storeid)
         if store:
             return store.json()
         else:
-            return {"message": "store not found"}, 404
+            return {"message": NOT_FOUND.format("store")}, 404
 
+    @classmethod
     @jwt_required
-    def post(self):
+    def post(cls):
         claim = get_jwt_claims()
         data = Store.parser.parse_args()
         if not claim["is_admin"] and claim["userid"] != data["user_id"]:
-            return {"message": "Admin priviledge required."}, 401
+            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
 
         if StoreModel.find_by_name(storename=data["storename"]):
-            return {
-                "message": f"A store with name {data['storename']} already exists"
-            }, 400
+            return {"message": ALREADY_EXISTS.format("store", data["storename"])}, 400
 
         store = StoreModel(**data)
         try:
             store.save_to_db()
         except Exception as e:
             print(e)
-            return {"message": "An error occured while creating the store."}, 500
+            return {"message": ERROR_WHILE_INSERTING.format("store.")}, 500
 
         return store.json(), 201
 
     # use for authentication before calling post
+    @classmethod
     @jwt_required
-    def put(self, storeid):
+    def put(cls, storeid):
         claim = get_jwt_claims()
         data = Store.parser.parse_args()
 
         if not claim["is_admin"] and claim["userid"] != data["user_id"]:
-            return {"message": "Admin priviledge required."}, 401
+            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
 
         store_byid = StoreModel.find_by_id(storeid=storeid)
         store_byname = StoreModel.find_by_name(storename=data["storename"])
@@ -73,7 +75,9 @@ class Store(Resource):
             if store_byname:
                 if store_byname.storename != store_byid.storename:
                     return {
-                        "message": f"store name {store_byname.storename} already exists."
+                        "message": ALREADY_EXISTS.format(
+                            "store", store_byname.storename
+                        )
                     }, 400  # 400 is for bad request
 
             # update
@@ -84,12 +88,12 @@ class Store(Resource):
             except Exception as e:
                 print(f"error is {e} dd")
                 return {
-                    "message": "An error occured updating the item the item"
+                    "message": ERROR_WHILE_INSERTING.format("item")
                 }, 500  # Internal server error
         else:
             if store_byname:
                 return {
-                    "message": f"store name {store_byname.storename} already in use."
+                    "message": ALREADY_EXISTS.format("store", store_byname.storename)
                 }, 400  # 400 is for bad request
             try:
                 # confirm the unique key to be same with the product route
@@ -98,28 +102,29 @@ class Store(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": "An error occured creating the item"
+                    "message": ERROR_WHILE_INSERTING.format("item")
                 }, 500  # Internal server error
 
         return store_byid.json(), 201
 
+    @classmethod
     @fresh_jwt_required
-    def delete(self, storeid):
+    def delete(cls, storeid):
         claim = get_jwt_claims()
         store = StoreModel.find_by_id(storeid)
 
         if store:
             if not claim["is_admin"] and claim["userid"] != store.user_id:
-                return {"message": "Admin priviledge required."}, 401
+                return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
             store.delete_from_db()
-            return {"message": "Store deleted"}
+            return {"message": DELETED.format("Store")}
         elif not store and not claim["is_admin"]:
-            return {"message": "Admin priviledge required."}, 401
-
-        return {"message": "Store not found"}
+            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
+        return {"message": NOT_FOUND.format("Store")}
 
 
 class StoreList(Resource):
-    def get(self):
+    @classmethod
+    def get(cls):
         stores = StoreModel.find_all()
         return {"stores": [store.json() for store in stores]}
