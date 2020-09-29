@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
-from routes import route_path
-from ma import ma
 from app_config import *
+from init_models import *
+from routes import *
+
+
 
 """
 
@@ -21,12 +23,13 @@ create_and_config_app(app=app, route_path=route_path)
 
 if __name__ == "__main__":
     from db import db
-
-    db.init_app(app)
-    ma.init_app(app)
+    from ma import ma
     
     @app.before_first_request
     def create_tables():
         db.create_all()
+
+    db.init_app(app)
+    ma.init_app(app)
 
     app.run(port=5000, debug=True)

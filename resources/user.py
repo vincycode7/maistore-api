@@ -122,8 +122,7 @@ class User(Resource):
                 }, 400  # 400 is for bad request
             # update
             try:
-                for each in data_or_err.keys():
-                    user.__setattr__(each, data_or_err[each])
+                for each in data_or_err.keys(): user.__setattr__(each, data_or_err[each])
                 user.save_to_db()
             except Exception as e:
                 print(f"error is {e}")

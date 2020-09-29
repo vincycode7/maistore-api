@@ -1,3 +1,11 @@
+from resources.user import (
+    User,
+    UserList,
+    UserRegister,
+    UserLogin,
+    TokenRefresh,
+    UserLogout,
+)
 from resources.store import Store, StoreList
 from resources.product import Product, ProductList
 from resources.productcat import ProductCatList
@@ -14,26 +22,44 @@ from resources.storelocation import StorelocList
 from resources.storephone import StorephoneList
 from resources.ratingtype import RatingTypeList
 from resources.review import ReviewList
-from resources.user import (
-    User,
-    UserList,
-    UserRegister,
-    UserLogin,
-    TokenRefresh,
-    UserLogout,
-)
-
 
 route_path = [
-    [TokenRefresh, ["/refresh"]],  # https://mistore.com/refresh
-    [UserRegister, ["/register"]],  # https://mistore.com/register
-    [UserLogin, ["/login"]],  # https://mistore.com/register
-    [UserLogout, ["/logout"]],  # https://mistore.com/register
-    [User, ["/user/<int:userid>"]],  # https://mistore.com/user/1
-    [UserList, ["/users"]],  # https://mistore.com/users
-    [Store, ["/store/<int:storeid>", "/store"]],  # https://maistore.com/store/1
-    [StoreList, ["/stores"]],  # https://maistore.com/store
-    [ProductList, ["/products"]],  # https://mistore.com/product
+    [
+        TokenRefresh, 
+        ["/refresh"]
+    ], # https://mistore.com/refresh
+    [
+        UserRegister, 
+        ["/register"]
+    ],  # https://mistore.com/register
+    [
+        UserLogin, 
+        ["/login"]
+    ],  # https://mistore.com/register
+    [
+        UserLogout, 
+        ["/logout"]
+    ],  # https://mistore.com/register
+    [
+        User, 
+        ["/user/<int:userid>"]
+    ],  # https://mistore.com/user/1
+    [
+        UserList, 
+        ["/users"]
+    ],  # https://mistore.com/users
+    [
+        Store, 
+        ["/store/<int:storeid>", "/store"]
+    ],  # https://maistore.com/store/1
+    [
+        StoreList, 
+        ["/stores"]
+    ],  # https://maistore.com/store
+    [
+        ProductList, 
+        ["/products"]
+    ],  # https://mistore.com/product
     [
         Product,
         ["/product/<int:productid>", "/product"],

@@ -4,6 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_claims, fresh_jwt_required
 from models.store import StoreModel
 from error_messages import *
 from schemas.store import StoreSchema
+
 reg_schema = StoreSchema()
 reg_schema_many = StoreSchema(many=True)
 
@@ -110,4 +111,4 @@ class StoreList(Resource):
     @classmethod
     def get(cls):
         stores = StoreModel.find_all()
-        return {"stores": reg_schema_many(stores)}
+        return {"stores": reg_schema_many.dump(stores)}
