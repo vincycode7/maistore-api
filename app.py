@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from routes import route_path
+from ma import ma
 from app_config import *
 
 """
@@ -22,7 +23,8 @@ if __name__ == "__main__":
     from db import db
 
     db.init_app(app)
-
+    ma.init_app(app)
+    
     @app.before_first_request
     def create_tables():
         db.create_all()

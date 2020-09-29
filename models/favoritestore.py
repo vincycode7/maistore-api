@@ -12,7 +12,7 @@ class FavStoreModel(db.Model):
 
     # merge (for sqlalchemy to link tables)
     user = db.relationship("UserModel")
-    store = db.relationship("UserModel")
+    store = db.relationship("StoreModel")
 
     def __init__(self, store_id, user_id):
         self.store_id = store_id

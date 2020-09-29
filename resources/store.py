@@ -1,39 +1,19 @@
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
+from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_claims, fresh_jwt_required
 from models.store import StoreModel
 from error_messages import *
-
+from schemas.store import StoreSchema
+reg_schema = StoreSchema()
+reg_schema_many = StoreSchema(many=True)
 
 class Store(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument(
-        name="storename",
-        required=True,
-        help=BLANK_ERROR.format("storename"),
-        type=str,
-        case_sensitive=False,
-    )
-    parser.add_argument(
-        name="user_id",
-        required=True,
-        help=BLANK_ERROR.format("user_id"),
-        type=int,
-        case_sensitive=False,
-    )
-    parser.add_argument(
-        name="country",
-        required=False,
-        help="Country where the store is located",
-        type=str,
-        case_sensitive=False,
-    )
-
     @classmethod
     @jwt_required
     def get(cls, storeid):
         store = StoreModel.find_by_id(storeid)
         if store:
-            return store.json()
+            return reg_schema.dump(store)
         else:
             return {"message": NOT_FOUND.format("store")}, 404
 
@@ -41,34 +21,37 @@ class Store(Resource):
     @jwt_required
     def post(cls):
         claim = get_jwt_claims()
-        data = Store.parser.parse_args()
-        if not claim["is_admin"] and claim["userid"] != data["user_id"]:
+        data_or_err,status = parser_or_err(reg_schema,request.get_json())
+        if status == 400: return data_or_err
+
+        if not claim["is_admin"] and claim["userid"] != data_or_err["user_id"]:
             return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
 
-        if StoreModel.find_by_name(storename=data["storename"]):
-            return {"message": ALREADY_EXISTS.format("store", data["storename"])}, 400
+        if StoreModel.find_by_name(storename=data_or_err["storename"]):
+            return {"message": ALREADY_EXISTS.format("store", data_or_err["storename"])}, 400
 
-        store = StoreModel(**data)
+        store = StoreModel(**data_or_err)
         try:
             store.save_to_db()
         except Exception as e:
             print(e)
             return {"message": ERROR_WHILE_INSERTING.format("store.")}, 500
 
-        return store.json(), 201
+        return reg_schema.dump(store), 201
 
     # use for authentication before calling post
     @classmethod
     @jwt_required
     def put(cls, storeid):
         claim = get_jwt_claims()
-        data = Store.parser.parse_args()
+        data_or_err,status = parser_or_err(reg_schema,request.get_json())
+        if status == 400: return data_or_err
 
-        if not claim["is_admin"] and claim["userid"] != data["user_id"]:
+        if not claim["is_admin"] and claim["userid"] != data_or_err["user_id"]:
             return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
 
         store_byid = StoreModel.find_by_id(storeid=storeid)
-        store_byname = StoreModel.find_by_name(storename=data["storename"])
+        store_byname = StoreModel.find_by_name(storename=data_or_err["storename"])
 
         # check if store name is in use
         if store_byid:
@@ -82,8 +65,8 @@ class Store(Resource):
 
             # update
             try:
-                for each in data.keys():
-                    store_byid.__setattr__(each, data[each])
+                for each in data_or_err.keys():
+                    store_byid.__setattr__(each, data_or_err[each])
                 store_byid.save_to_db()
             except Exception as e:
                 print(f"error is {e} dd")
@@ -97,7 +80,7 @@ class Store(Resource):
                 }, 400  # 400 is for bad request
             try:
                 # confirm the unique key to be same with the product route
-                store_byid = StoreModel(**data)
+                store_byid = StoreModel(**data_or_err)
                 store_byid.save_to_db()
             except Exception as e:
                 print(f"error is {e}")
@@ -105,7 +88,7 @@ class Store(Resource):
                     "message": ERROR_WHILE_INSERTING.format("item")
                 }, 500  # Internal server error
 
-        return store_byid.json(), 201
+        return reg_schema.dump(store_byid), 201
 
     @classmethod
     @fresh_jwt_required
@@ -127,4 +110,4 @@ class StoreList(Resource):
     @classmethod
     def get(cls):
         stores = StoreModel.find_all()
-        return {"stores": [store.json() for store in stores]}
+        return {"stores": reg_schema_many(stores)}

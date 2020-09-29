@@ -1,10 +1,12 @@
 from flask_restful import Resource, reqparse
+from flask import request
 from models.user import UserModel
 from blacklist import BLACKLIST_REFRESH, BLACKLIST_ACCESS
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     jwt_required,
+    jwt_optional,
     get_jwt_claims,
     get_jwt_identity,
     jwt_refresh_token_required,
@@ -13,95 +15,21 @@ from flask_jwt_extended import (
     get_csrf_token,
 )
 from error_messages import *
+from schemas.user import UserSchema
 
-PARSER = reqparse.RequestParser()
-PARSER.add_argument(
-    name="firstname",
-    type=str,
-    required=False,
-    help=TO_INPUT.format("firstname"),
-    case_sensitive=False,
-)
-PARSER.add_argument(
-    name="middlename",
-    type=str,
-    required=False,
-    help=TO_INPUT.format("middlename"),
-    case_sensitive=False,
-)
-PARSER.add_argument(
-    name="lastname",
-    type=str,
-    required=False,
-    help=TO_INPUT.format("lastname"),
-    case_sensitive=False,
-)
-PARSER.add_argument(
-    name="password", type=str, required=True, help=BLANK_ERROR.format("password")
-)
-PARSER.add_argument(
-    name="email", type=str, required=True, help=BLANK_ERROR.format("email")
-)
-PARSER.add_argument(
-    name="image", type=str, required=False, help=TO_INPUT.format("image")
-)
-PARSER.add_argument(
-    name="phoneno", type=str, required=True, help=BLANK_ERROR.format("phoneno")
-)
-PARSER.add_argument(
-    name="address",
-    type=str,
-    required=False,
-    help=TO_INPUT.format("home address"),
-    case_sensitive=False,
-)
-PARSER.add_argument(
-    name="admin",
-    type=bool,
-    default=False,
-    required=False,
-    help=TO_INPUT.format("admin status (1 -- true, 0 -- false)"),
-)
-PARSER.add_argument(
-    name="country",
-    type=str,
-    default=False,
-    required=True,
-    help=BLANK_ERROR.format("country"),
-    case_sensitive=False,
-)
-PARSER.add_argument(
-    name="lga",
-    type=str,
-    default=False,
-    required=True,
-    help=TO_INPUT.format("user's lga"),
-    case_sensitive=False,
-)
-PARSER.add_argument(
-    name="state",
-    type=str,
-    default=False,
-    required=True,
-    help=TO_INPUT.format("user's state"),
-    case_sensitive=False,
-)
+reg_schema = UserSchema()
+login_schema = UserSchema(only=("email", "password"))
+reg_schema_many = UserSchema(many=True)
+
 # class to login users
 class UserLogin(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument(
-        name="password", type=str, required=True, help=BLANK_ERROR.format("password")
-    )
-    parser.add_argument(
-        name="email", type=str, required=True, help=BLANK_ERROR.format("email")
-    )
-
     @classmethod
     def post(cls):
-        data = cls.parser.parse_args()  # get data <1>
-        user = UserModel.find_by_email(data.get("email"))  # find user by email <2>
+        data_or_err,status = parser_or_err(login_schema,request.get_json())
+        if status == 400: return data_or_err
+        user = UserModel.find_by_email(data_or_err.get("email"))  # find user by email <2>
 
-        if user and user.password == data.get("password"):  # check password <3>
+        if user and user.password == data_or_err.get("password"):  # check password <3>
             access_token = create_access_token(
                 identity=user.id, fresh=True
             )  # create access token <4>
@@ -115,19 +43,21 @@ class UserLogin(Resource):
 
 # class to register user
 class UserRegister(Resource):
+    @classmethod
+    @jwt_optional
     def post(cls):
-        data = PARSER.parse_args()
+        claim = get_jwt_claims()
+        data_or_err,status = parser_or_err(reg_schema, request.get_json())
+        if status == 400: return data_or_err
 
         # check if data already exist
-        if UserModel.find_by_email(email=data["email"]):
-            return {
-                "message": ALREADY_EXISTS.format("email", data["email"])
-            }, 400  # 400 is for bad request
-
-        user = UserModel(**data)
+        unique_input_error = UserModel.regpost_already_exist(data_or_err)
+        if unique_input_error: return unique_input_error
+        if not claim or not claim["is_admin"]: data_or_err["admin"] = False
 
         # insert
         try:
+            user = UserModel(**data_or_err)
             user.save_to_db()
         except Exception as e:
             print(f"error is ----> {e}")
@@ -135,7 +65,7 @@ class UserRegister(Resource):
                 "message": ERROR_WHILE_INSERTING.format("item")
             }, 500  # Internal server error
 
-        return user.json(), 201
+        return reg_schema.dump(user), 201
 
 
 # class to list all user
@@ -149,8 +79,8 @@ class UserList(Resource):
 
         users = UserModel.find_all()
         if users:
-            return {"users": [user.json() for user in users]}, 201
-        return {"message": NOT_FOUND.format("item")}, 400
+            return {"users": reg_schema_many.dump(users)}, 201
+        return {"message": NOT_FOUND.format("users")}, 400
 
 
 # class to create user and get user
@@ -165,7 +95,7 @@ class User(Resource):
         user = UserModel.find_by_id(id=userid)
 
         if user:
-            return {"user": user.json()}, 201
+            return {"user": reg_schema.dump(user)}, 201
         return {"message": "user not found"}, 400
 
     # use for authentication before calling post
@@ -176,20 +106,24 @@ class User(Resource):
         if not claim["is_admin"] and claim["userid"] != userid:
             return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
 
-        data = PARSER.parse_args()
+        data_or_err,status = parser_or_err(reg_schema, request.get_json())
+        if status == 400: return data_or_err
+
+        if not claim["is_admin"]: data_or_err["admin"] = False
+
         user = UserModel.find_by_id(id=userid)
-        email = UserModel.find_by_email(email=data["email"])
+        email = UserModel.find_by_email(email=data_or_err["email"])
 
         if user:
             # for product in products: product.update_cls_vars(data)
             if email and not (email.email == user.email):
                 return {
-                    "message": ALREADY_EXISTS.format("email", data["email"])
+                    "message": ALREADY_EXISTS.format("email", data_or_err["email"])
                 }, 400  # 400 is for bad request
             # update
             try:
-                for each in data.keys():
-                    user.__setattr__(each, data[each])
+                for each in data_or_err.keys():
+                    user.__setattr__(each, data_or_err[each])
                 user.save_to_db()
             except Exception as e:
                 print(f"error is {e}")
@@ -199,10 +133,10 @@ class User(Resource):
 
         # confirm the unique key to be same with the product route
         else:
-            user = UserModel(**data)
+            user = UserModel(**data_or_err)
             if email:
                 return {
-                    "message": ALREADY_EXISTS.format("email", data["email"])
+                    "message": ALREADY_EXISTS.format("email", data_or_err["email"])
                 }, 400  # 400 is for bad request
             try:
                 user.save_to_db()
@@ -212,7 +146,7 @@ class User(Resource):
                     "message": ERROR_WHILE_INSERTING.format("item")
                 }, 500  # Internal server error
 
-        return user.json(), 201
+        return reg_schema.dump(user), 201
 
     # use for authentication before calling post
     @classmethod

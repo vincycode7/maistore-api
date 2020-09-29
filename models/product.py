@@ -25,11 +25,9 @@ class ProductModel(db.Model, ModelsHelper):
 
     productcat = db.relationship("ProductCatModel")
     store = db.relationship("StoreModel")
-    reviews = db.relationship("ReviewModel", lazy="dynamic")
-    sizes = db.relationship("ProductSizeModel", lazy="dynamic")
-    colors = db.relationship("ProductColorModel", lazy="dynamic")
-
-    _childrelations = ["reviews", "sizes", "colors"]
+    reviews = db.relationship("ReviewModel", lazy="dynamic", cascade="all, delete-orphan")
+    sizes = db.relationship("ProductSizeModel", lazy="dynamic", cascade="all, delete-orphan")
+    colors = db.relationship("ProductColorModel", lazy="dynamic", cascade="all, delete-orphan")
 
     def __init__(
         self,
@@ -54,21 +52,21 @@ class ProductModel(db.Model, ModelsHelper):
             self.is_available = False
 
     # a json representation
-    def json(self):
-        return {
-            "id": self.id,
-            "productname": self.productname,
-            "price": self.price,
-            "quantity": self.quantity,
-            "store_id": self.store_id,
-            "user_id": self.store.user_id,
-            "is_available": self.is_available,
-            "category_id": self.productcat_id,
-            "desc": self.desc,
-            "reviews": [review.json() for review in self.reviews.all()],
-            "sizes": [size.json() for size in self.sizes.all()],
-            "colors": [color.json() for color in self.colors.all()],
-        }
+    # def json(self):
+    #     return {
+    #         "id": self.id,
+    #         "productname": self.productname,
+    #         "price": self.price,
+    #         "quantity": self.quantity,
+    #         "store_id": self.store_id,
+    #         "user_id": self.store.user_id,
+    #         "is_available": self.is_available,
+    #         "category_id": self.productcat_id,
+    #         "desc": self.desc,
+    #         "reviews": [review.json() for review in self.reviews.all()],
+    #         "sizes": [size.json() for size in self.sizes.all()],
+    #         "colors": [color.json() for color in self.colors.all()],
+    #     }
 
     @classmethod
     def find_all(cls):
