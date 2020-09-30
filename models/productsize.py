@@ -1,7 +1,6 @@
-from db import db
+from models.models_helper import *
 
-
-class ProductSizeModel(db.Model):
+class ProductSizeModel(db.Model,ModelsHelper):
     __tablename__ = "productsize"
 
     # class variables
@@ -9,39 +8,7 @@ class ProductSizeModel(db.Model):
     productid = db.Column(db.Integer, db.ForeignKey("product.id"))
     desc = db.Column(db.String(256))
 
-    # merge
-    product = db.relationship("ProductModel")
-
-    def __init__(self, productid, desc):
-        self.productid = productid
-        self.desc = desc
-
-    def json(self):
-        return {
-            "id": self.id,
-            "desc": self.desc,
-        }
-
-    def save_to_db(self):
-        # connect to the database
-        db.session.add(self)
-        db.session.commit()
-
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    @classmethod
-    def find_all(cls):
-        result = cls.query.all()
-        return result
-
     @classmethod
     def find_by_productid(cls, productid=None):
         result = cls.query.filter_by(productid=productid).first()
-        return result
-
-    @classmethod
-    def find_by_id(cls, id):
-        result = cls.query.filter_by(id=id).first()
         return result

@@ -1,13 +1,8 @@
 # import packages
-from db import db
-from datetime import datetime as dt
-from models.models_helper import ModelsHelper
-from typing import List, Dict
-from error_messages import *
+from models.models_helper import *
 
 # class to create user and get user
-class UserModel(db.Model, ModelsHelper):
-
+class UserModel(db.Model,ModelsHelper):
     __tablename__ = "user"
 
     # columns
@@ -27,42 +22,11 @@ class UserModel(db.Model, ModelsHelper):
     phoneno = db.Column(db.String(15), index=False, unique=True, nullable=False)
 
     # merge (for sqlalchemy to link tables)
-    stores = db.relationship("StoreModel", lazy="dynamic", cascade="all, delete-orphan")
-    bitcoins = db.relationship("BitcoinPayModel", lazy="dynamic", cascade="all, delete-orphan")
-    cards = db.relationship("CardpayModel", lazy="dynamic", cascade="all, delete-orphan")
-    favstores = db.relationship("FavStoreModel", lazy="dynamic", cascade="all, delete-orphan")
-    carts = db.relationship("CartSystemModel", lazy="dynamic", cascade="all, delete-orphan")
-
-    # # a json representation
-    # def json(self) -> Dict:
-    #     return {
-    #         "id": self.id,
-    #         "profile": {
-    #             "firstname": self.firstname,
-    #             "lastname": self.lastname,
-    #             "middlename": self.middlename,
-    #             "phoneno": self.phoneno,
-    #             "address": self.address,
-    #             "image": self.image,
-    #             "password": self.password,
-    #             "email": self.email,
-    #             "lga": self.lga,
-    #             "state": self.state,
-    #             "country": self.country,
-    #         },
-    #         "mystores": [store.json() for store in self.stores.all()],
-    #         "paymentmethods": {
-    #             "bitcoins": [coin.json() for coin in self.bitcoins.all()],
-    #             "cards": [card.json() for card in self.cards.all()],
-    #         },
-    #         "favstores": [fav.json()["storeid"] for fav in self.favstores.all()],
-    #         "mycarts": [cart.json() for cart in self.carts.all()],
-    #     }
-
-    @classmethod
-    def find_all(cls) -> List:
-        results = cls.query.all()  # the comma is required because it expects a tuple
-        return results
+    stores = db.relationship("StoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan")
+    bitcoins = db.relationship("BitcoinPayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan")
+    cards = db.relationship("CardpayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan")
+    favstores = db.relationship("FavStoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan")
+    carts = db.relationship("CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan")
 
     @classmethod
     def find_by_email(cls, email: str = None):
@@ -75,21 +39,35 @@ class UserModel(db.Model, ModelsHelper):
         return result
 
     @classmethod
-    def find_by_id(cls, id: int):
-        result = cls.query.filter_by(id=id).first()
-        return result
+    def check_unique_inputs(cls, user_data):
+        email = cls.find_by_email(email=user_data["email"])
+        phoneno = cls.find_by_phoneno(phoneno=user_data["phoneno"])
+        return email,phoneno
 
     @classmethod
-    def regpost_already_exist(cls, user_data):
-        if UserModel.find_by_email(email=user_data["email"]):
-            return {
-                "message": ALREADY_EXISTS.format("email", user_data["email"])
-            }, 400  # 400 is for bad request
-        elif UserModel.find_by_phoneno(phoneno=user_data["phoneno"]):
-            return {
-                "message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])
-            }, 400  # 400 is for bad request
-        return False
+    def post_unique_already_exist(cls, claim, user_data):
+        email,phoneno = cls.check_unique_inputs(user_data=user_data)
+        if email: return { "message": ALREADY_EXISTS.format("email", user_data["email"])}, 400  # 400 is for bad request
+        elif phoneno: return {"message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])}, 400  # 400 is for bad request
+        elif (not claim and user_data["admin"] == True) or (claim and not claim["is_admin"] and user_data["admin"] == True): 
+            return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("set admin status to true")}, 401
+        return False, 200
+
+    @classmethod
+    def put_unique_already_exist(cls, claim, userid, user_data):
+        user = cls.find_by_id(id=userid)
+        email,phoneno = cls.check_unique_inputs(user_data=user_data)
+
+        #check user permission, edit and parse data
+        if not claim["is_admin"] and claim["userid"] != userid: 
+            return user, {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")}, 401
+        elif not claim["is_admin"] and user_data["admin"] != True: 
+            return user, {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to change admin status")}, 401
+        elif user and email and user.email != email.email:
+            return user, {"message": ALREADY_EXISTS.format("email", user_data["email"])}, 400  # 400 is for bad request
+        elif user and phoneno and user.phoneno != phoneno.phoneno:
+            return user, {"message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])}, 400  # 400 is for bad request
+        return user, False, 200
 
     def __repr__(self) -> str:
         return f"{self.email}"

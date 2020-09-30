@@ -3,6 +3,10 @@ from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from models.product import ProductModel
 from error_messages import *
+from schemas.product import ProductSchema
+
+schema = ProductSchema()
+schema_many = ProductSchema(many=True)
 
 # parser is now a class variable
 PARSER = reqparse.RequestParser()

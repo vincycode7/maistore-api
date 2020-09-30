@@ -17,9 +17,9 @@ from flask_jwt_extended import (
 from error_messages import *
 from schemas.user import UserSchema
 
-reg_schema = UserSchema()
+schema = UserSchema()
 login_schema = UserSchema(only=("email", "password"))
-reg_schema_many = UserSchema(many=True)
+schema_many = UserSchema(many=True)
 
 # class to login users
 class UserLogin(Resource):
@@ -47,25 +47,23 @@ class UserRegister(Resource):
     @jwt_optional
     def post(cls):
         claim = get_jwt_claims()
-        data_or_err,status = parser_or_err(reg_schema, request.get_json())
-        if status == 400: return data_or_err
+        data_or_err,status = parser_or_err(schema, request.get_json())
+        if status == 400: 
+            return data_or_err
 
         # check if data already exist
-        unique_input_error = UserModel.regpost_already_exist(data_or_err)
-        if unique_input_error: return unique_input_error
-        if not claim or not claim["is_admin"]: data_or_err["admin"] = False
+        unique_input_error, status = UserModel.post_unique_already_exist(claim, data_or_err)
+        if unique_input_error: 
+            return unique_input_error, status
 
         # insert
+        user = UserModel(**data_or_err)
         try:
-            user = UserModel(**data_or_err)
             user.save_to_db()
         except Exception as e:
             print(f"error is ----> {e}")
-            return {
-                "message": ERROR_WHILE_INSERTING.format("item")
-            }, 500  # Internal server error
-
-        return reg_schema.dump(user), 201
+            return {"message": ERROR_WHILE_INSERTING.format("item")}, 500  # Internal server error
+        return schema.dump(user), 201
 
 
 # class to list all user
@@ -75,11 +73,11 @@ class UserList(Resource):
     def get(cls):
         claim = get_jwt_claims()
         if not claim or not claim["is_admin"]:
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
+            return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to get all users")}, 401
 
         users = UserModel.find_all()
-        if users:
-            return {"users": reg_schema_many.dump(users)}, 201
+        if users: 
+            return {"users": schema_many.dump(users)}, 201
         return {"message": NOT_FOUND.format("users")}, 400
 
 
@@ -89,13 +87,13 @@ class User(Resource):
     @jwt_required
     def get(cls, userid=None):
         claim = get_jwt_claims()
-        if not claim["is_admin"] and claim["userid"] != userid:
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
+
+        if not claim["is_admin"] and claim["userid"] != userid: 
+            return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to get this users")}, 401
 
         user = UserModel.find_by_id(id=userid)
-
-        if user:
-            return {"user": reg_schema.dump(user)}, 201
+        if user: 
+            return {"user": schema.dump(user)}, 201
         return {"message": "user not found"}, 400
 
     # use for authentication before calling post
@@ -103,65 +101,41 @@ class User(Resource):
     @jwt_required
     def put(cls, userid):
         claim = get_jwt_claims()
-        if not claim["is_admin"] and claim["userid"] != userid:
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
-
-        data_or_err,status = parser_or_err(reg_schema, request.get_json())
-        if status == 400: return data_or_err
-
-        if not claim["is_admin"]: data_or_err["admin"] = False
-
-        user = UserModel.find_by_id(id=userid)
-        email = UserModel.find_by_email(email=data_or_err["email"])
-
-        if user:
-            # for product in products: product.update_cls_vars(data)
-            if email and not (email.email == user.email):
-                return {
-                    "message": ALREADY_EXISTS.format("email", data_or_err["email"])
-                }, 400  # 400 is for bad request
-            # update
-            try:
-                for each in data_or_err.keys(): user.__setattr__(each, data_or_err[each])
-                user.save_to_db()
-            except Exception as e:
-                print(f"error is {e}")
-                return {
-                    "message": ERROR_WHILE_INSERTING.format("item")
-                }, 500  # Internal server error
+        data_or_err,status = parser_or_err(schema, request.get_json())
 
         # confirm the unique key to be same with the product route
-        else:
-            user = UserModel(**data_or_err)
-            if email:
-                return {
-                    "message": ALREADY_EXISTS.format("email", data_or_err["email"])
-                }, 400  # 400 is for bad request
-            try:
-                user.save_to_db()
-            except Exception as e:
-                print(f"error is {e}")
-                return {
-                    "message": ERROR_WHILE_INSERTING.format("item")
-                }, 500  # Internal server error
+        user,unique_input_error, status = UserModel.put_unique_already_exist(claim =claim, userid=userid, user_data=data_or_err)
+        if unique_input_error: 
+            return unique_input_error, status
+        if status == 400: 
+            return data_or_err
+        if not claim["is_admin"]: 
+            data_or_err["admin"] = False
 
-        return reg_schema.dump(user), 201
+        # if user already exist update the dictionary
+        if user: 
+            for each in data_or_err.keys(): user.__setattr__(each, data_or_err[each])
+        else: 
+            user = UserModel(**data_or_err)
+
+        #save
+        try: 
+            user.save_to_db()
+        except Exception as e:
+            print(f"error is {e}")
+            return {"message": ERROR_WHILE_INSERTING.format("item")}, 500  # Internal server error
+        return schema.dump(user), 201
 
     # use for authentication before calling post
     @classmethod
     @jwt_required
     def delete(cls, userid):
         claim = get_jwt_claims()
-        if not claim["is_admin"] and claim["userid"] != userid:
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
-
-        user = UserModel.find_by_id(
-            id=userid,
-        )
+        if not claim["is_admin"] and claim["userid"] != userid: return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("delete users")}, 401
+        user = UserModel.find_by_id(id=userid)
         if user:
             user.delete_from_db()
             return {"message": DELETED.format("User")}, 200  # 200 ok
-
         return {"message": NOT_FOUND.format("User")}, 400  # 400 is for bad request
 
 
@@ -180,7 +154,6 @@ class UserLogout(Resource):
     @classmethod
     @jwt_required
     def post(cls):
-        print(get_raw_jwt())
         jti = get_raw_jwt()["jti"]
         BLACKLIST_ACCESS.add(jti)
         return {"message": LODDED_OUT}, 200

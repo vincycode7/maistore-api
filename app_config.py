@@ -33,6 +33,11 @@ def link_route_path(api, route_path):
 
 
 def jwt_error_handler(jwt):
+    """
+        Note here is more secure claim must be added here, 
+        where only one user can be the super user.
+        And Only that user can create the first admin.
+    """
     @jwt.user_claims_loader
     def add_claims_to_jwt(identity=None):
         if identity == 1:  # best to read this from a config file or database
