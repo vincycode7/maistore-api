@@ -1,6 +1,7 @@
 from ma import ma
 from models.productcat import ProductCatModel
 
+
 class ProductCatSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ProductCatModel

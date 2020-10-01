@@ -1,6 +1,7 @@
 from ma import ma
 from models.ratingtype import RatingTypeModel
 
+
 class RatingTypeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = RatingTypeModel

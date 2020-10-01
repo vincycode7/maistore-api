@@ -1,6 +1,7 @@
 from ma import ma
 from models.storelocation import StorelocModel
 
+
 class StorelocSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = StorelocModel

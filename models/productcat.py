@@ -1,6 +1,7 @@
 from models.models_helper import *
 
-class ProductCatModel(db.Model,ModelsHelper):
+
+class ProductCatModel(db.Model, ModelsHelper):
     __tablename__ = "productcat"
 
     # columns
@@ -8,7 +9,12 @@ class ProductCatModel(db.Model,ModelsHelper):
     desc = db.Column(db.String(256))
 
     # merge
-    products = db.relationship("ProductModel", lazy="dynamic", backref="productcat", cascade="all, delete-orphan")
+    products = db.relationship(
+        "ProductModel",
+        lazy="dynamic",
+        backref="productcat",
+        cascade="all, delete-orphan",
+    )
 
     @classmethod
     def find_by_productid(cls, productid=None):

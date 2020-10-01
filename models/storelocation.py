@@ -1,6 +1,7 @@
 from models.models_helper import *
 
-class StorelocModel(db.Model,ModelsHelper):
+
+class StorelocModel(db.Model, ModelsHelper):
 
     __tablename__ = "storelocation"
 

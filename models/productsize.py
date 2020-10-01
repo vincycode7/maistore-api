@@ -1,6 +1,7 @@
 from models.models_helper import *
 
-class ProductSizeModel(db.Model,ModelsHelper):
+
+class ProductSizeModel(db.Model, ModelsHelper):
     __tablename__ = "productsize"
 
     # class variables

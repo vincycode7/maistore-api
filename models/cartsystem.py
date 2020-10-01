@@ -1,7 +1,8 @@
 # This table will hold the created carts
 from models.models_helper import *
 
-class CartSystemModel(db.Model,ModelsHelper):
+
+class CartSystemModel(db.Model, ModelsHelper):
     __tablename__ = "cartsystem"
 
     # columns

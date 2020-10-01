@@ -1,6 +1,7 @@
 from models.models_helper import *
 
-class PaymentModel(db.Model,ModelsHelper):
+
+class PaymentModel(db.Model, ModelsHelper):
     __tablename__ = "payment"
 
     id = db.Column(db.Integer, primary_key=True, unique=True)

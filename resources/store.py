@@ -8,6 +8,7 @@ from schemas.store import StoreSchema
 schema = StoreSchema()
 schema_many = StoreSchema(many=True)
 
+
 class Store(Resource):
     @classmethod
     @jwt_required
@@ -22,15 +23,14 @@ class Store(Resource):
     @jwt_required
     def post(cls):
         claim = get_jwt_claims()
-        data_or_err,status = parser_or_err(schema, request.get_json())
-        if status == 400: 
-            return data_or_err, status
+        data = schema.load(request.get_json())
 
         # check if data already exist
-        unique_input_error, status = StoreModel.post_unique_already_exist(claim, data_or_err,)
-        if unique_input_error: return unique_input_error, status
+        unique_input_error, status = StoreModel.post_unique_already_exist(claim, data)
+        if unique_input_error:
+            return unique_input_error, status
 
-        store = StoreModel(**data_or_err)
+        store = StoreModel(**data)
         try:
             store.save_to_db()
         except Exception as e:
@@ -44,40 +44,43 @@ class Store(Resource):
     @jwt_required
     def put(cls, storeid):
         claim = get_jwt_claims()
-        data_or_err,status = parser_or_err(schema,request.get_json())
-        if status == 400: 
-            return data_or_err
-
-        store,unique_input_error, status = StoreModel.put_unique_already_exist(claim=claim, storeid=storeid, store_data=data_or_err)
-        if unique_input_error: 
+        data = schema.load(request.get_json())
+        store, unique_input_error, status = StoreModel.put_unique_already_exist(
+            claim=claim, storeid=storeid, store_data=data
+        )
+        if unique_input_error:
             return unique_input_error, status
 
         if store:
-            for each in data_or_err.keys(): store.__setattr__(each, data_or_err[each]) # update
+            for each in data.keys():
+                store.__setattr__(each, data[each])  # update
         else:
-            store = StoreModel(**data_or_err)
+            store = StoreModel(**data)
 
         try:
             store.save_to_db()
         except Exception as e:
             print(f"error is {e}")
-            return {"message": ERROR_WHILE_INSERTING.format("item")}, 500  # Internal server error
+            return {
+                "message": ERROR_WHILE_INSERTING.format("item")
+            }, 500  # Internal server error
         return schema.dump(store), 201
 
     @classmethod
     @fresh_jwt_required
     def delete(cls, storeid):
         claim = get_jwt_claims()
-        
-        store, unique_input_error, status = StoreModel.delete_auth(claim=claim, storeid=storeid)
-        if unique_input_error: 
+        store, unique_input_error, status = StoreModel.delete_auth(
+            claim=claim, storeid=storeid
+        )
+        if unique_input_error:
             return unique_input_error, status
-        
+
         try:
             store.delete_from_db()
         except Exception as e:
             print(e)
-            return {"message" : INTERNAL_ERROR}, 500
+            return {"message": INTERNAL_ERROR}, 500
         return {"message": DELETED.format("Store")}
 
 

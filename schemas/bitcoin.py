@@ -1,6 +1,7 @@
 from ma import ma
 from models.bitcoin import BitcoinPayModel
 
+
 class BitcoinPaySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = BitcoinPayModel

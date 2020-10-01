@@ -1,6 +1,7 @@
 from ma import ma
 from models.paystatus import PaystatusModel
 
+
 class PaystatusSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = PaystatusModel

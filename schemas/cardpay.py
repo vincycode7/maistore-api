@@ -1,6 +1,7 @@
 from ma import ma
 from models.cardpay import CardpayModel
 
+
 class CardpaySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CardpayModel

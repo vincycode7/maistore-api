@@ -3,7 +3,8 @@
 
 from models.models_helper import *
 
-class CartProductModel(db.Model,ModelsHelper):
+
+class CartProductModel(db.Model, ModelsHelper):
     __tablename__ = "cartproduct"
 
     # columns
@@ -12,7 +13,9 @@ class CartProductModel(db.Model,ModelsHelper):
     store_id = db.Column(db.Integer, db.ForeignKey("store.id"), nullable=False)
     cartsystemid = db.Column(db.Integer, db.ForeignKey("cartsystem.id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    created = db.Column(db.DateTime, index=False, unique=False, nullable=False, default=dt.now)
+    created = db.Column(
+        db.DateTime, index=False, unique=False, nullable=False, default=dt.now
+    )
 
     @classmethod
     def find_by_productid(cls, productid=None):

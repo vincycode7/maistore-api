@@ -1,6 +1,7 @@
 from models.models_helper import *
 
-class ReviewModel(db.Model,ModelsHelper):
+
+class ReviewModel(db.Model, ModelsHelper):
     __tablename__ = "review"
 
     id = db.Column(db.Integer, primary_key=True, unique=True)

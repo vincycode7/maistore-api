@@ -2,8 +2,7 @@
 from models.models_helper import *
 
 
-
-class CartStatusModel(db.Model,ModelsHelper):
+class CartStatusModel(db.Model, ModelsHelper):
     __tablename__ = "cartstatus"
 
     # columns

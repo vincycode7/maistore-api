@@ -5,6 +5,7 @@ from resources.user import (
     UserLogin,
     TokenRefresh,
     UserLogout,
+    UserConfirm,
 )
 from resources.store import Store, StoreList
 from resources.product import Product, ProductList
@@ -24,42 +25,16 @@ from resources.ratingtype import RatingTypeList
 from resources.review import ReviewList
 
 route_path = [
-    [
-        TokenRefresh, 
-        ["/refresh"]
-    ], # https://mistore.com/refresh
-    [
-        UserRegister, 
-        ["/register"]
-    ],  # https://mistore.com/register
-    [
-        UserLogin, 
-        ["/login"]
-    ],  # https://mistore.com/register
-    [
-        UserLogout, 
-        ["/logout"]
-    ],  # https://mistore.com/register
-    [
-        User, 
-        ["/user/<int:userid>"]
-    ],  # https://mistore.com/user/1
-    [
-        UserList, 
-        ["/users"]
-    ],  # https://mistore.com/users
-    [
-        Store, 
-        ["/store/<int:storeid>", "/store"]
-    ],  # https://maistore.com/store/1
-    [
-        StoreList, 
-        ["/stores"]
-    ],  # https://maistore.com/store
-    [
-        ProductList, 
-        ["/products"]
-    ],  # https://mistore.com/product
+    [TokenRefresh, ["/refresh"]],  # https://mistore.com/refresh
+    [UserRegister, ["/register"]],  # https://mistore.com/register
+    [UserConfirm, ["/activate/user/<user_id>"]],  # https://mistore.com/activate/user/1
+    [UserLogin, ["/login"]],  # https://mistore.com/register
+    [UserLogout, ["/logout"]],  # https://mistore.com/register
+    [User, ["/user/<int:userid>"]],  # https://mistore.com/user/1
+    [UserList, ["/users"]],  # https://mistore.com/users
+    [Store, ["/store/<int:storeid>", "/store"]],  # https://maistore.com/store/1
+    [StoreList, ["/stores"]],  # https://maistore.com/store
+    [ProductList, ["/products"]],  # https://mistore.com/product
     [
         Product,
         ["/product/<int:productid>", "/product"],

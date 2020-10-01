@@ -1,6 +1,7 @@
 from ma import ma
 from models.productsize import ProductSizeModel
 
+
 class ProductSizeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ProductSizeModel

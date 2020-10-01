@@ -1,6 +1,7 @@
 from ma import ma
 from models.storephone import StorephoneModel
 
+
 class StorephoneSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = StorephoneModel

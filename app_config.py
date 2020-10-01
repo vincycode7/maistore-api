@@ -1,19 +1,23 @@
-import os
-from flask import jsonify
-from blacklist import BLACKLIST_ACCESS, BLACKLIST_REFRESH
+from flask import Flask, request, jsonify
+from blacklist import BLACKLIST_ACCESS
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
+import os
 
 
-def config_app(app, secret_key):
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-        "DATABASE_URL", "sqlite:///data.db"
+def config_app(app):
+
+    sql_db = "sqlite:///data.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", sql_db)
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = os.environ.get(
+        "SQLALCHEMY_TRACK_MODIFICATIONS", False
     )
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["PROPAGATE_EXCEPTIONS"] = True
-    app.config["JWT_BLACKLIST_ENABLED"] = True
+    app.config["PROPAGATE_EXCEPTIONS"] = os.environ.get("PROPAGATE_EXCEPTIONS", True)
+    app.config["JWT_BLACKLIST_ENABLED"] = os.environ.get("JWT_BLACKLIST_ENABLED", True)
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
-    app.secret_key = secret_key  # always remember to get the apps's secret key, also this key should be hidden from the public.
+    app.secret_key = os.environ.get(
+        "SECRET_KEY", "vcode"
+    )  # always remember to get the apps's secret key, also this key should be hidden from the public.
     return app
 
 
@@ -34,10 +38,11 @@ def link_route_path(api, route_path):
 
 def jwt_error_handler(jwt):
     """
-        Note here is more secure claim must be added here, 
-        where only one user can be the super user.
-        And Only that user can create the first admin.
+    Note here is more secure claim must be added here,
+    where only one user can be the super user.
+    And Only that user can create the first admin.
     """
+
     @jwt.user_claims_loader
     def add_claims_to_jwt(identity=None):
         if identity == 1:  # best to read this from a config file or database
@@ -94,8 +99,9 @@ def jwt_error_handler(jwt):
 
 
 def create_and_config_app(app, route_path):
-    app = config_app(app, secret_key="vcode")
+    app = config_app(app)
     api = create_api(app)
     jwt = link_jwt(app)
     jwt_error_handler(jwt)
     link_route_path(api=api, route_path=route_path)
+    return app, jwt, api

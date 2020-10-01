@@ -1,6 +1,7 @@
 from ma import ma
 from models.cartsystem import CartSystemModel
 
+
 class CartSystemSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CartSystemModel

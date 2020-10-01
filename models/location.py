@@ -1,6 +1,7 @@
 from models.models_helper import *
 
-class LocationModel(db.Model,ModelsHelper):
+
+class LocationModel(db.Model, ModelsHelper):
     __tablename__ = "location"
 
     id = db.Column(db.Integer, primary_key=True, unique=True)

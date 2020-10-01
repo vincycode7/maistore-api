@@ -1,6 +1,7 @@
 from ma import ma
 from models.productcol import ProductColorModel
 
+
 class ProductColorSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ProductColorModel

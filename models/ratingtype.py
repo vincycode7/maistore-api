@@ -1,7 +1,7 @@
 from models.models_helper import *
 
 
-class RatingTypeModel(db.Model,ModelsHelper):
+class RatingTypeModel(db.Model, ModelsHelper):
     __tablename__ = "ratingtype"
 
     # class variables
@@ -9,4 +9,9 @@ class RatingTypeModel(db.Model,ModelsHelper):
     desc = db.Column(db.String(256))
 
     # merge
-    reviews = db.relationship("ReviewModel", lazy="dynamic", backref="ratingtype", cascade="all, delete-orphan")
+    reviews = db.relationship(
+        "ReviewModel",
+        lazy="dynamic",
+        backref="ratingtype",
+        cascade="all, delete-orphan",
+    )

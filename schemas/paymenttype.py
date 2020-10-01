@@ -1,6 +1,7 @@
 from ma import ma
 from models.paymenttype import PaytypeModel
 
+
 class PaytypeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = PaytypeModel

@@ -1,13 +1,13 @@
 from models.models_helper import *
 
-class ProductColorModel(db.Model,ModelsHelper):
+
+class ProductColorModel(db.Model, ModelsHelper):
     __tablename__ = "productcol"
 
     # class variables
     id = db.Column(db.Integer, primary_key=True, unique=True)
     productid = db.Column(db.Integer, db.ForeignKey("product.id"))
     desc = db.Column(db.String(256))
-
 
     @classmethod
     def find_by_productid(cls, productid=None):

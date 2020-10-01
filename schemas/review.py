@@ -1,6 +1,7 @@
 from ma import ma
 from models.review import ReviewModel
 
+
 class ReviewSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ReviewModel
