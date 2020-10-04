@@ -14,3 +14,5 @@ LODDED_OUT = "Successfully logged out."
 INTERNAL_ERROR = "Internal Error"
 NOT_CONFIRMED_ERROR = "You have not confirm registration please check you {} <{}>"
 USER_CONFIRMED = "User {} <{}> confirmed"
+SUCCESS_REGISTER_MESSAGE = "Account created succesffuly, an email with an \
+activation link has been sent to this <{}> email address, please check."

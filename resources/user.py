@@ -1,8 +1,9 @@
 from flask_restful import Resource, reqparse
-from flask import request, json, jsonify
+from flask import request, json, jsonify, make_response, render_template
 from models.user import *
 from schemas.user import UserSchema
 import datetime as dt
+import traceback
 
 _5MIN = dt.timedelta(minutes=5)
 schema = UserSchema()
@@ -24,7 +25,6 @@ class UserRegister(Resource):
     @jwt_optional
     def post(cls):
         claim = get_jwt_claims()
-        print(claim)
         data = schema.load(request.get_json())
 
         # check if data already exist
@@ -36,12 +36,14 @@ class UserRegister(Resource):
         user = UserModel(**data)
         try:
             user.save_to_db()
-        except Exception as e:
-            print(f"error is ----> {e}")
+            res = user.send_confirmation_email()
+            print(f"{res.json()}")
+        except:
+            traceback.print_exc()
             return {
                 "message": ERROR_WHILE_INSERTING.format("item")
             }, 500  # Internal server error
-        return schema.dump(user), 201
+        return SUCCESS_REGISTER_MESSAGE.format(user.email), 201
 
 
 # class to list all user
@@ -167,4 +169,8 @@ class UserConfirm(Resource):
         except Exception as e:
             print(e)
             return ERROR_WHILE.format("activating user"), 401
-        return USER_CONFIRMED.format("email",user.email), 200
+        # return USER_CONFIRMED.format("email", user.email), 200
+        headers = {"Content-Type": "text/html"}
+        return make_response(
+            render_template("confirmation_page.html", email=user.email), 200, headers
+        )

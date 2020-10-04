@@ -1,5 +1,9 @@
 # import packages
 from models.models_helper import *
+from requests import Response
+from flask import request, url_for, make_response, render_template
+from libs.mailgun import Mailgun
+
 # class to create user and get user
 class UserModel(db.Model, ModelsHelper):
     __tablename__ = "user"
@@ -42,6 +46,16 @@ class UserModel(db.Model, ModelsHelper):
         "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
     )
 
+    def send_confirmation_email(self) -> Response:
+        link = request.url_root[:-1] + url_for(
+            "userconfirm", user_id=self.id
+        )  # get e.g http://maistore.com + /activate/user/1
+        to = [self.email]
+        subject = "Registration confirmation"
+        html = render_template("activate_email.html", link=link)
+        # html = f'<html> Please click the link to confirm your registration <a href="{link}"> {link} </a></html>'
+        return Mailgun.send_email(email=to, subject=subject, html=html)
+
     @classmethod
     def find_by_email(cls, email: str = None):
         result = cls.query.filter_by(email=email).first()
@@ -57,9 +71,11 @@ class UserModel(db.Model, ModelsHelper):
         email = cls.find_by_email(email=user_data["email"])
         phoneno = cls.find_by_phoneno(phoneno=user_data["phoneno"])
         return email, phoneno
+
     @classmethod
     def login_checker(cls, user_data):
         import datetime as dt
+
         _5MIN = dt.timedelta(minutes=5)
 
         user = UserModel.find_by_email(user_data.get("email"))  # find user by email <2>
@@ -76,7 +92,7 @@ class UserModel(db.Model, ModelsHelper):
                     "refresh_token": refresh_token,
                 }, 200
             else:
-                return {"message": NOT_CONFIRMED_ERROR.format("email",user.email)}, 400
+                return {"message": NOT_CONFIRMED_ERROR.format("email", user.email)}, 400
         return {"message": INVALID_CREDENTIALS}, 401
 
     @classmethod
