@@ -1,12 +1,15 @@
 from models.models_helper import *
 
+# helper functions
+def create_id(context):
+    return "MAISTORE(v1)-" + uuid4().hex
 
 class StoreModel(db.Model, ModelsHelper):
     __tablename__ = "store"
 
     # class variable
-    id = db.Column(db.Integer, primary_key=True, unique=True)
-    storename = db.Column(db.String(40), nullable=False)
+    id = db.Column(db.String(50), primary_key=True, unique=True, default=create_id)
+    storename = db.Column(db.String(40), unique=True, nullable=False)
     user_id = db.Column(
         db.Integer,
         db.ForeignKey(

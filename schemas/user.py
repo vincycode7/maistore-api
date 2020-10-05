@@ -1,5 +1,6 @@
 from ma import ma
 from marshmallow_sqlalchemy import fields
+from marshmallow import pre_dump
 from models.user import UserModel
 
 
@@ -11,7 +12,12 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         load_only = ("password",)
         dump_only = (
             "id",
-            "activated",
+            "confirmation",
         )
         include_fk = True
         include_relationships = True
+
+    @pre_dump
+    def _pre_dump(self, user: UserModel):   
+        user.confirmation = [user.most_recent_confirmation]
+        return user

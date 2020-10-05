@@ -1,6 +1,8 @@
 from flask_restful import Resource, reqparse
 from flask import request, json, jsonify, make_response, render_template
+from libs.mailer import MailerException
 from models.user import *
+from models.confirmation import ConfirmationModel
 from schemas.user import UserSchema
 import datetime as dt
 import traceback
@@ -32,18 +34,10 @@ class UserRegister(Resource):
         if unique_input_error:
             return unique_input_error, status
 
-        # insert
-        user = UserModel(**data)
-        try:
-            user.save_to_db()
-            res = user.send_confirmation_email()
-            print(f"{res.json()}")
-        except:
-            traceback.print_exc()
-            return {
-                "message": ERROR_WHILE_INSERTING.format("item")
-            }, 500  # Internal server error
-        return SUCCESS_REGISTER_MESSAGE.format(user.email), 201
+        # create user and send confirmation email
+        err_msg, status_code = UserModel.create_user_send_confirmation(data=data)
+        if err_msg != None : return err_msg, status_code
+        return SUCCESS_REGISTER_MESSAGE.format(user.email), status_code
 
 
 # class to list all user
@@ -154,23 +148,3 @@ class UserLogout(Resource):
         BLACKLIST_ACCESS.add(jti1)
         BLACKLIST_ACCESS.add(jti2)
         return {"message": LODDED_OUT}, 200
-
-
-# confirm user
-class UserConfirm(Resource):
-    @classmethod
-    def get(cls, user_id: int):
-        user = UserModel.find_by_id(user_id)
-        if not user:
-            return NOT_FOUND.format("user id <" + user_id + ">"), 404
-        user.activated = True
-        try:
-            user.save_to_db()
-        except Exception as e:
-            print(e)
-            return ERROR_WHILE.format("activating user"), 401
-        # return USER_CONFIRMED.format("email", user.email), 200
-        headers = {"Content-Type": "text/html"}
-        return make_response(
-            render_template("confirmation_page.html", email=user.email), 200, headers
-        )

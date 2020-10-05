@@ -34,4 +34,4 @@ if __name__ == "__main__":
 
     db.init_app(app)
     ma.init_app(app)
-    app.run(port=5001, debug=True)
+    app.run(port=os.environ.get("PORT"), debug=os.environ.get("PORT"))

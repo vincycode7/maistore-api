@@ -54,6 +54,7 @@ Werkzeug = "==1.0.1"
 python-dotenv = "*"
 requests = "*"
 black = "*"
+mailer = "*"
 
 [requires]
 python_version = "3.8"

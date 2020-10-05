@@ -2,14 +2,20 @@
 from models.models_helper import *
 from requests import Response
 from flask import request, url_for, make_response, render_template
-from libs.mailgun import Mailgun
+from libs.mailer import Sender
+from models.confirmation import ConfirmationModel
+from uuid import uuid4
+
+# helper functions
+def create_id(context):
+    return uuid4().hex
 
 # class to create user and get user
 class UserModel(db.Model, ModelsHelper):
     __tablename__ = "user"
 
     # columns
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.String(50), primary_key=True, unique=True, default=create_id)
     lga = db.Column(db.String(30), nullable=True)
     state = db.Column(db.String(30), nullable=True)
     address = db.Column(db.String(300), nullable=True)
@@ -27,7 +33,6 @@ class UserModel(db.Model, ModelsHelper):
     password = db.Column(db.String(80), index=False, unique=False, nullable=False)
     email = db.Column(db.String(100), index=False, unique=True, nullable=False)
     phoneno = db.Column(db.String(15), index=False, unique=True, nullable=False)
-    activated = db.Column(db.Boolean, default=False)
 
     # merge (for sqlalchemy to link tables)
     stores = db.relationship(
@@ -46,15 +51,53 @@ class UserModel(db.Model, ModelsHelper):
         "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
     )
 
+    confirmation = db.relationship("ConfirmationModel", lazy="dynamic", cascade="all, delete-orphan")
+
+    @property
+    def most_recent_confirmation(self):
+        return self.confirmation.order_by(db.desc(ConfirmationModel.expire_at)).first()
+
+    def create_confirmation(self):
+        confirmation = ConfirmationModel(self.id)
+        confirmation.save_to_db()
+        print(f"{self.id}  and {confirmation.id}")
+
     def send_confirmation_email(self) -> Response:
         link = request.url_root[:-1] + url_for(
-            "userconfirm", user_id=self.id
-        )  # get e.g http://maistore.com + /activate/user/1
+            "confirmation", confirmation_id=self.most_recent_confirmation.id
+        )  # get e.g http://maistore.com + /user_confirmation/1
+        # from_ = "MAISTORE"
         to = [self.email]
         subject = "Registration confirmation"
         html = render_template("activate_email.html", link=link)
-        # html = f'<html> Please click the link to confirm your registration <a href="{link}"> {link} </a></html>'
-        return Mailgun.send_email(email=to, subject=subject, html=html)
+        sender = Sender()
+        return sender.send_email(to=to, subject=subject, html=html, text=None)
+
+    @classmethod
+    def create_user_send_confirmation(cls, data):
+
+        user = cls(**data) # create user
+
+        #save user
+        try:
+            user.save_to_db()
+        except:
+            traceback.print_exc()
+            return {
+                "message": ERROR_WHILE_INSERTING.format("user")
+            }, 500  # Internal server error
+
+        #send confirmation
+        try:
+            user.create_confirmation()
+            user.send_confirmation_email()
+        except MailerException as e:
+            user.delete_from_db()
+            print(e)
+            return {
+                "message": ERROR_WHILE.format("sending confirmation")
+            }, 500  # Internal server error
+        return None, 201
 
     @classmethod
     def find_by_email(cls, email: str = None):
@@ -80,7 +123,8 @@ class UserModel(db.Model, ModelsHelper):
 
         user = UserModel.find_by_email(user_data.get("email"))  # find user by email <2>
         if user and user.password == user_data.get("password"):
-            if user.activated:  # check password <3>
+            confirmation = user.most_recent_confirmation
+            if confirmation and confirmation.confirmed:  # check password <3>
                 access_token = create_access_token(
                     identity=user.id, fresh=True, expires_delta=_5MIN
                 )  # create access token <4>

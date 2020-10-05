@@ -6,18 +6,14 @@ import os
 
 
 def config_app(app):
-
-    sql_db = "sqlite:///data.db"
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", sql_db)
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = os.environ.get(
         "SQLALCHEMY_TRACK_MODIFICATIONS", False
     )
-    app.config["PROPAGATE_EXCEPTIONS"] = os.environ.get("PROPAGATE_EXCEPTIONS", True)
-    app.config["JWT_BLACKLIST_ENABLED"] = os.environ.get("JWT_BLACKLIST_ENABLED", True)
+    app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["JWT_BLACKLIST_ENABLED"] = True
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
-    app.secret_key = os.environ.get(
-        "SECRET_KEY", "vcode"
-    )  # always remember to get the apps's secret key, also this key should be hidden from the public.
+    app.secret_key = os.environ.get("SECRET_KEY")  # always remember to get the apps's secret key, also this key should be hidden from the public.
     return app
 
 

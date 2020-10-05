@@ -1,12 +1,5 @@
-from resources.user import (
-    User,
-    UserList,
-    UserRegister,
-    UserLogin,
-    TokenRefresh,
-    UserLogout,
-    UserConfirm,
-)
+from resources.user import (User,UserList,UserRegister,UserLogin,TokenRefresh,UserLogout,)
+from resources.confirmation import Confirmation, ConfirmationByUser
 from resources.store import Store, StoreList
 from resources.product import Product, ProductList
 from resources.productcat import ProductCatList
@@ -27,7 +20,8 @@ from resources.review import ReviewList
 route_path = [
     [TokenRefresh, ["/refresh"]],  # https://mistore.com/refresh
     [UserRegister, ["/register"]],  # https://mistore.com/register
-    [UserConfirm, ["/activate/user/<user_id>"]],  # https://mistore.com/activate/user/1
+    [Confirmation, ["/user_confirmation/<string:confirmation_id>"]],  # https://mistore.com/activate/user/1
+    [ConfirmationByUser, ["/confirmation/user/<int:user_id>"]],  # https://mistore.com/activate/user/1
     [UserLogin, ["/login"]],  # https://mistore.com/register
     [UserLogout, ["/logout"]],  # https://mistore.com/register
     [User, ["/user/<int:userid>"]],  # https://mistore.com/user/1
