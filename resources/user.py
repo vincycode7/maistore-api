@@ -35,9 +35,9 @@ class UserRegister(Resource):
             return unique_input_error, status
 
         # create user and send confirmation email
-        msg, status_code = UserModel.create_user_send_confirmation(data=data)
-        if status_code != 201 : return msg, status_code
-        return msg, status_code
+        err_msg, status_code = UserModel.create_user_send_confirmation(data=data)
+        if err_msg != None : return err_msg, status_code
+        return SUCCESS_REGISTER_MESSAGE.format(user.email), status_code
 
 
 # class to list all user
@@ -71,7 +71,6 @@ class User(Resource):
 
         user = UserModel.find_by_id(id=userid)
         if user:
-            print("yeyeyeyeyey")
             return {"user": schema.dump(user)}, 201
         return {"message": "user not found"}, 400
 

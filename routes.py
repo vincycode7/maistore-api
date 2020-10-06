@@ -20,11 +20,11 @@ from resources.review import ReviewList
 route_path = [
     [TokenRefresh, ["/refresh"]],  # https://mistore.com/refresh
     [UserRegister, ["/register"]],  # https://mistore.com/register
-    [Confirmation, ["/user_confirmation/<string:confirmation_id>"]],  # https://mistore.com/user_confirmation/1
-    [ConfirmationByUser, ["/confirmation/user/<string:user_id>"]],  # https://mistore.com/confirmation/user/1
+    [Confirmation, ["/user_confirmation/<string:confirmation_id>"]],  # https://mistore.com/activate/user/1
+    [ConfirmationByUser, ["/confirmation/user/<int:user_id>"]],  # https://mistore.com/activate/user/1
     [UserLogin, ["/login"]],  # https://mistore.com/register
     [UserLogout, ["/logout"]],  # https://mistore.com/register
-    [User, ["/user/<string:userid>"]],  # https://mistore.com/user/1
+    [User, ["/user/<int:userid>"]],  # https://mistore.com/user/1
     [UserList, ["/users"]],  # https://mistore.com/users
     [Store, ["/store/<int:storeid>", "/store"]],  # https://maistore.com/store/1
     [StoreList, ["/stores"]],  # https://maistore.com/store

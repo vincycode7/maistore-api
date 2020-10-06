@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
 from blacklist import BLACKLIST_ACCESS
 from flask_restful import Api
-from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 import os
 
 
 def config_app(app):
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///data.db")
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = os.environ.get(
+        "SQLALCHEMY_TRACK_MODIFICATIONS", False
+    )
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["JWT_BLACKLIST_ENABLED"] = True
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
@@ -95,7 +96,6 @@ def jwt_error_handler(jwt):
 
 def create_and_config_app(app, route_path):
     app = config_app(app)
-    CORS(app=app)
     api = create_api(app)
     jwt = link_jwt(app)
     jwt_error_handler(jwt)
