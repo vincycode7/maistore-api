@@ -98,9 +98,9 @@ def jwt_error_handler(jwt):
 def create_and_config_app(app, route_path):
     app = config_app(app)
     CORS(app=app)
-    CORS(app, resources=r'/api/*', allow_headers='Content-Type')
     api = create_api(app)
     jwt = link_jwt(app)
     jwt_error_handler(jwt)
     link_route_path(api=api, route_path=route_path)
+    CORS(app, resources=r'/api/*', allow_headers='Content-Type',)
     return app, jwt, api
