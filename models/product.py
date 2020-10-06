@@ -28,7 +28,7 @@ class ProductModel(db.Model, ModelsHelper):
         nullable=False,
     )
     store_id = db.Column(
-        db.Integer, db.ForeignKey("store.id"), index=False, unique=False, nullable=False
+        db.String(50), db.ForeignKey("store.id"), index=False, unique=False, nullable=False
     )
     is_available = db.Column(
         db.Boolean,

@@ -6,7 +6,7 @@ class LocationModel(db.Model, ModelsHelper):
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
     address = db.Column(db.String(300))
-    store_id = db.Column(db.Integer, db.ForeignKey("store.id"))
+    store_id = db.Column(db.String(50), db.ForeignKey("store.id"))
 
     @classmethod
     def find_by_store_id(cls, store_id=None):
