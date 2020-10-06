@@ -97,7 +97,6 @@ def jwt_error_handler(jwt):
 
 def create_and_config_app(app, route_path):
     app = config_app(app)
-    CORS(app=app)
     api = create_api(app)
     jwt = link_jwt(app)
     jwt_error_handler(jwt)

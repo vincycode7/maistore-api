@@ -19,6 +19,7 @@ from routes import *
 # create app
 # set up config for app, jwt and api
 app = Flask(__name__)
+CORS(app=app)
 app, jwt, api = create_and_config_app(app=app, route_path=route_path)
 if __name__ == "__main__":
     from db import db
