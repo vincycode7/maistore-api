@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 data.db
 .env
+Pipfile
+Pipfile.lock
