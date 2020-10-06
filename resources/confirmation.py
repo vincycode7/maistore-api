@@ -47,7 +47,7 @@ class Confirmation(Resource):
 # use to view or resend confirmations
 class ConfirmationByUser(Resource):
     @classmethod
-    # @jwt_required
+    @jwt_required
     def get(cls, user_id:int):
         """ Returns confirmations for a given user. Use for testing """
         claim = get_jwt_claims()

@@ -63,7 +63,6 @@ class User(Resource):
     @jwt_required
     def get(cls, userid=None):
         claim = get_jwt_claims()
-
         if not claim["is_admin"] and claim["userid"] != userid:
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get this users")
