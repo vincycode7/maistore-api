@@ -12,6 +12,8 @@ def config_app(app):
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["JWT_BLACKLIST_ENABLED"] = True
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
+    # app.config['CORS_ALLOW_HEADERS'] = "Content-Type"
+    # app.config['CORS_RESOURCES'] = {r"/api/*": {"origins": "*"}}
     app.secret_key = os.environ.get("SECRET_KEY", "vvvvv dclnf qnwiefnn")  # always remember to get the apps's secret key, also this key should be hidden from the public.
     return app
 
@@ -96,6 +98,7 @@ def jwt_error_handler(jwt):
 def create_and_config_app(app, route_path):
     app = config_app(app)
     CORS(app=app)
+    CORS(app, resources=r'/api/*', allow_headers='Content-Type')
     api = create_api(app)
     jwt = link_jwt(app)
     jwt_error_handler(jwt)
