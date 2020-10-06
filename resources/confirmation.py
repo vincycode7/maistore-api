@@ -66,7 +66,6 @@ class ConfirmationByUser(Resource):
                                         for each in user.confirmation.order_by(ConfirmationModel.expire_at)
                                         ], 
                 }, 200)
-        return {"message" : "testing"}, 200
 
     @classmethod
     def post(cls, user_id:int=None):

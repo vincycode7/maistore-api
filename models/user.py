@@ -62,7 +62,6 @@ class UserModel(db.Model, ModelsHelper):
     def create_confirmation(self):
         confirmation = ConfirmationModel(self.id)
         confirmation.save_to_db()
-        print(f"{self.id}  and {confirmation.id}")
 
     def send_confirmation_email(self) -> Response:
         link = request.url_root[:-1] + url_for(
