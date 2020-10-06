@@ -1,94 +1,91 @@
-from flask_restful import Resource, reqparse
-from flask_jwt_extended import jwt_required, get_jwt_claims
+from flask_restful import Resource
+from flask import request
+from flask_jwt_extended import jwt_required, get_jwt_claims, fresh_jwt_required
 from models.store import StoreModel
+from error_messages import *
+from schemas.store import StoreSchema
+
+schema = StoreSchema()
+schema_many = StoreSchema(many=True)
+
 
 class Store(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument(name="storename", required=True, help="a store name is required to proceed", type=str,case_sensitive=False)
-    parser.add_argument(name="user_id", required=True, help="only active users can create a store", type=int,case_sensitive=False)
-    parser.add_argument(name="country", required=False, help="Country where the store is located", type=str,case_sensitive=False)
-
+    @classmethod
     @jwt_required
-    def get(self, storeid):
+    def get(cls, storeid):
         store = StoreModel.find_by_id(storeid)
         if store:
-            return store.json()
+            return schema.dump(store)
         else:
-            return {"message" : "store not found"}, 404
+            return {"message": NOT_FOUND.format("store")}, 404
 
+    @classmethod
     @jwt_required
-    def post(self):
+    def post(cls):
         claim = get_jwt_claims()
-        data = Store.parser.parse_args()
-        if not claim["is_admin"] and claim["userid"] != data["user_id"]: 
-                return {"message" : "Admin priviledge required."}, 401
+        data = schema.load(request.get_json())
 
-        if StoreModel.find_by_name(storename=data["storename"]):
-            return {"message" : f"A store with name {data['storename']} already exists"}, 400
+        # check if data already exist
+        unique_input_error, status = StoreModel.post_unique_already_exist(claim, data)
+        if unique_input_error:
+            return unique_input_error, status
 
         store = StoreModel(**data)
         try:
             store.save_to_db()
         except Exception as e:
             print(e)
-            return {"message" : "An error occured while creating the store."}, 500
+            return {"message": ERROR_WHILE_INSERTING.format("store.")}, 500
 
-        return store.json(), 201
+        return schema.dump(store), 201
 
-    #use for authentication before calling post
+    # use for authentication before calling post
+    @classmethod
     @jwt_required
-    def put(self, storeid):
+    def put(cls, storeid):
         claim = get_jwt_claims()
-        data = Store.parser.parse_args()
-
-        if not claim["is_admin"] and claim["userid"] != data["user_id"]: 
-                return {"message" : "Admin priviledge required."}, 401
-
-        store_byid = StoreModel.find_by_id(storeid=storeid)
-        store_byname = StoreModel.find_by_name(storename=data["storename"])
-
-        #check if store name is in use
-        if store_byid:
-            if store_byname:
-                if store_byname.storename != store_byid.storename: return {"message" : f"store name {store_byname.storename} already exists."},400 # 400 is for bad request
-        
-            #update
-            try:
-                for each in data.keys(): store_byid.__setattr__(each, data[each])
-                store_byid.save_to_db()                
-            except Exception as e:
-                print(f"error is {e} dd")
-                return {"message" : "An error occured updating the item the item"}, 500 #Internal server error
-        else:
-            if store_byname: return {"message" : f"store name {store_byname.storename} already in use."},400 # 400 is for bad request
-            try:
-                    #confirm the unique key to be same with the product route
-                    store_byid = StoreModel(**data)
-                    store_byid.save_to_db()
-            except Exception as e:
-                print(f"error is {e}")
-                return {"message" : "An error occured creating the item"}, 500 #Internal server error
-    
-        return store_byid.json(), 201
-
-    @jwt_required
-    def delete(self, storeid):
-        claim = get_jwt_claims()
-        store = StoreModel.find_by_id(storeid)
+        data = schema.load(request.get_json())
+        store, unique_input_error, status = StoreModel.put_unique_already_exist(
+            claim=claim, storeid=storeid, store_data=data
+        )
+        if unique_input_error:
+            return unique_input_error, status
 
         if store:
-            if not claim["is_admin"] and claim["userid"] != store.user_id: 
-                return {"message" : "Admin priviledge required."}, 401
-            store.delete_from_db()
-            return {"message" : "Store deleted"}
-        elif not store and not claim["is_admin"]:
-            return {"message" : "Admin priviledge required."}, 401
+            for each in data.keys():
+                store.__setattr__(each, data[each])  # update
+        else:
+            store = StoreModel(**data)
 
-        return {"message" : "Store not found"}
+        try:
+            store.save_to_db()
+        except Exception as e:
+            print(f"error is {e}")
+            return {
+                "message": ERROR_WHILE_INSERTING.format("item")
+            }, 500  # Internal server error
+        return schema.dump(store), 201
+
+    @classmethod
+    @fresh_jwt_required
+    def delete(cls, storeid):
+        claim = get_jwt_claims()
+        store, unique_input_error, status = StoreModel.delete_auth(
+            claim=claim, storeid=storeid
+        )
+        if unique_input_error:
+            return unique_input_error, status
+
+        try:
+            store.delete_from_db()
+        except Exception as e:
+            print(e)
+            return {"message": INTERNAL_ERROR}, 500
+        return {"message": DELETED.format("Store")}
 
 
 class StoreList(Resource):
-    @jwt_required
-    def get(self):
+    @classmethod
+    def get(cls):
         stores = StoreModel.find_all()
-        return {"stores" : [store.json() for store in stores]}
+        return {"stores": schema_many.dump(stores)}

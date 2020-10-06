@@ -2,9 +2,13 @@ from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required
 from models.cartsystem import CartSystemModel
 
+
 class CartSystemList(Resource):
     @jwt_required
     def get(self):
         cartsystems = CartSystemModel.find_all()
-        if cartsystems: return {"cartsystems" : [ cartsystem.json() for cartsystem in cartsystems]},201
-        return {"message" : 'Item not found'}, 400
+        if cartsystems:
+            return {
+                "cartsystems": [cartsystem.json() for cartsystem in cartsystems]
+            }, 201
+        return {"message": "Item not found"}, 400

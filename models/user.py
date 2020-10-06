@@ -1,108 +1,196 @@
-#import packages
-from db import db
-from datetime import datetime as dt
-from models.models_helper import ModelsHelper
+# import packages
+from uuid import uuid4
+from requests import Response
 
-#class to create user and get user
+from flask import request, url_for, make_response, render_template
+
+from models.models_helper import *
+from libs.mailer import MailerException,Sender
+from models.confirmation import ConfirmationModel
+
+# helper functions
+def create_id(context):
+    return uuid4().hex
+
+# class to create user and get user
 class UserModel(db.Model, ModelsHelper):
-
     __tablename__ = "user"
 
     # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    lga = db.Column(db.String(30), nullable=False)
-    country = db.Column(db.String(30), nullable=False)
-    state = db.Column(db.String(30), nullable=False)
+    lga = db.Column(db.String(30), nullable=True)
+    state = db.Column(db.String(30), nullable=True)
+    address = db.Column(db.String(300), nullable=True)
+    image = db.Column(db.String(300), nullable=True)
+    middlename = db.Column(db.String(30), index=False, unique=False, nullable=True)
+    lastname = db.Column(db.String(30), index=False, unique=False, nullable=True)
     firstname = db.Column(db.String(30), index=False, unique=False, nullable=False)
-    middlename = db.Column(db.String(30), index=False, unique=False, nullable=False)
-    lastname = db.Column(db.String(30), index=False, unique=False, nullable=False)
+    created = db.Column(
+        db.DateTime, index=False, unique=False, nullable=False, default=dt.now
+    )
+    country = db.Column(db.String(30), nullable=False)
+    admin = db.Column(
+        db.Boolean, index=False, unique=False, nullable=False, default=False
+    )
     password = db.Column(db.String(80), index=False, unique=False, nullable=False)
-    email = db.Column(db.String(100), index=False, unique=False, nullable=False)
-    phoneno = db.Column(db.String(15), index=False, unique=False, nullable=False)
-    created = db.Column(db.DateTime, index=False, unique=False, nullable=False)
-    address = db.Column(db.String(300))
-    image = db.Column(db.String(300))
-    admin = db.Column(db.Boolean, index=False, unique=False, nullable=False)
+    email = db.Column(db.String(100), index=False, unique=True, nullable=False)
+    phoneno = db.Column(db.String(15), index=False, unique=True, nullable=False)
 
-    #merge (for sqlalchemy to link tables)
-    stores = db.relationship("StoreModel", lazy="dynamic")
-    bitcoins = db.relationship("BitcoinPayModel", lazy="dynamic")
-    cards = db.relationship("CardpayModel",lazy="dynamic")
-    favstores = db.relationship("FavStoreModel", lazy="dynamic")
-    carts = db.relationship("CartSystemModel", lazy="dynamic")
+    # merge (for sqlalchemy to link tables)
+    stores = db.relationship(
+        "StoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    bitcoins = db.relationship(
+        "BitcoinPayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    cards = db.relationship(
+        "CardpayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    favstores = db.relationship(
+        "FavStoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    carts = db.relationship(
+        "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
 
-    # set children
-    _childrelations = ['stores', 'bitcoins', 'cards', 'favstores', 'carts']
+    confirmation = db.relationship("ConfirmationModel", lazy="dynamic", cascade="all, delete-orphan")
 
-    def __init__(
-                    self, password, phoneno, email, 
-                    admin=False, country=None, state=None, 
-                    lga=None, created=None, lastname=None, 
-                    middlename=None, firstname=None, address=None,
-                    image=None
-                ):
+    @property
+    def most_recent_confirmation(self):
+        return self.confirmation.order_by(db.desc(ConfirmationModel.expire_at)).first()
 
-        # Required 
-        self.password = password
-        self.phoneno = phoneno
-        self.email = email
+    def create_confirmation(self):
+        confirmation = ConfirmationModel(self.id)
+        confirmation.save_to_db()
+        print(f"{self.id}  and {confirmation.id}")
 
-        #optional
-        self.firstname = firstname
-        self.lastname = lastname
-        self.middlename = middlename
-        self.address = address
-        self.image = image
-        self.admin = admin
-        self.country = country
-        self.state = state
-        self.lga = lga
-        self.created = created if created else dt.now()
-
-    # a json representation
-    def json(self):
-        return {
-                "id" : self.id,
-
-                "profile"      : {   
-                                    "firstname" : self.firstname,
-                                    "lastname" : self.lastname,
-                                    "middlename" : self.middlename,
-                                    "phoneno" : self.phoneno,
-                                    "address" : self.address,
-                                    "image" : self.image,
-                                    "password" : self.password,
-                                    "email" : self.email,
-                                    "lga" : self.lga,
-                                    "state": self.state,
-                                    "country" : self.country
-                                    },
-
-                "mystores"       : [store.json() for store in self.stores.all()],
-
-                "paymentmethods" : {
-                                    "bitcoins" : [coin.json() for coin in self.bitcoins.all()],
-                                    "cards"    : [card.json() for card in self.cards.all()]
-                                    },
-
-                "favstores" : [fav.json()["storeid"] for fav in self.favstores.all()],
-                "mycarts" : [cart.json() for cart in self.carts.all()],
-                }
+    def send_confirmation_email(self) -> Response:
+        link = request.url_root[:-1] + url_for(
+            "confirmation", confirmation_id=self.most_recent_confirmation.id
+        )  # get e.g http://maistore.com + /user_confirmation/1
+        # from_ = "MAISTORE"
+        to = [self.email]
+        subject = "Registration confirmation"
+        html = render_template("activate_email.html", link=link)
+        sender = Sender()
+        return sender.send_email(to=to, subject=subject, html=html, text=None)
 
     @classmethod
-    def find_all(cls):
-        results = cls.query.all()  #the comma is required because it expects a tuple
-        return results 
+    def create_user_send_confirmation(cls, data):
+
+        user = cls(**data) # create user
+
+        #save user
+        try:
+            user.save_to_db()
+        except:
+            traceback.print_exc()
+            return {
+                "message": ERROR_WHILE_INSERTING.format("user")
+            }, 500  # Internal server error
+
+        #send confirmation
+        try:
+            user.create_confirmation()
+            user.send_confirmation_email()
+        except MailerException as e:
+            user.delete_from_db()
+            print(e)
+            return {
+                "message": ERROR_WHILE.format("sending confirmation")
+            }, 500  # Internal server error
+        return SUCCESS_REGISTER_MESSAGE.format(user.email), 201
 
     @classmethod
-    def find_by_email(cls, email=None):
+    def find_by_email(cls, email: str = None):
         result = cls.query.filter_by(email=email).first()
-        return result 
+        return result
 
     @classmethod
-    def find_by_id(cls, id):
-        result = cls.query.filter_by(id=id).first()
-        return result 
+    def find_by_phoneno(cls, phoneno: str = None):
+        result = cls.query.filter_by(phoneno=phoneno).first()
+        return result
 
-    def __repr__(self):
+    @classmethod
+    def check_unique_inputs(cls, user_data):
+        email = cls.find_by_email(email=user_data["email"])
+        phoneno = cls.find_by_phoneno(phoneno=user_data["phoneno"])
+        return email, phoneno
+
+    @classmethod
+    def login_checker(cls, user_data):
+        import datetime as dt
+
+        _5MIN = dt.timedelta(minutes=5)
+
+        user = UserModel.find_by_email(user_data.get("email"))  # find user by email <2>
+        if user and user.password == user_data.get("password"):
+            confirmation = user.most_recent_confirmation
+            if confirmation and confirmation.confirmed:  # check password <3>
+                access_token = create_access_token(
+                    identity=user.id, fresh=True, expires_delta=_5MIN
+                )  # create access token <4>
+                refresh_token = create_refresh_token(
+                    identity=user.id
+                )  # create refresh token <5>
+                return {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                }, 200
+            else:
+                return {"message": NOT_CONFIRMED_ERROR.format("email", user.email)}, 400
+        return {"message": INVALID_CREDENTIALS}, 401
+
+    @classmethod
+    def post_unique_already_exist(cls, claim, user_data):
+        email, phoneno = cls.check_unique_inputs(user_data=user_data)
+        if email:
+            return {
+                "message": ALREADY_EXISTS.format("email", user_data["email"])
+            }, 400  # 400 is for bad request
+        elif phoneno:
+            return {
+                "message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])
+            }, 400  # 400 is for bad request
+        elif (not claim and user_data["admin"] == True) or (
+            claim and not claim["is_admin"] and user_data["admin"] == True
+        ):
+            return {
+                "message": ADMIN_PRIVILEDGE_REQUIRED.format("set admin status to true")
+            }, 401
+        return False, 200
+
+    @classmethod
+    def put_unique_already_exist(cls, claim, userid, user_data):
+        user = cls.find_by_id(id=userid)
+        email, phoneno = cls.check_unique_inputs(user_data=user_data)
+
+        # check user permission, edit and parse data
+        if not claim["is_admin"] and claim["userid"] != userid:
+            return (
+                user,
+                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},
+                401,
+            )
+        elif not claim["is_admin"] and user_data["admin"] != True:
+            return (
+                user,
+                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to change admin status")},
+                401,
+            )
+        elif user and email and user.email != email.email:
+            return (
+                user,
+                {"message": ALREADY_EXISTS.format("email", user_data["email"])},
+                400,
+            )  # 400 is for bad request
+        elif user and phoneno and user.phoneno != phoneno.phoneno:
+            return (
+                user,
+                {"message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])},
+                400,
+            )  # 400 is for bad request
+        return user, False, 200
+
+    def __repr__(self) -> str:
         return f"{self.email}"

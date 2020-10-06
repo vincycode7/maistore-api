@@ -1,5 +1,6 @@
+from resources.user import (User,UserList,UserRegister,UserLogin,TokenRefresh,UserLogout,)
+from resources.confirmation import Confirmation, ConfirmationByUser
 from resources.store import Store, StoreList
-from resources.user import User, UserList, UserRegister, UserLogin
 from resources.product import Product, ProductList
 from resources.productcat import ProductCatList
 from resources.productsize import ProductSizeList
@@ -17,14 +18,19 @@ from resources.ratingtype import RatingTypeList
 from resources.review import ReviewList
 
 route_path = [
-                [UserRegister, ["/register"]], #https://mistore.com/register
-                [UserLogin, ["/login"]], #https://mistore.com/register
-                [User, ['/user/<int:userid>']], #https://mistore.com/user/1
-                [UserList , ["/users"]], #https://mistore.com/users
-
-                [Store, ["/store/<int:storeid>", "/store"]], #https://maistore.com/store/1
-                [StoreList, ["/stores"]], #https://maistore.com/store
-                
-                [ProductList, ["/products"]], #https://mistore.com/product
-                [Product, ['/product/<int:productid>','/product']] #https://mistore.com/product/bags
-            ]
+    [TokenRefresh, ["/refresh"]],  # https://mistore.com/refresh
+    [UserRegister, ["/register"]],  # https://mistore.com/register
+    [Confirmation, ["/user_confirmation/<string:confirmation_id>"]],  # https://mistore.com/user_confirmation/1
+    [ConfirmationByUser, ["/confirmation/user/<string:user_id>"]],  # https://mistore.com/confirmation/user/1
+    [UserLogin, ["/login"]],  # https://mistore.com/register
+    [UserLogout, ["/logout"]],  # https://mistore.com/register
+    [User, ["/user/<string:userid>"]],  # https://mistore.com/user/1
+    [UserList, ["/users"]],  # https://mistore.com/users
+    [Store, ["/store/<int:storeid>", "/store"]],  # https://maistore.com/store/1
+    [StoreList, ["/stores"]],  # https://maistore.com/store
+    [ProductList, ["/products"]],  # https://mistore.com/product
+    [
+        Product,
+        ["/product/<int:productid>", "/product"],
+    ],  # https://mistore.com/product/bags
+]

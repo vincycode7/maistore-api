@@ -3,5 +3,5 @@
     "python.linting.pydocstyleEnabled": false,
     "python.linting.pylamaEnabled": false,
     "python.linting.enabled": true,
-    "python.pythonPath": "/home/vcode/Documents/Flask/venv/bin/python3.8"
+    "python.pythonPath": "/home/vcode/.local/share/virtualenvs/maistore-jI5Uwqgk/bin/python"
 }
