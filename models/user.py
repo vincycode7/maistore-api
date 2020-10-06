@@ -1,10 +1,12 @@
 # import packages
-from models.models_helper import *
-from requests import Response
-from flask import request, url_for, make_response, render_template
-from libs.mailer import Sender
-from models.confirmation import ConfirmationModel
 from uuid import uuid4
+from requests import Response
+
+from flask import request, url_for, make_response, render_template
+
+from models.models_helper import *
+from libs.mailer import MailerException,Sender
+from models.confirmation import ConfirmationModel
 
 # helper functions
 def create_id(context):
@@ -15,7 +17,7 @@ class UserModel(db.Model, ModelsHelper):
     __tablename__ = "user"
 
     # columns
-    id = db.Column(db.String(50), primary_key=True, unique=True, default=create_id)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
     lga = db.Column(db.String(30), nullable=True)
     state = db.Column(db.String(30), nullable=True)
     address = db.Column(db.String(300), nullable=True)
@@ -97,7 +99,7 @@ class UserModel(db.Model, ModelsHelper):
             return {
                 "message": ERROR_WHILE.format("sending confirmation")
             }, 500  # Internal server error
-        return None, 201
+        return SUCCESS_REGISTER_MESSAGE.format(user.email), 201
 
     @classmethod
     def find_by_email(cls, email: str = None):
