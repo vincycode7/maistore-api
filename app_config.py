@@ -102,5 +102,4 @@ def create_and_config_app(app, route_path):
     jwt = link_jwt(app)
     jwt_error_handler(jwt)
     link_route_path(api=api, route_path=route_path)
-    CORS(app, resources=r'/api/*', allow_headers='Content-Type',)
     return app, jwt, api

@@ -19,4 +19,8 @@
 "CONFIRMATION_RESEND_SUCCESSFUL" : "E-mail confirmation successfully resent.",
 "CONFIRMATION_RESEND_FAILED" : "Failed to resend e-mail confirmation.",
 
+
+"mailer_failed_to_load_username" : "Failed to load mailer username",
+"mailer_failed_to_load_password" : "Failed to load mailer password"
+
 }
