@@ -55,6 +55,7 @@ python-dotenv = "*"
 requests = "*"
 black = "*"
 mailer = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "3.8"

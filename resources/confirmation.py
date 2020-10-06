@@ -3,13 +3,20 @@ from time import time
 
 from flask_restful import Resource
 from flask import make_response, render_template
+from flask_jwt_extended import jwt_required, get_jwt_claims
 
 from models.user import UserModel
+from db import db
 from error_messages import *
 from schemas.confirmation import ConfirmationSchema
+from models.confirmation import ConfirmationModel
 from libs.mailer import MailerException
 
-confirimation_schema = ConfirmationSchema()
+confirmation_schema = ConfirmationSchema()
+confirimation_schema_many = ConfirmationSchema(many=True)
+
+
+# use to confirm user
 class Confirmation(Resource):
     @classmethod
     def get(cls, confirmation_id: str):
@@ -37,23 +44,32 @@ class Confirmation(Resource):
             render_template("confirmation_page.html", email=confirmation.user.email), 200, headers
         )
 
+# use to view or resend confirmations
 class ConfirmationByUser(Resource):
     @classmethod
+    # @jwt_required
     def get(cls, user_id:int):
         """ Returns confirmations for a given user. Use for testing """
+        claim = get_jwt_claims()
+        if not claim or not claim["is_admin"]:
+            return {
+                "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get user confirmations")
+            }, 401
+
         user = UserModel.find_by_id(id=user_id)
         if not user:
             return {"message" : NOT_FOUND.format("user")}, 404
-
-        return {
+        return ({
                     "current_time" : int(time()),
                     "confirmations" : [
-                                        confirimation_schema.dump(each)
+                                        confirmation_schema.dump(each)
                                         for each in user.confirmation.order_by(ConfirmationModel.expire_at)
                                         ], 
-                }, 200
+                }, 200)
+        return {"message" : "testing"}, 200
+
     @classmethod
-    def post(cls, user_id:int):
+    def post(cls, user_id:int=None):
         """ Resend confirmation email """
         user = UserModel.find_by_id(id=user_id)
 
@@ -61,12 +77,12 @@ class ConfirmationByUser(Resource):
             return {"message" : NOT_FOUND.format("user id")}, 404
         
         try:
-            confirimation = user.most_recent_confirmation
-            if confirimation:
-                if confirimation.confirmed:
+            confirmation = user.most_recent_confirmation
+            if confirmation:
+                if confirmation.confirmed:
                     return {"message" : ALREADY_CONFIRMED.format("user confirmation id", confirmation.id)}, 400
-                confirimation.forced_to_expire()
-                new_confirmation = Confirmation(user_id)
+                confirmation.force_to_expire()
+                new_confirmation = ConfirmationModel(user_id)
                 new_confirmation.save_to_db()
                 user.send_confirmation_email()
 
