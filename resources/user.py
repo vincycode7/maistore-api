@@ -18,6 +18,7 @@ class UserLogin(Resource):
     @cross_origin(origin='*')
     def post(cls):
         data = login_schema.load(UserModel.get_data_())
+        if not data: return {"message" : "no data found"}, 404
         msg, status = UserModel.login_checker(user_data=data)
         return msg, status
 
