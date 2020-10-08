@@ -8,7 +8,6 @@ from schemas.store import StoreSchema
 schema = StoreSchema()
 schema_many = StoreSchema(many=True)
 
-
 class Store(Resource):
     @classmethod
     @jwt_required
@@ -23,7 +22,7 @@ class Store(Resource):
     @jwt_required
     def post(cls):
         claim = get_jwt_claims()
-        data = schema.load(request.get_json())
+        data = schema.load(StoreModel.get_data_())
 
         # check if data already exist
         unique_input_error, status = StoreModel.post_unique_already_exist(claim, data)
@@ -44,7 +43,7 @@ class Store(Resource):
     @jwt_required
     def put(cls, storeid):
         claim = get_jwt_claims()
-        data = schema.load(request.get_json())
+        data = schema.load(StoreModel.get_data_())
         store, unique_input_error, status = StoreModel.put_unique_already_exist(
             claim=claim, storeid=storeid, store_data=data
         )

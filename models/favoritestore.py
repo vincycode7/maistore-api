@@ -6,7 +6,7 @@ class FavStoreModel(db.Model, ModelsHelper):
 
     # class variable
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    store_id = db.Column(db.Integer, db.ForeignKey("store.id"))
+    store_id = db.Column(db.String(50), db.ForeignKey("store.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     @classmethod

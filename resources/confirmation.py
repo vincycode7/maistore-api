@@ -51,6 +51,7 @@ class ConfirmationByUser(Resource):
     def get(cls, user_id:int):
         """ Returns confirmations for a given user. Use for testing """
         claim = get_jwt_claims()
+        print(f"userid --> {claim}")
         if not claim or not claim["is_admin"]:
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get user confirmations")
@@ -66,7 +67,6 @@ class ConfirmationByUser(Resource):
                                         for each in user.confirmation.order_by(ConfirmationModel.expire_at)
                                         ], 
                 }, 200)
-        return {"message" : "testing"}, 200
 
     @classmethod
     def post(cls, user_id:int=None):

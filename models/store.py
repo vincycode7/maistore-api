@@ -1,4 +1,5 @@
 from models.models_helper import *
+from uuid import uuid4
 
 # helper functions
 def create_id(context):
@@ -71,19 +72,29 @@ class StoreModel(db.Model, ModelsHelper):
 
     @classmethod
     def put_unique_already_exist(cls, claim, storeid, store_data):
-        store = cls.find_by_id(id=storeid)
         # check user permission, edit and parse data
-        if not claim["is_admin"] and claim["userid"] != store_data["user_id"]:
+        store = cls.find_by_id(id=storeid)
+        storename, user = cls.check_unique_inputs(store_data=store_data)
+
+
+        # check if admin is trying to change store's user_id
+        if not claim["is_admin"] and claim["userid"] != store_data["userid"]:
+            return (
+                store,
+                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("change store user id")},
+                401,
+            )
+
+        #check if user own store
+        if store and store.user_id != claim["userid"]:
             return (
                 store,
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},
                 401,
             )
 
-        storename, user = cls.check_unique_inputs(store_data=store_data)
-        if not user:
-            return store, {"message": NOT_FOUND.format("user")}, 400
-        elif store and storename and store.storename != storename.storename:
+        # check if name exist and if user own's it and if it was the store specified
+        if not store and storename:
             return (
                 store,
                 {
@@ -93,6 +104,25 @@ class StoreModel(db.Model, ModelsHelper):
                 },
                 400,
             )  # 400 is for bad request
+
+        # check if name exist and if user own's it
+        if storename and storename.user_id != claim["userid"]:
+            return (
+                store,
+                {
+                    "message": ALREADY_EXISTS.format(
+                        "storename", store_data["storename"]
+                    )
+                },
+                400,
+            )  # 400 is for bad request
+
+        
+        #check if the user to be filled exist
+        if not user:
+            return store, {"message": NOT_FOUND.format("user")}, 400
+
+        # print(f"dope {storename.user_id} {storename.user_id != claim['userid']}")
         return store, False, 200
 
     @classmethod

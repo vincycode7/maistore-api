@@ -2,8 +2,8 @@ from requests import Response, post, request
 from mailer import Mailer, Message
 import os
 
-FAILED_LOAD_USR = "username not found"
-FAILED_LOAD_PWD = "password not found"
+FAILED_LOAD_USR = "email username not found"
+FAILED_LOAD_PWD = "email password not found"
 ERR_SENDING_EMAIL = "Error in sending confirmation email. (check mailer credentials or network connection)"
 
 class MailerException(Exception):
@@ -11,8 +11,8 @@ class MailerException(Exception):
         super().__init__(message)
 
 class Sender:
-    MAILER_USR = os.environ.get("MAILER_USR")
-    MAILER_PWD = os.environ.get("MAILER_PWD")
+    MAILER_USR = os.environ.get("MAILER_USR", "gbengavincentakinwande@zohomail.com")
+    MAILER_PWD = os.environ.get("MAILER_PWD", "@Gbenga20122013")
 
     @classmethod
     def send_email(cls, to, subject, html, text=None) -> Response:

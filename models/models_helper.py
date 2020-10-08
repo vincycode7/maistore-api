@@ -3,6 +3,7 @@ from typing import List, Dict
 from error_messages import *
 from datetime import datetime as dt
 from blacklist import BLACKLIST_ACCESS
+from flask import request, json
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -37,3 +38,15 @@ class ModelsHelper:
     def find_by_id(cls, id):
         result = cls.query.filter_by(id=id).first()
         return result
+
+    @staticmethod
+    def get_data_():
+        """ 
+            function to get data from user, if first approach fails
+            tries the second.
+        """
+        data = dict(request.values)
+        print(f"first --> {data} \n second --> {request.get_data(as_text=True)}")
+        if data: 
+            return data
+        return json.loads(request.get_data(as_text=True))

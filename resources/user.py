@@ -1,12 +1,12 @@
 from flask_restful import Resource, reqparse
 from flask import request, json, jsonify, make_response, render_template
+from flask_cors import CORS, cross_origin
 from libs.mailer import MailerException
 from models.user import *
 from models.confirmation import ConfirmationModel
 from schemas.user import UserSchema
 import datetime as dt
 import traceback
-
 _5MIN = dt.timedelta(minutes=5)
 schema = UserSchema()
 login_schema = UserSchema(only=("email", "password"))
@@ -16,7 +16,8 @@ schema_many = UserSchema(many=True)
 class UserLogin(Resource):
     @classmethod
     def post(cls):
-        data = login_schema.load(request.get_json())
+        data = login_schema.load(UserModel.get_data_())
+        if not data: return {"message" : "no data found"}, 404
         msg, status = UserModel.login_checker(user_data=data)
         return msg, status
 
@@ -27,7 +28,7 @@ class UserRegister(Resource):
     @jwt_optional
     def post(cls):
         claim = get_jwt_claims()
-        data = schema.load(request.get_json())
+        data = schema.load(UserModel.get_data_())
 
         # check if data already exist
         unique_input_error, status = UserModel.post_unique_already_exist(claim, data)
@@ -79,7 +80,7 @@ class User(Resource):
     @jwt_required
     def put(cls, userid):
         claim = get_jwt_claims()
-        data = schema.load(request.get_json())
+        data = schema.load(UserModel.get_data_())
 
         # confirm the unique key to be same with the product route
         user, unique_input_error, status = UserModel.put_unique_already_exist(
