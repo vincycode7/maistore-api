@@ -15,7 +15,6 @@ schema_many = UserSchema(many=True)
 # class to login usersdt.datetime.now() +
 class UserLogin(Resource):
     @classmethod
-    @cross_origin(origin='*')
     def post(cls):
         data = login_schema.load(UserModel.get_data_())
         if not data: return {"message" : "no data found"}, 404
