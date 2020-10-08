@@ -16,8 +16,10 @@ schema_many = UserSchema(many=True)
 class UserLogin(Resource):
     @classmethod
     def post(cls):
-        data = login_schema.load(UserModel.get_data_())
+        data = UserModel.get_data_()
+        print(f"data data --> {data}")
         if not data: return {"message" : "no data found"}, 404
+        data = login_schema.load(data)
         msg, status = UserModel.login_checker(user_data=data)
         return msg, status
 

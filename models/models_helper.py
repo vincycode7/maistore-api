@@ -49,4 +49,7 @@ class ModelsHelper:
         print(f"first --> {data} \n second --> {request.get_data(as_text=True)}")
         if data: 
             return data
+        data = request.get_data(as_text=True)
+        if not data:
+            return None
         return json.loads(request.get_data(as_text=True))
