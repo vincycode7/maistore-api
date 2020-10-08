@@ -12,9 +12,11 @@ def config_app(app):
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["JWT_BLACKLIST_ENABLED"] = True
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
-    app.config['CORS_ENABLED'] = True
-    app.config['CORS_HEADERS'] = ['Content-Type','Authorization', 'application/json']
-    app.config['CORS_ALLOW_HEADERS'] = ['Content-Type','Authorization', 'application/json']
+    app.config['DEFAULT_PARSERS'] = [
+                                        'flask.ext.api.parsers.JSONParser',
+                                        'flask.ext.api.parsers.URLEncodedParser',
+                                        'flask.ext.api.parsers.MultiPartParser'
+                                    ]
     app.secret_key = os.environ.get("SECRET_KEY", "vvvvv dclnf qnwiefnn")  # always remember to get the apps's secret key, also this key should be hidden from the public.
     return app
 
