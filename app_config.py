@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from blacklist import BLACKLIST_ACCESS
 from flask_restful import Api
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_jwt_extended import JWTManager
 import os
 
@@ -12,8 +12,10 @@ def config_app(app):
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["JWT_BLACKLIST_ENABLED"] = True
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
-    # app.config['CORS_ALLOW_HEADERS'] = "Content-Type"
+    app.config['CORS_ENABLED'] = True
     # app.config['CORS_RESOURCES'] = {r"/api/*": {"origins": "*"}}
+    app.config['CORS_HEADERS'] = ['Content-Type','Authorization', 'application/json']
+    app.config['CORS_ALLOW_HEADERS'] = ['Content-Type','Authorization', 'application/json']
     app.secret_key = os.environ.get("SECRET_KEY", "vvvvv dclnf qnwiefnn")  # always remember to get the apps's secret key, also this key should be hidden from the public.
     return app
 
@@ -93,7 +95,6 @@ def jwt_error_handler(jwt):
             ),
             401,
         )
-
 
 def create_and_config_app(app, route_path):
     app = config_app(app)
