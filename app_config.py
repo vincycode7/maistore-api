@@ -98,16 +98,17 @@ def jwt_error_handler(jwt):
             ),
             401,
         )
+def mash_err_handler(app):
+    @app.errorhandler(ValidationError)
+    def handle_marshmallow_validation(err):
+        return {"message" : str(err)}, 400
 
 def create_and_config_app(app, route_path):
     cors = CORS(app)
     app = config_app(app)
     api = create_api(app)
     jwt = link_jwt(app)
+    mash_err_handler(app=app)
     jwt_error_handler(jwt)
-    @app.errorhandler(ValidationError)
-    def handle_marshmallow_validation(err):
-        print(f"message message message --> {err}")
-        return {"message" : str(err)}, 400
     link_route_path(api=api, route_path=route_path)
     return app, cors, jwt, api

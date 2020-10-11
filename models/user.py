@@ -24,7 +24,7 @@ class UserModel(db.Model, ModelsHelper):
     image = db.Column(db.String(300), nullable=True)
     middlename = db.Column(db.String(30), index=False, unique=False, nullable=True)
     lastname = db.Column(db.String(30), index=False, unique=False, nullable=True)
-    firstname = db.Column(db.String(30), index=False, unique=False, nullable=False)
+    firstname = db.Column(db.String(30), index=False, unique=False, nullable=True)
     created = db.Column(
         db.DateTime, index=False, unique=False, nullable=False, default=dt.now
     )
