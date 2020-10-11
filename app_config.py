@@ -17,6 +17,7 @@ def config_app(app):
                                         'flask.ext.api.parsers.URLEncodedParser',
                                         'flask.ext.api.parsers.MultiPartParser'
                                     ]
+    app.config["CORS_HEADERS"] = 'Content-Type'
     app.secret_key = os.environ.get("SECRET_KEY", "vvvvv dclnf qnwiefnn")  # always remember to get the apps's secret key, also this key should be hidden from the public.
     return app
 
