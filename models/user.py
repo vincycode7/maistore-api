@@ -151,8 +151,8 @@ class UserModel(db.Model, ModelsHelper):
             return {
                 "message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])
             }, 400  # 400 is for bad request
-        elif (not claim and user_data["admin"] == True) or (
-            claim and not claim["is_admin"] and user_data["admin"] == True
+        elif (not claim and user_data.get("admin",False) == True) or (
+            claim and not claim["is_admin"] and user_data.get("admin",False) == True
         ):
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("set admin status to true")
@@ -171,7 +171,7 @@ class UserModel(db.Model, ModelsHelper):
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},
                 401,
             )
-        elif not claim["is_admin"] and user_data["admin"] != True:
+        elif not claim["is_admin"] and user_data.get("admin",False) != True:
             return (
                 user,
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to change admin status")},
@@ -180,7 +180,7 @@ class UserModel(db.Model, ModelsHelper):
         elif user and email and user.email != email.email:
             return (
                 user,
-                {"message": ALREADY_EXISTS.format("email", user_data["email"])},
+                {"message": ALREADY_EXISTS.format("email", user_data.get("admin",False))},
                 400,
             )  # 400 is for bad request
         elif user and phoneno and user.phoneno != phoneno.phoneno:
