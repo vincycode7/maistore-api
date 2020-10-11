@@ -98,7 +98,7 @@ class UserModel(db.Model, ModelsHelper):
             return {
                 "message": ERROR_WHILE.format("sending confirmation")
             }, 500  # Internal server error
-        return SUCCESS_REGISTER_MESSAGE.format(user.email), 201
+        return {"message" : SUCCESS_REGISTER_MESSAGE.format(user.email)}, 201
 
     @classmethod
     def find_by_email(cls, email: str = None):
