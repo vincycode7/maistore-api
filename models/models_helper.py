@@ -1,3 +1,4 @@
+import traceback
 from db import db
 from typing import List, Dict
 from error_messages import *
