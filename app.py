@@ -1,6 +1,5 @@
 import os
 from flask import Flask, request, jsonify
-from marshmallow import ValidationError
 from flask_cors import CORS
 from app_config import *
 from init_models import *
@@ -28,10 +27,6 @@ if __name__ == "__main__":
     @app.before_first_request
     def create_tables():
         db.create_all()
-
-    @app.errorhandler(ValidationError)
-    def handle_marshmallow_validation(err):
-        return jsonify(err.message), 400
 
     db.init_app(app)
     ma.init_app(app)

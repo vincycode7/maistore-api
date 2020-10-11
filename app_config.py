@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from blacklist import BLACKLIST_ACCESS
+from marshmallow import ValidationError
 from flask_restful import Api
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import JWTManager
@@ -104,5 +105,8 @@ def create_and_config_app(app, route_path):
     api = create_api(app)
     jwt = link_jwt(app)
     jwt_error_handler(jwt)
+    @app.errorhandler(ValidationError)
+    def handle_marshmallow_validation(err):
+        return jsonify(err.message), 400
     link_route_path(api=api, route_path=route_path)
     return app, cors, jwt, api

@@ -28,7 +28,7 @@ class UserModel(db.Model, ModelsHelper):
     created = db.Column(
         db.DateTime, index=False, unique=False, nullable=False, default=dt.now
     )
-    country = db.Column(db.String(30), nullable=False)
+    country = db.Column(db.String(30))
     admin = db.Column(
         db.Boolean, index=False, unique=False, nullable=False, default=False
     )
@@ -138,7 +138,7 @@ class UserModel(db.Model, ModelsHelper):
                 }, 200
             else:
                 return {"message": NOT_CONFIRMED_ERROR.format("email", user.email)}, 400
-        return {"message": INVALID_CREDENTIALS}, 401
+        return {"message": INVALID_CREDENTIALS}, 400
 
     @classmethod
     def post_unique_already_exist(cls, claim, user_data):
