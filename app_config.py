@@ -107,6 +107,6 @@ def create_and_config_app(app, route_path):
     jwt_error_handler(jwt)
     @app.errorhandler(ValidationError)
     def handle_marshmallow_validation(err):
-        return jsonify(err.message), 400
+        return jsonify({"message" : err}), 400
     link_route_path(api=api, route_path=route_path)
     return app, cors, jwt, api
