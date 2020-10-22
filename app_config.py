@@ -43,7 +43,7 @@ def create_usr_from_root(app):
         "email": os.environ.get("ROOT_USR_EMAIL"),
         "phoneno": os.environ.get("ROOT_USR_PHONE"),
     }
-    print(os.environ.get("ROOT_USR_PWD"), os.environ.get("ROOT_USR_EMAIL"), os.environ.get("ROOT_USR_PHONE"))
+    print("work please --> ",os.environ.get("ROOT_USR_PWD"), os.environ.get("ROOT_USR_EMAIL"), os.environ.get("ROOT_USR_PHONE"))
     claim = {}
     try:
         # creat root user
