@@ -9,7 +9,7 @@ class CartProductModel(db.Model, ModelsHelper):
 
     # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+    product_id = db.Column(db.String(50), db.ForeignKey("product.id"), nullable=False)
     store_id = db.Column(db.String(50), db.ForeignKey("store.id"), nullable=False)
     cartsystemid = db.Column(db.Integer, db.ForeignKey("cartsystem.id"), nullable=False)
     user_id = db.Column(db.String(50), db.ForeignKey("user.id"), nullable=False)
