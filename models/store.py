@@ -3,7 +3,8 @@ from uuid import uuid4
 
 # helper functions
 def create_id(context):
-    return "MAISTORE(v1)-" + uuid4().hex
+    return "MAISTORE-V1-" + uuid4().hex
+
 
 class StoreModel(db.Model, ModelsHelper):
     __tablename__ = "store"
@@ -12,7 +13,7 @@ class StoreModel(db.Model, ModelsHelper):
     id = db.Column(db.String(50), primary_key=True, unique=True, default=create_id)
     storename = db.Column(db.String(40), unique=True, nullable=False)
     user_id = db.Column(
-        db.Integer,
+        db.String(50),
         db.ForeignKey(
             "user.id",
         ),
@@ -50,10 +51,8 @@ class StoreModel(db.Model, ModelsHelper):
 
     @classmethod
     def check_unique_inputs(cls, store_data):
-        storename = cls.find_by_name(storename=store_data["storename"])
-        from models.user import UserModel
-
-        user = UserModel.find_by_id(id=store_data["user_id"])
+        storename = cls.find_by_name(storename=store_data.get("storename", None))
+        user = cls.find_user_by_id(userid=store_data.get("user_id", None))
         return storename, user
 
     @classmethod
@@ -62,6 +61,8 @@ class StoreModel(db.Model, ModelsHelper):
             return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")}, 401
 
         storename, user = cls.check_unique_inputs(store_data=store_data)
+
+        # check if user id to insert exist
         if not user:
             return {"message": NOT_FOUND.format("user")}, 400
         elif storename:
@@ -76,27 +77,34 @@ class StoreModel(db.Model, ModelsHelper):
         store = cls.find_by_id(id=storeid)
         storename, user = cls.check_unique_inputs(store_data=store_data)
 
-
         # check if admin is trying to change store's user_id
-        if not claim["is_admin"] and claim["userid"] != store_data["userid"]:
+        if not claim["is_admin"] or not claim["is_root"] or claim["userid"] != store_data["user_id"]:
             return (
-                store,
+                None,
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("change store user id")},
                 401,
             )
 
-        #check if user own store
-        if store and store.user_id != claim["userid"]:
+        #check if store exist
+        if not store:
+            return None, {"message": NOT_FOUND.format("store id")}, 400
+
+        # check if the user to be filled exist
+        if not user:
+            return None, {"message": NOT_FOUND.format("user id")}, 400
+
+        # check if user own store
+        if store and (store.user_id != claim["userid"] or not claim["is_admin"] or not claim["is_root"]):
             return (
-                store,
+                None,
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},
                 401,
             )
 
         # check if name exist and if user own's it and if it was the store specified
-        if not store and storename:
+        if storename and storename.id != store.id:
             return (
-                store,
+                None,
                 {
                     "message": ALREADY_EXISTS.format(
                         "storename", store_data["storename"]
@@ -104,23 +112,6 @@ class StoreModel(db.Model, ModelsHelper):
                 },
                 400,
             )  # 400 is for bad request
-
-        # check if name exist and if user own's it
-        if storename and storename.user_id != claim["userid"]:
-            return (
-                store,
-                {
-                    "message": ALREADY_EXISTS.format(
-                        "storename", store_data["storename"]
-                    )
-                },
-                400,
-            )  # 400 is for bad request
-
-        
-        #check if the user to be filled exist
-        if not user:
-            return store, {"message": NOT_FOUND.format("user")}, 400
 
         # print(f"dope {storename.user_id} {storename.user_id != claim['userid']}")
         return store, False, 200

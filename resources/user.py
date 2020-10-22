@@ -7,6 +7,7 @@ from models.confirmation import ConfirmationModel
 from schemas.user import UserSchema
 import datetime as dt
 import traceback
+
 _5MIN = dt.timedelta(minutes=5)
 schema = UserSchema()
 login_schema = UserSchema(only=("email", "password"))
@@ -17,8 +18,8 @@ class UserLogin(Resource):
     @classmethod
     def post(cls):
         data = UserModel.get_data_()
-        print(f"data data --> {data}")
-        if not data: return {"message" : "no data found"}, 404
+        if not data:
+            return {"message": "no data found"}, 404
         data = login_schema.load(data)
         msg, status = UserModel.login_checker(user_data=data)
         return msg, status
@@ -39,7 +40,8 @@ class UserRegister(Resource):
 
         # create user and send confirmation email
         msg, status_code = UserModel.create_user_send_confirmation(data=data)
-        if status_code != 201 : return msg, status_code
+        if status_code != 201:
+            return msg, status_code
         return msg, status_code
 
 
@@ -73,9 +75,8 @@ class User(Resource):
 
         user = UserModel.find_by_id(id=userid)
         if user:
-            print("yeyeyeyeyey")
             return {"user": schema.dump(user)}, 201
-        return {"message": "user not found"}, 400
+        return {"message": NOT_FOUND.format("user")}, 400
 
     # use for authentication before calling post
     @classmethod
@@ -94,30 +95,45 @@ class User(Resource):
             data["admin"] = False
 
         # if user already exist update the dictionary
+        print(f" user--> {user}")
         if user:
             for each in data.keys():
                 user.__setattr__(each, data[each])
-        else:
-            user = UserModel(**data)
+        # else:
+        #     # check if data already exist
+        #     unique_input_error, status = UserModel.post_unique_already_exist(
+        #         claim, data
+        #     )
+        #     if unique_input_error:
+        #         return unique_input_error, status
+        #     user = UserModel(**data)
 
         # save
-        try:
-            user.save_to_db()
-        except Exception as e:
-            print(f"error is {e}")
-            return {
-                "message": ERROR_WHILE_INSERTING.format("item")
-            }, 500  # Internal server error
-        return schema.dump(user), 201
+            try:
+                user.save_to_db()
+                return schema.dump(user), 201
+            except Exception as e:
+                print(f"error is {e}")
+                return {
+                    "message": ERROR_WHILE_INSERTING.format("item")
+                }, 500  # Internal server error
+        return {
+            "message": NOT_FOUND.format("user id")
+        }, 400  # 400 is for bad request
 
     # use for authentication before calling post
     @classmethod
     @jwt_required
     def delete(cls, userid):
         claim = get_jwt_claims()
-        if not claim["is_admin"] and claim["userid"] != userid:
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("delete users")}, 401
         user = UserModel.find_by_id(id=userid)
+        if claim and user:
+            if not claim["is_root"] and user.rootusr:
+                return {"message": CANNOT_DELETE_ROOT}, 401
+            if not claim["is_admin"] and claim["userid"] != userid:
+                return {
+                    "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete users")
+                }, 401
         if user:
             user.delete_from_db()
             return {"message": DELETED.format("User")}, 200  # 200 ok

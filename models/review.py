@@ -14,7 +14,11 @@ class ReviewModel(db.Model, ModelsHelper):
         nullable=False,
     )
     store_id = db.Column(
-        db.String(50), db.ForeignKey("store.id"), index=False, unique=False, nullable=False
+        db.String(50),
+        db.ForeignKey("store.id"),
+        index=False,
+        unique=False,
+        nullable=False,
     )
     user_id = db.Column(
         db.Integer, db.ForeignKey("user.id"), index=False, unique=False, nullable=False

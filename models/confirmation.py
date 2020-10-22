@@ -6,7 +6,7 @@ from libs.mailer import Sender
 from uuid import uuid4
 from time import time
 
-CONFIRMATION_EXPIRATION_DELTA = 1800 #30 MINUTES
+CONFIRMATION_EXPIRATION_DELTA = 1800  # 30 MINUTES
 
 # class to create user and get user
 class ConfirmationModel(db.Model, ModelsHelper):
@@ -15,7 +15,7 @@ class ConfirmationModel(db.Model, ModelsHelper):
     # columns
     id = db.Column(db.String(50), primary_key=True, unique=True)
     expire_at = db.Column(db.Integer, unique=False, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"),nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
 
     # merge (for sqlalchemy to link tables)

@@ -18,6 +18,6 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         include_relationships = True
 
     @pre_dump
-    def _pre_dump(self, user: UserModel,**kwargs):   
+    def _pre_dump(self, user: UserModel, **kwargs):
         user.confirmation = [user.most_recent_confirmation]
         return user

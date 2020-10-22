@@ -24,13 +24,17 @@ class Confirmation(Resource):
         confirmation = ConfirmationModel.find_by_id(id=confirmation_id)
 
         if not confirmation:
-            return {"message" : NOT_FOUND.format("user confirmation")}, 404
+            return {"message": NOT_FOUND.format("user confirmation")}, 404
+
+        elif confirmation.confirmed:
+            return {
+                "message": ALREADY_CONFIRMED.format(
+                    "user confirmation id", confirmation.id
+                )
+            }, 400
 
         elif confirmation.expired:
-            return {"message" : EXPIRED.format("user confirmation")}, 400
-        
-        elif confirmation.confirmed:
-            return {"message" : ALREADY_CONFIRMED.format("user confirmation id", confirmation.id)}, 400
+            return {"message": EXPIRED.format("user confirmation")}, 400
 
         try:
             confirmation.confirmed = True
@@ -41,14 +45,17 @@ class Confirmation(Resource):
 
         headers = {"Content-Type": "text/html"}
         return make_response(
-            render_template("confirmation_page.html", email=confirmation.user.email), 200, headers
+            render_template("confirmation_page.html", email=confirmation.user.email),
+            200,
+            headers,
         )
+
 
 # use to view or resend confirmations
 class ConfirmationByUser(Resource):
     @classmethod
     @jwt_required
-    def get(cls, user_id:int):
+    def get(cls, user_id: int):
         """ Returns confirmations for a given user. Use for testing """
         claim = get_jwt_claims()
         print(f"userid --> {claim}")
@@ -59,37 +66,44 @@ class ConfirmationByUser(Resource):
 
         user = UserModel.find_by_id(id=user_id)
         if not user:
-            return {"message" : NOT_FOUND.format("user")}, 404
-        return ({
-                    "current_time" : int(time()),
-                    "confirmations" : [
-                                        confirmation_schema.dump(each)
-                                        for each in user.confirmation.order_by(ConfirmationModel.expire_at)
-                                        ], 
-                }, 200)
+            return {"message": NOT_FOUND.format("user")}, 404
+        return (
+            {
+                "current_time": int(time()),
+                "confirmations": [
+                    confirmation_schema.dump(each)
+                    for each in user.confirmation.order_by(ConfirmationModel.expire_at)
+                ],
+            },
+            200,
+        )
 
     @classmethod
-    def post(cls, user_id:int=None):
+    def post(cls, user_id: int = None):
         """ Resend confirmation email """
         user = UserModel.find_by_id(id=user_id)
 
         if not user:
-            return {"message" : NOT_FOUND.format("user id")}, 404
-        
+            return {"message": NOT_FOUND.format("user id")}, 404
+
         try:
             confirmation = user.most_recent_confirmation
             if confirmation:
                 if confirmation.confirmed:
-                    return {"message" : ALREADY_CONFIRMED.format("user confirmation id", confirmation.id)}, 400
+                    return {
+                        "message": ALREADY_CONFIRMED.format(
+                            "user confirmation id", confirmation.id
+                        )
+                    }, 400
                 confirmation.force_to_expire()
                 new_confirmation = ConfirmationModel(user_id)
                 new_confirmation.save_to_db()
                 user.send_confirmation_email()
 
-                return {"message" : CONFIRMATION_RESEND_SUCCESSFUL}, 201
+                return {"message": CONFIRMATION_RESEND_SUCCESSFUL}, 201
         except MailerException as e:
-            return {"message" : str(e)}, 500
-        
+            return {"message": str(e)}, 500
+
         except:
             traceback.print_exc()
-            return {"message" : CONFIRMATION_RESEND_FAILED}, 500
+            return {"message": CONFIRMATION_RESEND_FAILED}, 500

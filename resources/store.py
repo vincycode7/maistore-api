@@ -8,6 +8,7 @@ from schemas.store import StoreSchema
 schema = StoreSchema()
 schema_many = StoreSchema(many=True)
 
+
 class Store(Resource):
     @classmethod
     @jwt_required
@@ -50,20 +51,26 @@ class Store(Resource):
         if unique_input_error:
             return unique_input_error, status
 
+        print(f"store --> {store}, {store.id}")
         if store:
             for each in data.keys():
                 store.__setattr__(each, data[each])  # update
-        else:
-            store = StoreModel(**data)
+        # else:
+        #     store = StoreModel(**data)
 
-        try:
-            store.save_to_db()
-        except Exception as e:
-            print(f"error is {e}")
-            return {
-                "message": ERROR_WHILE_INSERTING.format("item")
-            }, 500  # Internal server error
-        return schema.dump(store), 201
+            try:
+                print("after this")
+                store.save_to_db()
+                print("didnt get here")
+                return schema.dump(store), 201
+            except Exception as e:
+                print(f"error is {e}")
+                return {
+                    "message": ERROR_WHILE_INSERTING.format("item")
+                }, 500  # Internal server error
+        return {
+            "message": NOT_FOUND.format("store id")
+        }, 400  # 400 is for bad request
 
     @classmethod
     @fresh_jwt_required

@@ -9,9 +9,11 @@ class StoreSchema(ma.SQLAlchemyAutoSchema):
         lambda: UserSchema(only=("id", "firstname", "middlename", "lastname"))
     )
 
+    products = fields.Nested("ProductSchema", many=True, exclude=("store",))
+
     class Meta:
         model = StoreModel
-        # load_only = ("password",)
+        load_only = ("user_id",)
         dump_only = ("id",)
         include_fk = True
         include_relationships = True

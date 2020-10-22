@@ -5,19 +5,20 @@ from requests import Response
 from flask import request, url_for, make_response, render_template
 
 from models.models_helper import *
-from libs.mailer import MailerException,Sender
+from libs.mailer import MailerException, Sender
 from models.confirmation import ConfirmationModel
 
 # helper functions
 def create_id(context):
-    return uuid4().hex
+    return "USER-V1-" + uuid4().hex
+
 
 # class to create user and get user
 class UserModel(db.Model, ModelsHelper):
     __tablename__ = "user"
 
     # columns
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.String(50), primary_key=True, unique=True, default=create_id)
     lga = db.Column(db.String(30), nullable=True)
     state = db.Column(db.String(30), nullable=True)
     address = db.Column(db.String(300), nullable=True)
@@ -30,6 +31,9 @@ class UserModel(db.Model, ModelsHelper):
     )
     country = db.Column(db.String(30))
     admin = db.Column(
+        db.Boolean, index=False, unique=False, nullable=False, default=False
+    )
+    rootusr = db.Column(
         db.Boolean, index=False, unique=False, nullable=False, default=False
     )
     password = db.Column(db.String(80), index=False, unique=False, nullable=False)
@@ -53,7 +57,9 @@ class UserModel(db.Model, ModelsHelper):
         "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
     )
 
-    confirmation = db.relationship("ConfirmationModel", lazy="dynamic", cascade="all, delete-orphan")
+    confirmation = db.relationship(
+        "ConfirmationModel", lazy="dynamic", cascade="all, delete-orphan"
+    )
 
     @property
     def most_recent_confirmation(self):
@@ -62,6 +68,7 @@ class UserModel(db.Model, ModelsHelper):
     def create_confirmation(self):
         confirmation = ConfirmationModel(self.id)
         confirmation.save_to_db()
+        return confirmation
 
     def send_confirmation_email(self) -> Response:
         link = request.url_root[:-1] + url_for(
@@ -77,9 +84,9 @@ class UserModel(db.Model, ModelsHelper):
     @classmethod
     def create_user_send_confirmation(cls, data):
 
-        user = cls(**data) # create user
+        user = cls(**data)  # create user
 
-        #save user
+        # save user
         try:
             user.save_to_db()
         except:
@@ -88,7 +95,7 @@ class UserModel(db.Model, ModelsHelper):
                 "message": ERROR_WHILE_INSERTING.format("user")
             }, 500  # Internal server error
 
-        #send confirmation
+        # send confirmation
         try:
             user.create_confirmation()
             user.send_confirmation_email()
@@ -98,7 +105,7 @@ class UserModel(db.Model, ModelsHelper):
             return {
                 "message": ERROR_WHILE.format("sending confirmation")
             }, 500  # Internal server error
-        return {"message" : SUCCESS_REGISTER_MESSAGE.format(user.email)}, 201
+        return {"message": SUCCESS_REGISTER_MESSAGE.format(user.email)}, 201
 
     @classmethod
     def find_by_email(cls, email: str = None):
@@ -151,8 +158,14 @@ class UserModel(db.Model, ModelsHelper):
             return {
                 "message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])
             }, 400  # 400 is for bad request
-        elif (not claim and user_data.get("admin",False) == True) or (
-            claim and not claim["is_admin"] and user_data.get("admin",False) == True
+        elif claim and not claim["is_root"] and user_data.get("rootusr", False) == True:
+            return {
+                "message": ROOT_PRIVILEDGE_REQUIRED.format(
+                    "set rootuser status to true"
+                )
+            }, 401
+        elif (not claim and user_data.get("admin", False) == True) or (
+            claim and not claim["is_admin"] and user_data.get("admin", False) == True
         ):
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("set admin status to true")
@@ -165,22 +178,36 @@ class UserModel(db.Model, ModelsHelper):
         email, phoneno = cls.check_unique_inputs(user_data=user_data)
 
         # check user permission, edit and parse data
-        if not claim["is_admin"] and claim["userid"] != userid:
+        if not claim or (claim and not claim["is_admin"] and claim["userid"] != userid):
             return (
                 user,
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},
                 401,
             )
-        elif not claim["is_admin"] and user_data.get("admin",False) != True:
+        elif claim and not claim["is_root"] and user_data.get("rootusr", False) == True:
             return (
                 user,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to change admin status")},
+                {
+                    "message": ROOT_PRIVILEDGE_REQUIRED.format(
+                        "set rootuser status to true"
+                    )
+                },
+                401,
+            )
+        elif claim and not claim["is_admin"] and user_data.get("admin", False) == True:
+            return (
+                user,
+                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("change admin status")},
                 401,
             )
         elif user and email and user.email != email.email:
             return (
                 user,
-                {"message": ALREADY_EXISTS.format("email", user_data.get("admin",False))},
+                {
+                    "message": ALREADY_EXISTS.format(
+                        "email", user_data.get("email", False)
+                    )
+                },
                 400,
             )  # 400 is for bad request
         elif user and phoneno and user.phoneno != phoneno.phoneno:
