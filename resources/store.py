@@ -66,7 +66,7 @@ class Store(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("item")
+                    "message": ERROR_WHILE_INSERTING.format("store")
                 }, 500  # Internal server error
         return {
             "message": NOT_FOUND.format("store id")

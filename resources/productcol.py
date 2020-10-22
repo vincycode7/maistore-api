@@ -96,14 +96,21 @@ class ProductColor(Resource):
     @jwt_required
     def delete(self, productcolorid):
         claim = get_jwt_claims()
-        if not claim["is_admin"] or not claim["is_root"]:
+        productcolor = ProductColorModel.find_by_id(id=productcolorid)
+        if not productcolor:
+            return {"message": NOT_FOUND.format("product color")}, 401
+
+        if (
+            not claim["is_admin"] or not claim["is_root"]
+            or productcolor.product.store.user.id != claim["userid"]
+            ):
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product color")
             }, 401
-        productcolor = ProductColorModel.find_by_id(id=productcolorid)
-        if productcolor:
+
+        try:
             productcolor.delete_from_db()
-            return {"message": DELETED.format("product color")}, 200  # 200 ok
-        return {
-            "message": NOT_FOUND.format("product color")
-        }, 400  # 400 is for bad request
+        except Exception as e:
+            print(e)
+            return {"message": INTERNAL_ERROR}, 500
+        return {"message": DELETED.format("product color")}, 200  # 200 ok

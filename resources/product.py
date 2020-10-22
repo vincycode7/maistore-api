@@ -62,18 +62,23 @@ class Product(Resource):
         product = ProductModel.find_by_id(id=productid)
         claim = get_jwt_claims()
 
-        if product:
-            if (
-                not claim["is_admin"]
-                and schema.dump(product).get("user_id") != claim["userid"]
-            ):
-                return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
-            product.delete_from_db()
-            return {"message": DELETED.format("product")}, 200  # 200 ok
-        elif not claim["is_admin"]:
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
+        if not product:
+            return {"message": NOT_FOUND.format("product")}, 401
+            
+        if (
+            not claim["is_admin"] or not claim["is_root"]
+            or product.user.id != claim["userid"]
+        ):
+            return {
+                "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product")
+            }, 401
 
-        return {"message": NOT_FOUND.format("product")}, 401  # 400 is for bad request
+        try:
+            product.delete_from_db()
+        except Exception as e:
+            print(e)
+            return {"message": INTERNAL_ERROR}, 500
+        return {"message": DELETED.format("product")}, 200  # 200 ok
 
     # use for authentication before calling post
     @classmethod
@@ -81,13 +86,18 @@ class Product(Resource):
     def put(cls, productid):
         claim = get_jwt_claims()
         data = schema.load(ProductModel.get_data_())
+        product, unique_input_error, status = ProductModel.put_unique_already_exist(
+            claim=claim, productid=productid, product_data=data
+        )
 
-        product = ProductModel.find_by_id(id=productid)
+        if unique_input_error:
+            return unique_input_error, status
 
         if product:
             # update
             for each in data.keys():
                 product.__setattr__(each, data[each])
+
             try:
                 product.save_to_db()
                 return schema.dump(product), 201
@@ -96,4 +106,5 @@ class Product(Resource):
                 return {
                     "message": ERROR_WHILE_INSERTING.format("Product")
                 }, 500  # Internal server error
+
         return {"message": NOT_FOUND.format("Product")}, 400  # 400 is for bad request

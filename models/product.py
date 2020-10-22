@@ -137,48 +137,48 @@ class ProductModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, storeid, store_data):
+    def put_unique_already_exist(cls, claim, productid, product_data):
         # check user permission, edit and parse data
-        store = cls.find_by_id(id=storeid)
-        storename, user = cls.check_unique_inputs(store_data=store_data)
+        product = cls.find_by_id(id=productid)
+        store, productcat, productsubcat, size = cls.check_unique_inputs(product_data=product_data)
 
-        # check if admin is trying to change store's user_id
-        if not claim["is_admin"] or not claim["is_root"] or claim["userid"] != store_data["user_id"]:
-            return (
-                None,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("change store user id")},
-                401,
-            )
+        # check if product exist
+        if not product:
+            return None, {"message": NOT_FOUND.format("product")}, 401
 
-        #check if store exist
+        # check if store exist
+        print(store)
         if not store:
-            return None, {"message": NOT_FOUND.format("store id")}, 400
+            return None, {"message": NOT_FOUND.format("store")}, 401
 
-        # check if the user to be filled exist
-        if not user:
-            return None, {"message": NOT_FOUND.format("user id")}, 400
+        # check if user is admin or normal user
+        if not claim["is_admin"] or not claim["is_root"]  or claim["userid"] != store.user.id:
+            return None, {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")}, 401
 
-        # check if user own store
-        if store and (store.user_id != claim["userid"] or not claim["is_admin"] or not claim["is_root"]):
-            return (
-                None,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},
-                401,
-            )
+        # check if product is in store
+        if product.store.id != store.id:
+            return None, {"message" : NOT_EQUAL.format("product store id -- " + str(product.store.id ), "storeid -- " + str(store.id))}, 401
 
-        # check if name exist and if user own's it and if it was the store specified
-        if storename and storename.id != store.id:
-            return (
-                None,
-                {
-                    "message": ALREADY_EXISTS.format(
-                        "storename", store_data["storename"]
-                    )
-                },
-                400,
-            )  # 400 is for bad request
+        # check productcatid
+        # check if productcat exist
+        if not productcat:
+            return None, {"message": NOT_FOUND.format("productcat")}, 401
 
-        # print(f"dope {storename.user_id} {storename.user_id != claim['userid']}")
+        # check product subcat id
+        # check if productsubcat insert exist
+        if not productsubcat:
+            return None, {"message": NOT_FOUND.format("productsubcat")}, 401
+
+        #check if size is valid
+        # check if size exist
+        if not size:
+            return None, {"message": NOT_FOUND.format("size")}, 401
+
+
+        # check if productsubcat is in product cat
+        if productsubcat.productcat.id != productcat.id:
+            return None, {"message" : NOT_FOUND_IN.format("product sub category", "product category")}, 404
+
         return store, False, 200
 
     @classmethod
@@ -196,3 +196,7 @@ class ProductModel(db.Model, ModelsHelper):
     def check_foreignkey_exist(cls, store_data):
         user = cls.user.find_by_id(store_data["user_id"])
         return user
+
+# TODO: Do pagenate in response, for product.
+# TODO: check if i did put request side of product
+# TODO: check if i did delete auth side of product
