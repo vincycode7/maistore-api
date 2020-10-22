@@ -147,7 +147,6 @@ class ProductModel(db.Model, ModelsHelper):
             return None, {"message": NOT_FOUND.format("product")}, 401
 
         # check if store exist
-        print(store)
         if not store:
             return None, {"message": NOT_FOUND.format("store")}, 401
 
@@ -179,18 +178,18 @@ class ProductModel(db.Model, ModelsHelper):
         if productsubcat.productcat.id != productcat.id:
             return None, {"message" : NOT_FOUND_IN.format("product sub category", "product category")}, 404
 
-        return store, False, 200
+        return product, False, 200
 
     @classmethod
     def delete_auth(cls, claim, storeid):
         store = StoreModel.find_by_id(storeid)
 
         if not store:
-            return store, {"message": NOT_FOUND.format("store")}, 401
+            return product, {"message": NOT_FOUND.format("store")}, 401
 
         if store and not claim["is_admin"] and claim["userid"] != store.user_id:
-            return store, {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
-        return store, False, 200
+            return product, {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
+        return product, False, 200
 
     @classmethod
     def check_foreignkey_exist(cls, store_data):
