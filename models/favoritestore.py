@@ -7,7 +7,7 @@ class FavStoreModel(db.Model, ModelsHelper):
     # class variable
     id = db.Column(db.Integer, primary_key=True, unique=True)
     store_id = db.Column(db.String(50), db.ForeignKey("store.id"))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.String(50), db.ForeignKey("user.id"))
 
     @classmethod
     def find_by_store_id(cls, store_id=None):

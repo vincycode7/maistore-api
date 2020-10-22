@@ -8,7 +8,7 @@ class CartSystemModel(db.Model, ModelsHelper):
     # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
     statustime = db.Column(db.DateTime, index=False, unique=False, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.String(50), db.ForeignKey("user.id"), nullable=False)
     store_id = db.Column(db.String(50), db.ForeignKey("store.id"), nullable=False)
     status = db.Column(db.Integer, db.ForeignKey("cartstatus.id"), nullable=False)
 
