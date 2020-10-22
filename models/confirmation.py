@@ -15,7 +15,7 @@ class ConfirmationModel(db.Model, ModelsHelper):
     # columns
     id = db.Column(db.String(50), primary_key=True, unique=True)
     expire_at = db.Column(db.Integer, unique=False, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.String(50), db.ForeignKey("user.id"), nullable=False)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
 
     # merge (for sqlalchemy to link tables)
