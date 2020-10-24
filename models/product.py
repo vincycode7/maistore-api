@@ -197,5 +197,5 @@ class ProductModel(db.Model, ModelsHelper):
         return user
 
 # TODO: Do pagenate in response, for product.
-# TODO: check if i did put request side of product
-# TODO: check if i did delete auth side of product
+# TODO: check if i did put request side of product (i think)
+# TODO: check if i did delete auth side of product (i think is checked)
