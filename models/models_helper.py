@@ -44,6 +44,22 @@ class ModelsHelper:
         return result
 
     @classmethod
+    def find_all_pagenate(
+                            cls,
+                            page=None, 
+                            per_page=None, 
+                            error_out=True, 
+                            max_per_page=None
+                        ):
+        result = cls.query.pagenate(
+                                    page=page, 
+                                    per_page=per_page, 
+                                    error_out=error_out, 
+                                    max_per_page=max_per_page
+                                )
+        return result
+
+    @classmethod
     def find_by_productid_and_colorid(cls, productid=None, colorid=None):
         from models.productcol import ProductColorModel
         result = ProductColorModel.query.filter_by(

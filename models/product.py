@@ -8,7 +8,8 @@ def create_id(context):
 
 # helper functions
 def is_avail(context):
-    quantity = context.get_current_parameters().get("quantity", 0)
+    quantity = context.current_parameters.get("quantity",0)
+    print(f"context: {context.current_parameters}")
     if quantity > 0:
         print(f"quantity --> {quantity}")
         return True
