@@ -19,14 +19,18 @@ class ProductColorModel(db.Model, ModelsHelper):
             productid=productcol_data.get("productid", None),
             colorid=productcol_data.get("colorid", None),
         )
-        product = cls.find_product_by_id(productid=productcol_data.get("productid", None))
+        product = cls.find_product_by_id(
+            productid=productcol_data.get("productid", None)
+        )
         color = cls.find_color_by_id(colorid=productcol_data.get("colorid", None))
         return productcol, product, color
 
     @classmethod
     def post_unique_already_exist(cls, claim, productcol_data):
         # check if input don't exist before
-        productcol, product, color = cls.check_unique_inputs(productcol_data=productcol_data)
+        productcol, product, color = cls.check_unique_inputs(
+            productcol_data=productcol_data
+        )
         user = cls.find_user_by_id(userid=claim.get("userid", None))
 
         # check if productcol to be inserted exist
@@ -37,7 +41,7 @@ class ProductColorModel(db.Model, ModelsHelper):
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("post product color")},
                 401,
             )
-                # check if product to input exist
+            # check if product to input exist
         if not product:
             return (
                 {"message": NOT_FOUND.format("product id", product)},
@@ -72,7 +76,9 @@ class ProductColorModel(db.Model, ModelsHelper):
         productcolorid_ = cls.find_by_id(id=productcolorid)
 
         # check if input don't exist before
-        productcolor, product, color = cls.check_unique_inputs(productcol_data=productcol_data)
+        productcolor, product, color = cls.check_unique_inputs(
+            productcol_data=productcol_data
+        )
 
         # check if user is admin or root user
         if not claim or not user or not claim["is_admin"] or not claim["is_root"]:
@@ -112,7 +118,11 @@ class ProductColorModel(db.Model, ModelsHelper):
             if product and product.store.user.id != user.id:
                 return (
                     None,
-                    {"message": CANNOT_INSERT.format("product id", "it does not belong to user.")},
+                    {
+                        "message": CANNOT_INSERT.format(
+                            "product id", "it does not belong to user."
+                        )
+                    },
                     401,
                 )
 

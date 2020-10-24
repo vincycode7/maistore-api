@@ -99,16 +99,16 @@ class User(Resource):
         if user:
             for each in data.keys():
                 user.__setattr__(each, data[each])
-        # else:
-        #     # check if data already exist
-        #     unique_input_error, status = UserModel.post_unique_already_exist(
-        #         claim, data
-        #     )
-        #     if unique_input_error:
-        #         return unique_input_error, status
-        #     user = UserModel(**data)
+            # else:
+            #     # check if data already exist
+            #     unique_input_error, status = UserModel.post_unique_already_exist(
+            #         claim, data
+            #     )
+            #     if unique_input_error:
+            #         return unique_input_error, status
+            #     user = UserModel(**data)
 
-        # save
+            # save
             try:
                 user.save_to_db()
                 return schema.dump(user), 201
@@ -117,9 +117,7 @@ class User(Resource):
                 return {
                     "message": ERROR_WHILE_INSERTING.format("item")
                 }, 500  # Internal server error
-        return {
-            "message": NOT_FOUND.format("user id")
-        }, 400  # 400 is for bad request
+        return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request
 
     # use for authentication before calling post
     @classmethod

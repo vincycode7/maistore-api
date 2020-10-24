@@ -8,7 +8,7 @@ def create_id(context):
 
 # helper functions
 def is_avail(context):
-    quantity = context.current_parameters.get("quantity",0)
+    quantity = context.current_parameters.get("quantity", 0)
     print(f"context: {context.current_parameters}")
     if quantity > 0:
         print(f"quantity --> {quantity}")
@@ -96,21 +96,31 @@ class ProductModel(db.Model, ModelsHelper):
     @classmethod
     def check_unique_inputs(cls, product_data):
         store = cls.find_store_by_id(storeid=product_data.get("store_id", None))
-        productcat = cls.find_productcat_by_id(productcatid=product_data.get("productcat_id", None))
-        productsubcat = cls.find_productsubcat_by_id(productsubcatid=product_data.get("productsubcat_id", None))
+        productcat = cls.find_productcat_by_id(
+            productcatid=product_data.get("productcat_id", None)
+        )
+        productsubcat = cls.find_productsubcat_by_id(
+            productsubcatid=product_data.get("productsubcat_id", None)
+        )
         size = cls.find_size_by_id(sizeid=product_data.get("size_id", None))
         return store, productcat, productsubcat, size
 
     @classmethod
     def post_unique_already_exist(cls, claim, product_data):
-        store, productcat, productsubcat, size = cls.check_unique_inputs(product_data=product_data)
+        store, productcat, productsubcat, size = cls.check_unique_inputs(
+            product_data=product_data
+        )
 
         # check if store exist
         if not store:
             return {"message": NOT_FOUND.format("store")}, 401
 
         # check if user is admin or normal user
-        if not claim["is_admin"] or not claim["is_root"]  or claim["userid"] != store.user.id:
+        if (
+            not claim["is_admin"]
+            or not claim["is_root"]
+            or claim["userid"] != store.user.id
+        ):
             return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")}, 401
 
         # check productcatid
@@ -123,17 +133,20 @@ class ProductModel(db.Model, ModelsHelper):
         if not productsubcat:
             return {"message": NOT_FOUND.format("productsubcat")}, 401
 
-        #check if size is valid
+        # check if size is valid
         # check if size exist
         if not size:
             return {"message": NOT_FOUND.format("size")}, 401
 
-
         # check if productsubcat is in product cat
-        print("yes yes --> ", productsubcat.productcat.id , productcat.id)
+        print("yes yes --> ", productsubcat.productcat.id, productcat.id)
         if productsubcat.productcat.id != productcat.id:
-            return {"message" : NOT_FOUND_IN.format("product sub category", "product category")}, 404
-            
+            return {
+                "message": NOT_FOUND_IN.format(
+                    "product sub category", "product category"
+                )
+            }, 404
+
         # check if store id is for current user
         return False, 200
 
@@ -141,7 +154,9 @@ class ProductModel(db.Model, ModelsHelper):
     def put_unique_already_exist(cls, claim, productid, product_data):
         # check user permission, edit and parse data
         product = cls.find_by_id(id=productid)
-        store, productcat, productsubcat, size = cls.check_unique_inputs(product_data=product_data)
+        store, productcat, productsubcat, size = cls.check_unique_inputs(
+            product_data=product_data
+        )
 
         # check if product exist
         if not product:
@@ -152,12 +167,29 @@ class ProductModel(db.Model, ModelsHelper):
             return None, {"message": NOT_FOUND.format("store")}, 401
 
         # check if user is admin or normal user
-        if not claim["is_admin"] or not claim["is_root"]  or claim["userid"] != store.user.id:
-            return None, {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")}, 401
+        if (
+            not claim["is_admin"]
+            or not claim["is_root"]
+            or claim["userid"] != store.user.id
+        ):
+            return (
+                None,
+                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")},
+                401,
+            )
 
         # check if product is in store
         if product.store.id != store.id:
-            return None, {"message" : NOT_EQUAL.format("product store id -- " + str(product.store.id ), "storeid -- " + str(store.id))}, 401
+            return (
+                None,
+                {
+                    "message": NOT_EQUAL.format(
+                        "product store id -- " + str(product.store.id),
+                        "storeid -- " + str(store.id),
+                    )
+                },
+                401,
+            )
 
         # check productcatid
         # check if productcat exist
@@ -169,15 +201,22 @@ class ProductModel(db.Model, ModelsHelper):
         if not productsubcat:
             return None, {"message": NOT_FOUND.format("productsubcat")}, 401
 
-        #check if size is valid
+        # check if size is valid
         # check if size exist
         if not size:
             return None, {"message": NOT_FOUND.format("size")}, 401
 
-
         # check if productsubcat is in product cat
         if productsubcat.productcat.id != productcat.id:
-            return None, {"message" : NOT_FOUND_IN.format("product sub category", "product category")}, 404
+            return (
+                None,
+                {
+                    "message": NOT_FOUND_IN.format(
+                        "product sub category", "product category"
+                    )
+                },
+                404,
+            )
 
         return product, False, 200
 
@@ -197,6 +236,7 @@ class ProductModel(db.Model, ModelsHelper):
         user = cls.user.find_by_id(store_data["user_id"])
         return user
 
-# TODO: Do pagenate in response, for product.
-# TODO: check if i did put request side of product (i think)
-# TODO: check if i did delete auth side of product (i think is checked)
+
+# TODO: Do pagenate in response, for product (i think it's checked)
+# TODO: check if i did put request side of product (i think it's checked)
+# TODO: check if i did delete auth side of product (i think it's checked)

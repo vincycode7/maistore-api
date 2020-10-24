@@ -101,9 +101,10 @@ class ProductColor(Resource):
             return {"message": NOT_FOUND.format("product color")}, 401
 
         if (
-            not claim["is_admin"] or not claim["is_root"]
+            not claim["is_admin"]
+            or not claim["is_root"]
             or productcolor.product.store.user.id != claim["userid"]
-            ):
+        ):
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product color")
             }, 401

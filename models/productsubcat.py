@@ -6,7 +6,7 @@ class ProductSubCatModel(db.Model, ModelsHelper):
 
     # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    #gatta change this to productcatid
+    # gatta change this to productcatid
     categorycatid = db.Column(
         db.Integer, db.ForeignKey("productcat.id"), nullable=False
     )

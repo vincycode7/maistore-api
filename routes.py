@@ -8,8 +8,8 @@ from resources.user import (
     UserLogout,
 )
 from resources.confirmation import Confirmation, ConfirmationByUser
-from resources.store import Store, StoreList
-from resources.product import Product, ProductList
+from resources.store import Store, StoreList, StorePagenate
+from resources.product import Product, ProductList, ProductPagenate
 from resources.productcat import ProductCatList, ProductCat
 from resources.productsize import ProductSizeList, ProductSize
 from resources.productcol import ProductColorList, ProductColor
@@ -47,7 +47,15 @@ route_path = [
         [api_version + "/store/<string:storeid>", api_version + "/store"],
     ],  # https://maistore.com/store/1
     [StoreList, [api_version + "/stores"]],  # https://maistore.com/store
+    [
+        StorePagenate,
+        [api_version + "/stores/pagenate/<int:page>"],
+    ],  # https://maistore.com/stores/pagenate/1
     [ProductList, [api_version + "/products"]],  # https://maistore.com/product
+    [
+        ProductPagenate,
+        [api_version + "/products/pagenate/<int:page>"],
+    ],  # https://maistore.com/products/pagenate/1
     [
         Product,
         [api_version + "/product/<string:productid>", api_version + "/product"],
@@ -90,6 +98,9 @@ route_path = [
     ],  # https://maistore.com/productcolors
     [
         ProductColor,
-        [api_version + "/productcolor", api_version + "/productcolor/<string:productcolorid>"],
+        [
+            api_version + "/productcolor",
+            api_version + "/productcolor/<string:productcolorid>",
+        ],
     ],  # https://maistore.com/productcolor
 ]

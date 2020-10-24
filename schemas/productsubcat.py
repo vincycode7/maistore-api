@@ -3,9 +3,20 @@ from models.productsubcat import ProductSubCatModel
 from schemas.productcat import ProductCatSchema
 from marshmallow_sqlalchemy import fields
 
+
 class ProductSubCatSchema(ma.SQLAlchemyAutoSchema):
-    productcat = fields.Nested(lambda: ProductCatSchema( only=("desc","id")))
-    productsize = fields.Nested("ProductSizeSchema", many=True, exclude=("productcat","products", "productcatid","productsubcat",))
+    productcat = fields.Nested(lambda: ProductCatSchema(only=("desc", "id")))
+    productsize = fields.Nested(
+        "ProductSizeSchema",
+        many=True,
+        exclude=(
+            "productcat",
+            "products",
+            "productcatid",
+            "productsubcat",
+        ),
+    )
+
     class Meta:
         model = ProductSubCatModel
         load_only = ("categorycatid",)

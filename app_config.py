@@ -33,7 +33,7 @@ def create_usr_from_root(app):
         UserModel,
         ERROR_OCCURED_CREATING_ROOT_USR,
         ERROR_OCCURED_CONFIRMING_ROOT_USR,
-        ALREADY_EXISTS
+        ALREADY_EXISTS,
     )
 
     data_usr = {
@@ -49,7 +49,10 @@ def create_usr_from_root(app):
         root_usr = UserModel(**data_usr)
         email, user = UserModel.check_unique_inputs(user_data=data_usr)
         if email or user:
-            print("Error creating root user --> " + ALREADY_EXISTS.format("user or email",""))
+            print(
+                "Error creating root user --> "
+                + ALREADY_EXISTS.format("user or email", "")
+            )
             return
 
         root_usr.save_to_db()

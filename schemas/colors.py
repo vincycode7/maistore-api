@@ -7,9 +7,7 @@ class ColorsSchema(ma.SQLAlchemyAutoSchema):
     productcol = fields.Nested(
         "ProductColorSchema",
         many=True,
-        exclude=(
-            "colors",
-        ),
+        exclude=("colors",),
     )
 
     class Meta:

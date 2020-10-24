@@ -55,8 +55,8 @@ class Store(Resource):
         if store:
             for each in data.keys():
                 store.__setattr__(each, data[each])  # update
-        # else:
-        #     store = StoreModel(**data)
+            # else:
+            #     store = StoreModel(**data)
 
             try:
                 print("after this")
@@ -68,9 +68,7 @@ class Store(Resource):
                 return {
                     "message": ERROR_WHILE_INSERTING.format("store")
                 }, 500  # Internal server error
-        return {
-            "message": NOT_FOUND.format("store id")
-        }, 400  # 400 is for bad request
+        return {"message": NOT_FOUND.format("store id")}, 400  # 400 is for bad request
 
     @classmethod
     @fresh_jwt_required
@@ -94,4 +92,22 @@ class StoreList(Resource):
     @classmethod
     def get(cls):
         stores = StoreModel.find_all()
-        return {"stores": schema_many.dump(stores)}
+        if stores:
+            return {"stores": schema_many.dump(stores)}, 201
+
+        return {"message": NOT_FOUND.format("stores")}, 400
+
+# class to get to get stores using pagenate
+class StorePagenate(Resource):
+    # use for authentication before calling get
+    @classmethod
+    def get(cls, page=1):
+        args_ = StoreModel.get_data_() 
+        stores = StoreModel.find_all_pagenate(page=page, **args_)
+        items = stores.pop("items", None)
+        stores["stores"] = schema_many.dump(items)
+
+        if stores.get("stores", None):
+            return stores, 200
+
+        return {"message": NOT_FOUND.format("stores")}, 400

@@ -78,14 +78,18 @@ class StoreModel(db.Model, ModelsHelper):
         storename, user = cls.check_unique_inputs(store_data=store_data)
 
         # check if admin is trying to change store's user_id
-        if not claim["is_admin"] or not claim["is_root"] or claim["userid"] != store_data["user_id"]:
+        if (
+            not claim["is_admin"]
+            or not claim["is_root"]
+            or claim["userid"] != store_data["user_id"]
+        ):
             return (
                 None,
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("change store user id")},
                 401,
             )
 
-        #check if store exist
+        # check if store exist
         if not store:
             return None, {"message": NOT_FOUND.format("store id")}, 400
 
@@ -94,7 +98,11 @@ class StoreModel(db.Model, ModelsHelper):
             return None, {"message": NOT_FOUND.format("user id")}, 400
 
         # check if user own store
-        if store and (store.user_id != claim["userid"] or not claim["is_admin"] or not claim["is_root"]):
+        if store and (
+            store.user_id != claim["userid"]
+            or not claim["is_admin"]
+            or not claim["is_root"]
+        ):
             return (
                 None,
                 {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},

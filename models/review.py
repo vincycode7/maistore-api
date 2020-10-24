@@ -21,7 +21,11 @@ class ReviewModel(db.Model, ModelsHelper):
         nullable=False,
     )
     user_id = db.Column(
-        db.String(50), db.ForeignKey("user.id"), index=False, unique=False, nullable=False
+        db.String(50),
+        db.ForeignKey("user.id"),
+        index=False,
+        unique=False,
+        nullable=False,
     )
     product_rating = db.Column(
         db.Integer, db.ForeignKey("ratingtype.id"), index=False, unique=False
