@@ -66,14 +66,14 @@ class UserList(Resource):
 class User(Resource):
     @classmethod
     @jwt_required
-    def get(cls, userid=None):
+    def get(cls, user_id=None):
         claim = get_jwt_claims()
-        if not claim["is_admin"] and claim["userid"] != userid:
+        if not claim["is_admin"] and claim["userid"] != user_id:
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get this users")
             }, 401
 
-        user = UserModel.find_by_id(id=userid)
+        user = UserModel.find_by_id(id=user_id)
         if user:
             return {"user": schema.dump(user)}, 201
         return {"message": NOT_FOUND.format("user")}, 400
@@ -81,13 +81,13 @@ class User(Resource):
     # use for authentication before calling post
     @classmethod
     @jwt_required
-    def put(cls, userid):
+    def put(cls, user_id):
         claim = get_jwt_claims()
         data = schema.load(UserModel.get_data_())
 
         # confirm the unique key to be same with the product route
         user, unique_input_error, status = UserModel.put_unique_already_exist(
-            claim=claim, userid=userid, user_data=data
+            claim=claim, user_id=user_id, user_data=data
         )
         if unique_input_error:
             return unique_input_error, status
@@ -95,19 +95,9 @@ class User(Resource):
             data["admin"] = False
 
         # if user already exist update the dictionary
-        print(f" user--> {user}")
         if user:
             for each in data.keys():
                 user.__setattr__(each, data[each])
-            # else:
-            #     # check if data already exist
-            #     unique_input_error, status = UserModel.post_unique_already_exist(
-            #         claim, data
-            #     )
-            #     if unique_input_error:
-            #         return unique_input_error, status
-            #     user = UserModel(**data)
-
             # save
             try:
                 user.save_to_db()
@@ -122,13 +112,13 @@ class User(Resource):
     # use for authentication before calling post
     @classmethod
     @jwt_required
-    def delete(cls, userid):
+    def delete(cls, user_id):
         claim = get_jwt_claims()
-        user = UserModel.find_by_id(id=userid)
+        user = UserModel.find_by_id(id=user_id)
         if claim and user:
             if not claim["is_root"] and user.rootusr:
                 return {"message": CANNOT_DELETE_ROOT}, 401
-            if not claim["is_admin"] and claim["userid"] != userid:
+            if not claim["is_admin"] and claim["user_id"] != user_id:
                 return {
                     "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete users")
                 }, 401

@@ -13,15 +13,15 @@ class ProductSubCatList(Resource):
     def get(cls):
         productsubcats = ProductSubCatModel.find_all()
         if productsubcats:
-            return {"users": schema_many.dump(productsubcats)}, 201
+            return {"product_subcategorys": schema_many.dump(productsubcats)}, 201
         return {"message": NOT_FOUND.format("productsubcats")}, 400
 
 
 # class to add product subcategories
 class ProductSubCat(Resource):
     @jwt_required
-    def get(self, subcatid):
-        productsubcat = ProductSubCatModel.find_by_id(id=subcatid)
+    def get(self, subcat_id):
+        productsubcat = ProductSubCatModel.find_by_id(id=subcat_id)
         if productsubcat:
             return {"product_subcategory": schema.dump(productsubcat)}, 201
         return {"message": NOT_FOUND.format("productsubcats")}, 400
@@ -51,7 +51,7 @@ class ProductSubCat(Resource):
         return schema.dump(productsubcat), 201
 
     @jwt_required
-    def put(self, subcatid):
+    def put(self, subcat_id):
         claim = get_jwt_claims()
         data = schema.load(ProductSubCatModel.get_data_())
 
@@ -61,13 +61,13 @@ class ProductSubCat(Resource):
             unique_input_error,
             status,
         ) = ProductSubCatModel.put_unique_already_exist(
-            claim=claim, subcatid=subcatid, subcat_data=data
+            claim=claim, subcat_id=subcat_id, subcat_data=data
         )
 
         if unique_input_error:
             return unique_input_error, status
 
-        # if user already exist update the dictionary
+        # if product_subcategory already exist update the dictionary
         if productsubcat:
             for each in data.keys():
                 productsubcat.__setattr__(each, data[each])
@@ -92,7 +92,7 @@ class ProductSubCat(Resource):
         }, 400  # 400 is for bad request
 
     @jwt_required
-    def delete(self, subcatid):
+    def delete(self, subcat_id):
         claim = get_jwt_claims()
         if not claim["is_admin"] or not claim["is_root"]:
             return {
@@ -100,7 +100,7 @@ class ProductSubCat(Resource):
                     "delete product subcategory"
                 )
             }, 401
-        productsubcat = ProductSubCatModel.find_by_id(id=subcatid)
+        productsubcat = ProductSubCatModel.find_by_id(id=subcat_id)
         if productsubcat:
             productsubcat.delete_from_db()
             return {"message": DELETED.format("Product subcategory")}, 200  # 200 ok

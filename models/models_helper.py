@@ -81,66 +81,66 @@ class ModelsHelper:
         return result
 
     @classmethod
-    def find_by_productid_and_colorid(cls, productid=None, colorid=None):
+    def find_by_productid_and_colorid(cls, product_id=None, color_id=None):
         from models.productcol import ProductColorModel
 
         result = ProductColorModel.query.filter_by(
-            productid=productid, colorid=colorid
+            product_id=product_id, color_id=color_id
         ).first()
         return result
 
     @classmethod
     def find_by_prodcatid_prodsubcatid_desc(
-        cls, productcatid=None, productsubcatid=None, desc=None
+        cls, productcat_id=None, productsubcat_id=None, desc=None
     ):
         from models.productsize import ProductSizeModel
 
         result = ProductSizeModel.query.filter_by(
-            productcatid=productcatid, productsubcatid=productsubcatid, desc=desc
+            productcat_id=productcat_id, productsubcat_id=productsubcat_id, desc=desc
         ).first()
         return result
 
     @classmethod
-    def find_user_by_id(cls, userid):
+    def find_user_by_id(cls, user_id):
         from models.user import UserModel
 
-        return UserModel.find_by_id(id=userid)
+        return UserModel.find_by_id(id=user_id)
 
     @classmethod
-    def find_productcat_by_id(cls, productcatid):
+    def find_productcat_by_id(cls, productcat_id):
         from models.productcat import ProductCatModel
 
-        return ProductCatModel.find_by_id(id=productcatid)
+        return ProductCatModel.find_by_id(id=productcat_id)
 
     @classmethod
-    def find_productsubcat_by_id(cls, productsubcatid):
+    def find_productsubcat_by_id(cls, productsubcat_id):
         from models.productsubcat import ProductSubCatModel
 
-        return ProductSubCatModel.find_by_id(id=productsubcatid)
+        return ProductSubCatModel.find_by_id(id=productsubcat_id)
 
     @classmethod
-    def find_store_by_id(cls, storeid):
+    def find_store_by_id(cls, store_id):
         from models.store import StoreModel
 
-        return StoreModel.find_by_id(id=storeid)
+        return StoreModel.find_by_id(id=store_id)
 
     @classmethod
-    def find_size_by_id(cls, sizeid):
+    def find_size_by_id(cls, size_id):
         from models.productsize import ProductSizeModel
 
-        return ProductSizeModel.find_by_id(id=sizeid)
+        return ProductSizeModel.find_by_id(id=size_id)
 
     @classmethod
-    def find_product_by_id(cls, productid):
+    def find_product_by_id(cls, product_id):
         from models.product import ProductModel
 
-        return ProductModel.find_by_id(id=productid)
+        return ProductModel.find_by_id(id=product_id)
 
     @classmethod
-    def find_color_by_id(cls, colorid):
+    def find_color_by_id(cls, color_id):
         from models.colors import ColorsModel
 
-        return ColorsModel.find_by_id(id=colorid)
+        return ColorsModel.find_by_id(id=color_id)
 
     @classmethod
     def find_by_id(cls, id):

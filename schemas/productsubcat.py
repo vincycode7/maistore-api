@@ -12,14 +12,14 @@ class ProductSubCatSchema(ma.SQLAlchemyAutoSchema):
         exclude=(
             "productcat",
             "products",
-            "productcatid",
+            "productcat_id",
             "productsubcat",
         ),
     )
 
     class Meta:
         model = ProductSubCatModel
-        load_only = ("categorycatid",)
+        load_only = ("categorycat_id",)
         dump_only = ("id",)
         include_fk = True
         include_relationships = True

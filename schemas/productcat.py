@@ -19,7 +19,7 @@ class ProductCatSchema(ma.SQLAlchemyAutoSchema):
         exclude=(
             "productcat",
             "products",
-            "productcatid",
+            "productcat_id",
             "productsubcat",
         ),
     )

@@ -173,8 +173,8 @@ class UserModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, userid, user_data):
-        user = cls.find_by_id(id=userid)
+    def put_unique_already_exist(cls, claim, user_id, user_data):
+        user = cls.find_by_id(id=user_id)
         email, phoneno = cls.check_unique_inputs(user_data=user_data)
 
         # check user permission, edit and parse data

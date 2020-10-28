@@ -22,7 +22,7 @@ class StoreModel(db.Model, ModelsHelper):
     created = db.Column(
         db.DateTime, index=False, unique=False, nullable=False, default=dt.now
     )
-    country = db.Column(db.String(30), nullable=False)
+    country = db.Column(db.String(30), nullable=True)
 
     # merge (for sqlalchemy to link tables)
     products = db.relationship(
@@ -52,12 +52,12 @@ class StoreModel(db.Model, ModelsHelper):
     @classmethod
     def check_unique_inputs(cls, store_data):
         storename = cls.find_by_name(storename=store_data.get("storename", None))
-        user = cls.find_user_by_id(userid=store_data.get("user_id", None))
+        user = cls.find_user_by_id(user_id=store_data.get("user_id", None))
         return storename, user
 
     @classmethod
     def post_unique_already_exist(cls, claim, store_data):
-        if not claim["is_admin"] and claim["userid"] != store_data["userid"]:
+        if not claim["is_admin"] and claim["userid"] != store_data["user_id"]:
             return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")}, 401
 
         storename, user = cls.check_unique_inputs(store_data=store_data)
@@ -72,9 +72,9 @@ class StoreModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, storeid, store_data):
+    def put_unique_already_exist(cls, claim, store_id, store_data):
         # check user permission, edit and parse data
-        store = cls.find_by_id(id=storeid)
+        store = cls.find_by_id(id=store_id)
         storename, user = cls.check_unique_inputs(store_data=store_data)
 
         # check if admin is trying to change store's user_id
@@ -120,13 +120,11 @@ class StoreModel(db.Model, ModelsHelper):
                 },
                 400,
             )  # 400 is for bad request
-
-        # print(f"dope {storename.user_id} {storename.user_id != claim['userid']}")
         return store, False, 200
 
     @classmethod
-    def delete_auth(cls, claim, storeid):
-        store = StoreModel.find_by_id(storeid)
+    def delete_auth(cls, claim, store_id):
+        store = StoreModel.find_by_id(store_id)
 
         if not store:
             return store, {"message": NOT_FOUND.format("store")}, 401

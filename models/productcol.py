@@ -6,23 +6,23 @@ class ProductColorModel(db.Model, ModelsHelper):
 
     # class variables
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    productid = db.Column(
+    product_id = db.Column(
         db.String(50), db.ForeignKey("product.id"), unique=False, nullable=False
     )
-    colorid = db.Column(
+    color_id = db.Column(
         db.Integer, db.ForeignKey("colors.id"), unique=False, nullable=False
     )
 
     @classmethod
     def check_unique_inputs(cls, productcol_data=None):
         productcol = cls.find_by_productid_and_colorid(
-            productid=productcol_data.get("productid", None),
-            colorid=productcol_data.get("colorid", None),
+            product_id=productcol_data.get("product_id", None),
+            color_id=productcol_data.get("color_id", None),
         )
         product = cls.find_product_by_id(
-            productid=productcol_data.get("productid", None)
+            product_id=productcol_data.get("product_id", None)
         )
-        color = cls.find_color_by_id(colorid=productcol_data.get("colorid", None))
+        color = cls.find_color_by_id(color_id=productcol_data.get("color_id", None))
         return productcol, product, color
 
     @classmethod
@@ -31,7 +31,7 @@ class ProductColorModel(db.Model, ModelsHelper):
         productcol, product, color = cls.check_unique_inputs(
             productcol_data=productcol_data
         )
-        user = cls.find_user_by_id(userid=claim.get("userid", None))
+        user = cls.find_user_by_id(user_id=claim.get("userid", None))
 
         # check if productcol to be inserted exist
         # check if the product to be inserted is in the user's store
@@ -59,9 +59,9 @@ class ProductColorModel(db.Model, ModelsHelper):
                 {
                     "message": ALREADY_EXISTS.format(
                         "product and color",
-                        productcol_data.get("productid", None)
+                        productcol_data.get("product_id", None)
                         + " and "
-                        + str(productcol_data.get("colorid", None)),
+                        + str(productcol_data.get("color_id", None)),
                     )
                 },
                 400,
@@ -69,11 +69,11 @@ class ProductColorModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, productcolorid, productcol_data):
-        user = cls.find_user_by_id(userid=claim.get("userid", None))
+    def put_unique_already_exist(cls, claim, productcolor_id, productcol_data):
+        user = cls.find_user_by_id(user_id=claim.get("userid", None))
 
         # productcol to edit if it exist
-        productcolorid_ = cls.find_by_id(id=productcolorid)
+        productcolorid_ = cls.find_by_id(id=productcolor_id)
 
         # check if input don't exist before
         productcolor, product, color = cls.check_unique_inputs(
@@ -134,9 +134,9 @@ class ProductColorModel(db.Model, ModelsHelper):
                     {
                         "message": ALREADY_EXISTS.format(
                             "product and color",
-                            productcol_data.get("productid", None)
+                            productcol_data.get("product_id", None)
                             + " and "
-                            + productcol_data.get("colorid", None),
+                            + productcol_data.get("color_id", None),
                         )
                     },
                     400,

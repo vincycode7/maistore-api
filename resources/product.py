@@ -40,9 +40,9 @@ class Product(Resource):
 
     # use for authentication before calling get
     @classmethod
-    def get(cls, productid):
+    def get(cls, product_id):
 
-        product = ProductModel.find_by_id(id=productid)
+        product = ProductModel.find_by_id(id=product_id)
 
         if product:
             return {"product": schema.dump(product)}, 201
@@ -68,7 +68,7 @@ class Product(Resource):
         try:
             product.save_to_db()
         except Exception as e:
-            print(e)
+            print(f"error is {e}")
             return {
                 "message": ERROR_WHILE_INSERTING.format("product")
             }, 500  # Internal server error
@@ -77,8 +77,8 @@ class Product(Resource):
     # use for authentication before calling post
     @classmethod
     @jwt_required
-    def delete(cls, productid, userid=None, password=None):
-        product = ProductModel.find_by_id(id=productid)
+    def delete(cls, product_id):
+        product = ProductModel.find_by_id(id=product_id)
         claim = get_jwt_claims()
 
         if not product:
@@ -94,18 +94,18 @@ class Product(Resource):
         try:
             product.delete_from_db()
         except Exception as e:
-            print(e)
+            print(f"error is {e}")
             return {"message": INTERNAL_ERROR}, 500
         return {"message": DELETED.format("product")}, 200  # 200 ok
 
     # use for authentication before calling post
     @classmethod
     @jwt_required
-    def put(cls, productid):
+    def put(cls, product_id):
         claim = get_jwt_claims()
         data = schema.load(ProductModel.get_data_())
         product, unique_input_error, status = ProductModel.put_unique_already_exist(
-            claim=claim, productid=productid, product_data=data
+            claim=claim, product_id=product_id, product_data=data
         )
 
         if unique_input_error:

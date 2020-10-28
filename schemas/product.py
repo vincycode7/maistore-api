@@ -31,7 +31,7 @@ class ProductSchema(ma.SQLAlchemyAutoSchema):
         many=True,
         exclude=(
             "product",
-            "productid",
+            "product_id",
         ),
     )
 

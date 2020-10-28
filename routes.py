@@ -40,11 +40,11 @@ route_path = [
     ],  # https://mistore.com/confirmation/user/1
     [UserLogin, [api_version + "/login"]],  # https://mistore.com/register
     [UserLogout, [api_version + "/logout"]],  # https://mistore.com/register
-    [User, [api_version + "/user/<string:userid>"]],  # https://mistore.com/user/1
+    [User, [api_version + "/user/<string:user_id>"]],  # https://mistore.com/user/1
     [UserList, [api_version + "/users"]],  # https://mistore.com/users
     [
         Store,
-        [api_version + "/store/<string:storeid>", api_version + "/store"],
+        [api_version + "/store/<string:store_id>", api_version + "/store"],
     ],  # https://maistore.com/store/1
     [StoreList, [api_version + "/stores"]],  # https://maistore.com/store
     [
@@ -58,7 +58,7 @@ route_path = [
     ],  # https://maistore.com/products/pagenate/1
     [
         Product,
-        [api_version + "/product/<string:productid>", api_version + "/product"],
+        [api_version + "/product/<string:product_id>", api_version + "/product"],
     ],  # https://mistore.com/product/bags
     [
         ProductCatList,
@@ -66,7 +66,7 @@ route_path = [
     ],  # https://maistore.com/productcats
     [
         ProductCat,
-        [api_version + "/productcat", api_version + "/productcat/<string:catid>"],
+        [api_version + "/productcat", api_version + "/productcat/<string:cat_id>"],
     ],  # https://maistore.com/productcat
     [
         ProductSubCatList,
@@ -76,7 +76,7 @@ route_path = [
         ProductSubCat,
         [
             api_version + "/productsubcat",
-            api_version + "/productsubcat/<string:subcatid>",
+            api_version + "/productsubcat/<string:subcat_id>",
         ],
     ],  # https://maistore.com/productsubcat
     [
@@ -85,12 +85,12 @@ route_path = [
     ],  # https://maistore.com/productsizes
     [
         ProductSize,
-        [api_version + "/productsize", api_version + "/productsize/<string:sizeid>"],
+        [api_version + "/productsize", api_version + "/productsize/<string:size_id>"],
     ],  # https://maistore.com/productsizes
     [ColorList, [api_version + "/colors"]],  # https://maistore.com/colors
     [
         Color,
-        [api_version + "/color", api_version + "/color/<string:colorid>"],
+        [api_version + "/color", api_version + "/color/<string:color_id>"],
     ],  # https://maistore.com/color
     [
         ProductColorList,
@@ -100,7 +100,13 @@ route_path = [
         ProductColor,
         [
             api_version + "/productcolor",
-            api_version + "/productcolor/<string:productcolorid>",
+            api_version + "/productcolor/<string:productcolor_id>",
         ],
     ],  # https://maistore.com/productcolor
 ]
+
+# i want to comment all the Resources i have created
+# work on storelocation
+# work on storeemail
+# work on storephone
+# work on storefav

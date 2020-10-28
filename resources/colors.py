@@ -22,8 +22,8 @@ class ColorList(Resource):
 # class to add colors
 class Color(Resource):
     @jwt_required
-    def get(self, colorid):
-        color = ColorsModel.find_by_id(id=colorid)
+    def get(self, color_id):
+        color = ColorsModel.find_by_id(id=color_id)
         if color:
             return {"color": schema.dump(color)}, 201
         return {"message": NOT_FOUND.format("color")}, 400
@@ -51,13 +51,13 @@ class Color(Resource):
         return schema.dump(color), 201
 
     @jwt_required
-    def put(self, colorid):
+    def put(self, color_id):
         claim = get_jwt_claims()
         data = schema.load(ColorsModel.get_data_())
 
         # confirm the unique key to be same with the product route
         color, unique_input_error, status = ColorsModel.put_unique_already_exist(
-            claim=claim, colorid=colorid, color_data=data
+            claim=claim, color_id=color_id, color_data=data
         )
 
         if unique_input_error:
@@ -86,11 +86,11 @@ class Color(Resource):
         return {"message": NOT_FOUND.format("color")}, 400  # 400 is for bad request
 
     @jwt_required
-    def delete(self, colorid):
+    def delete(self, color_id):
         claim = get_jwt_claims()
         if not claim["is_admin"] or not claim["is_root"]:
             return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("delete color")}, 401
-        color = ColorsModel.find_by_id(id=colorid)
+        color = ColorsModel.find_by_id(id=color_id)
         if color:
             color.delete_from_db()
             return {"message": DELETED.format("color")}, 200  # 200 ok

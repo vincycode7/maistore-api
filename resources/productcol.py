@@ -22,8 +22,8 @@ class ProductColorList(Resource):
 # class to add product colors
 class ProductColor(Resource):
     @jwt_required
-    def get(self, productcolorid):
-        productcolor = ProductColorModel.find_by_id(id=productcolorid)
+    def get(self, productcolor_id):
+        productcolor = ProductColorModel.find_by_id(id=productcolor_id)
         if productcolor:
             return {"productcolor": schema.dump(productcolor)}, 201
         return {"message": NOT_FOUND.format("productcolor")}, 400
@@ -53,7 +53,7 @@ class ProductColor(Resource):
         return schema.dump(productcolor), 201
 
     @jwt_required
-    def put(self, productcolorid):
+    def put(self, productcolor_id):
         claim = get_jwt_claims()
         data = schema.load(ProductColorModel.get_data_())
 
@@ -63,7 +63,7 @@ class ProductColor(Resource):
             unique_input_error,
             status,
         ) = ProductColorModel.put_unique_already_exist(
-            claim=claim, productcolorid=productcolorid, productcol_data=data
+            claim=claim, productcolor_id=productcolor_id, productcol_data=data
         )
 
         if unique_input_error:
@@ -73,13 +73,6 @@ class ProductColor(Resource):
         if productcolor:
             for each in data.keys():
                 productcolor.__setattr__(each, data[each])
-            # else:
-            #     # check if data already exist
-            #     unique_input_error, status = ProductColorModel.post_unique_already_exist(claim, data)
-            #     if unique_input_error:
-            #         return unique_input_error, status
-            #     productcolor = ProductColorModel(**data)
-
             # save
             try:
                 productcolor.save_to_db()
@@ -94,9 +87,9 @@ class ProductColor(Resource):
         }, 400  # 400 is for bad request
 
     @jwt_required
-    def delete(self, productcolorid):
+    def delete(self, productcolor_id):
         claim = get_jwt_claims()
-        productcolor = ProductColorModel.find_by_id(id=productcolorid)
+        productcolor = ProductColorModel.find_by_id(id=productcolor_id)
         if not productcolor:
             return {"message": NOT_FOUND.format("product color")}, 401
 
@@ -112,6 +105,6 @@ class ProductColor(Resource):
         try:
             productcolor.delete_from_db()
         except Exception as e:
-            print(e)
+            print(f"error is {e}")
             return {"message": INTERNAL_ERROR}, 500
         return {"message": DELETED.format("product color")}, 200  # 200 ok

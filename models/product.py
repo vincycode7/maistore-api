@@ -9,12 +9,9 @@ def create_id(context):
 # helper functions
 def is_avail(context):
     quantity = context.current_parameters.get("quantity", 0)
-    print(f"context: {context.current_parameters}")
     if quantity > 0:
-        print(f"quantity --> {quantity}")
         return True
     else:
-        print(f"quantity --> {quantity}")
         return False
 
 
@@ -25,9 +22,9 @@ class ProductModel(db.Model, ModelsHelper):
         db.String(50), primary_key=True, unique=True, default=create_id, nullable=False
     )
     productname = db.Column(db.String(40), nullable=False)
-    price = db.Column(db.Float(precision=2), nullable=False, default=0)
+    price = db.Column(db.Float(precision=2), nullable=False)
     discount = db.Column(db.Float(precision=2), nullable=False, default=0)
-    quantity = db.Column(db.Integer, nullable=False, default=0)
+    quantity = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(200), nullable=True)
     store_id = db.Column(
         db.String(50),
@@ -41,8 +38,7 @@ class ProductModel(db.Model, ModelsHelper):
         db.ForeignKey("productcat.id"),
         index=False,
         unique=False,
-        nullable=True,
-        default=None,
+        nullable=False,
     )
     productsubcat_id = db.Column(
         db.Integer,
@@ -95,14 +91,14 @@ class ProductModel(db.Model, ModelsHelper):
 
     @classmethod
     def check_unique_inputs(cls, product_data):
-        store = cls.find_store_by_id(storeid=product_data.get("store_id", None))
+        store = cls.find_store_by_id(store_id=product_data.get("store_id", None))
         productcat = cls.find_productcat_by_id(
-            productcatid=product_data.get("productcat_id", None)
+            productcat_id=product_data.get("productcat_id", None)
         )
         productsubcat = cls.find_productsubcat_by_id(
-            productsubcatid=product_data.get("productsubcat_id", None)
+            productsubcat_id=product_data.get("productsubcat_id", None)
         )
-        size = cls.find_size_by_id(sizeid=product_data.get("size_id", None))
+        size = cls.find_size_by_id(size_id=product_data.get("size_id", None))
         return store, productcat, productsubcat, size
 
     @classmethod
@@ -123,7 +119,7 @@ class ProductModel(db.Model, ModelsHelper):
         ):
             return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")}, 401
 
-        # check productcatid
+        # check productcat_id
         # check if productcat exist
         if not productcat:
             return {"message": NOT_FOUND.format("productcat")}, 401
@@ -139,7 +135,6 @@ class ProductModel(db.Model, ModelsHelper):
             return {"message": NOT_FOUND.format("size")}, 401
 
         # check if productsubcat is in product cat
-        print("yes yes --> ", productsubcat.productcat.id, productcat.id)
         if productsubcat.productcat.id != productcat.id:
             return {
                 "message": NOT_FOUND_IN.format(
@@ -151,9 +146,9 @@ class ProductModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, productid, product_data):
+    def put_unique_already_exist(cls, claim, product_id, product_data):
         # check user permission, edit and parse data
-        product = cls.find_by_id(id=productid)
+        product = cls.find_by_id(id=product_id)
         store, productcat, productsubcat, size = cls.check_unique_inputs(
             product_data=product_data
         )
@@ -185,13 +180,13 @@ class ProductModel(db.Model, ModelsHelper):
                 {
                     "message": NOT_EQUAL.format(
                         "product store id -- " + str(product.store.id),
-                        "storeid -- " + str(store.id),
+                        "store_id -- " + str(store.id),
                     )
                 },
                 401,
             )
 
-        # check productcatid
+        # check productcat_id
         # check if productcat exist
         if not productcat:
             return None, {"message": NOT_FOUND.format("productcat")}, 401
@@ -221,8 +216,8 @@ class ProductModel(db.Model, ModelsHelper):
         return product, False, 200
 
     @classmethod
-    def delete_auth(cls, claim, storeid):
-        store = StoreModel.find_by_id(storeid)
+    def delete_auth(cls, claim, store_id):
+        store = StoreModel.find_by_id(store_id)
 
         if not store:
             return product, {"message": NOT_FOUND.format("store")}, 401
@@ -231,12 +226,6 @@ class ProductModel(db.Model, ModelsHelper):
             return product, {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
         return product, False, 200
 
-    @classmethod
-    def check_foreignkey_exist(cls, store_data):
-        user = cls.user.find_by_id(store_data["user_id"])
-        return user
-
-
-# TODO: Do pagenate in response, for product (i think it's checked)
+# TODO: Do pagenate in response, for product (i think it's checked).
 # TODO: check if i did put request side of product (i think it's checked)
 # TODO: check if i did delete auth side of product (i think it's checked)

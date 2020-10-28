@@ -7,7 +7,7 @@ class CardpayModel(db.Model, ModelsHelper):
 
     # class variables
     id = db.Column(db.Integer, primary_key=True)
-    userid = db.Column(db.String(50), db.ForeignKey("user.id"))
+    user_id = db.Column(db.String(50), db.ForeignKey("user.id"))
     card_num = db.Column(db.String(256))
     card_cvv = db.Column(db.String(3))
     card_exp = db.Column(db.DateTime)

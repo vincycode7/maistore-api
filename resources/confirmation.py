@@ -58,7 +58,7 @@ class ConfirmationByUser(Resource):
     def get(cls, user_id: int):
         """ Returns confirmations for a given user. Use for testing """
         claim = get_jwt_claims()
-        print(f"userid --> {claim}")
+        print(f"user_id --> {claim}")
         if not claim or not claim["is_admin"]:
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get user confirmations")

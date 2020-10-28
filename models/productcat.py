@@ -53,8 +53,8 @@ class ProductCatModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, catid, cat_data):
-        productcat = cls.find_by_id(id=catid)
+    def put_unique_already_exist(cls, claim, cat_id, cat_data):
+        productcat = cls.find_by_id(id=cat_id)
         desc = cls.check_unique_inputs(cat_data=cat_data)
 
         # check cat permission, edit and parse data

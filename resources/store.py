@@ -12,8 +12,8 @@ schema_many = StoreSchema(many=True)
 class Store(Resource):
     @classmethod
     @jwt_required
-    def get(cls, storeid):
-        store = StoreModel.find_by_id(storeid)
+    def get(cls, store_id):
+        store = StoreModel.find_by_id(store_id)
         if store:
             return schema.dump(store)
         else:
@@ -34,7 +34,7 @@ class Store(Resource):
         try:
             store.save_to_db()
         except Exception as e:
-            print(e)
+            print(f"error is {e}")
             return {"message": ERROR_WHILE_INSERTING.format("store.")}, 500
 
         return schema.dump(store), 201
@@ -42,16 +42,15 @@ class Store(Resource):
     # use for authentication before calling post
     @classmethod
     @jwt_required
-    def put(cls, storeid):
+    def put(cls, store_id):
         claim = get_jwt_claims()
         data = schema.load(StoreModel.get_data_())
         store, unique_input_error, status = StoreModel.put_unique_already_exist(
-            claim=claim, storeid=storeid, store_data=data
+            claim=claim, store_id=store_id, store_data=data
         )
         if unique_input_error:
             return unique_input_error, status
 
-        print(f"store --> {store}, {store.id}")
         if store:
             for each in data.keys():
                 store.__setattr__(each, data[each])  # update
@@ -59,9 +58,7 @@ class Store(Resource):
             #     store = StoreModel(**data)
 
             try:
-                print("after this")
                 store.save_to_db()
-                print("didnt get here")
                 return schema.dump(store), 201
             except Exception as e:
                 print(f"error is {e}")
@@ -72,10 +69,10 @@ class Store(Resource):
 
     @classmethod
     @fresh_jwt_required
-    def delete(cls, storeid):
+    def delete(cls, store_id):
         claim = get_jwt_claims()
         store, unique_input_error, status = StoreModel.delete_auth(
-            claim=claim, storeid=storeid
+            claim=claim, store_id=store_id
         )
         if unique_input_error:
             return unique_input_error, status
@@ -83,7 +80,7 @@ class Store(Resource):
         try:
             store.delete_from_db()
         except Exception as e:
-            print(e)
+            print(f"error is {e}")
             return {"message": INTERNAL_ERROR}, 500
         return {"message": DELETED.format("Store")}
 

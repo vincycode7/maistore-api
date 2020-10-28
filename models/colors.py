@@ -39,8 +39,8 @@ class ColorsModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, colorid, color_data):
-        color = cls.find_by_id(id=colorid)
+    def put_unique_already_exist(cls, claim, color_id, color_data):
+        color = cls.find_by_id(id=color_id)
         desc = cls.check_unique_inputs(color_data=color_data)
 
         # check color permission, edit and parse data
@@ -56,10 +56,4 @@ class ColorsModel(db.Model, ModelsHelper):
                 {"message": ALREADY_EXISTS.format("color", color_data["desc"])},
                 400,
             )  # 400 is for bad request
-        # elif color and desc and claim["is_admin"]:
-        #     return (
-        #         color,
-        #         {"message" : NOTHING_TO_UPDATE},
-        #         400,
-        #     )  # 400 is for bad request
         return color, False, 200

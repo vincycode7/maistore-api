@@ -6,8 +6,8 @@ class ProductSizeModel(db.Model, ModelsHelper):
 
     # class variables
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    productcatid = db.Column(db.Integer, db.ForeignKey("productcat.id"), nullable=False)
-    productsubcatid = db.Column(
+    productcat_id = db.Column(db.Integer, db.ForeignKey("productcat.id"), nullable=False)
+    productsubcat_id = db.Column(
         db.Integer, db.ForeignKey("productsubcat.id"), nullable=False
     )
     desc = db.Column(db.String(256), nullable=False)
@@ -28,15 +28,15 @@ class ProductSizeModel(db.Model, ModelsHelper):
     @classmethod
     def check_unique_inputs(cls, size_data=None):
         prodcat_subcat_desc = cls.find_by_prodcatid_prodsubcatid_desc(
-            size_data.get("productcatid", None),
-            size_data.get("productsubcatid", None),
+            size_data.get("productcat_id", None),
+            size_data.get("productsubcat_id", None),
             size_data.get("desc", None),
         )
         productcat = cls.find_productcat_by_id(
-            productcatid=size_data.get("productcatid", None)
+            productcat_id=size_data.get("productcat_id", None)
         )
         productsubcat = cls.find_productsubcat_by_id(
-            productsubcatid=size_data.get("productsubcatid", None)
+            productsubcat_id=size_data.get("productsubcat_id", None)
         )
         return prodcat_subcat_desc, productcat, productsubcat
 
@@ -60,7 +60,7 @@ class ProductSizeModel(db.Model, ModelsHelper):
         if not productcat:
             return {
                 "message": DOES_NOT_EXIST.format(
-                    "product category" + " " + str(size_data["productcatid"])
+                    "product category" + " " + str(size_data["productcat_id"])
                 )
             }, 400  # 400 is for bad request
 
@@ -68,7 +68,15 @@ class ProductSizeModel(db.Model, ModelsHelper):
         if not productsubcat:
             return {
                 "message": DOES_NOT_EXIST.format(
-                    "product sub category" + " " + str(size_data["productsubcatid"])
+                    "product sub category for" + " " + str(size_data["productsubcat_id"])
+                )
+            }, 400  # 400 is for bad request
+
+        # check if productid exist
+        if not productsubcat.productcat:
+            return {
+                "message": DOES_NOT_EXIST.format(
+                    "category for product subcategory"
                 )
             }, 400  # 400 is for bad request
 
@@ -79,14 +87,14 @@ class ProductSizeModel(db.Model, ModelsHelper):
             return {
                 "message": NOT_FOUND_IN.format(
                     "product sub category",
-                    "category id " + str(size_data["productsubcatid"]),
+                    "for category id " + str(size_data["productsubcat_id"]),
                 )
             }, 400  # 400 is for bad request
 
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, sizeid, size_data):
+    def put_unique_already_exist(cls, claim, size_id, size_data):
         # check if admin
         if not claim or (claim and (not claim["is_admin"] or not claim["is_root"])):
             return (
@@ -96,7 +104,7 @@ class ProductSizeModel(db.Model, ModelsHelper):
             )
 
         # chcek if record to edit exist
-        productsize_record = cls.find_by_id(id=sizeid)
+        productsize_record = cls.find_by_id(id=size_id)
         if not productsize_record:
             return (
                 None,
@@ -121,7 +129,7 @@ class ProductSizeModel(db.Model, ModelsHelper):
                 None,
                 {
                     "message": DOES_NOT_EXIST.format(
-                        "product category" + " " + str(size_data["productcatid"])
+                        "product category" + " " + str(size_data["productcat_id"])
                     )
                 },
                 400,
@@ -133,7 +141,7 @@ class ProductSizeModel(db.Model, ModelsHelper):
                 None,
                 {
                     "message": DOES_NOT_EXIST.format(
-                        "product sub category" + " " + str(size_data["productsubcatid"])
+                        "product sub category for" + " " + str(size_data["productsubcat_id"])
                     )
                 },
                 400,
@@ -148,12 +156,11 @@ class ProductSizeModel(db.Model, ModelsHelper):
                 {
                     "message": NOT_FOUND_IN.format(
                         "product sub category",
-                        "category id " + str(size_data["productsubcatid"]),
+                        "category id " + str(size_data["productsubcat_id"]),
                     )
                 },
                 400,
             )  # 400 is for bad request
         return productsize_record, False, 200
-
 
 # TODO: make sure to check all options of error when posting or puting

@@ -13,15 +13,15 @@ class ProductCatList(Resource):
     def get(cls):
         productcats = ProductCatModel.find_all()
         if productcats:
-            return {"productcat": schema_many.dump(productcats)}, 201
+            return {"product_categories": schema_many.dump(productcats)}, 201
         return {"message": NOT_FOUND.format("productcats")}, 400
 
 
 # class to add product categories
 class ProductCat(Resource):
     @jwt_required
-    def get(self, catid):
-        productcat = ProductCatModel.find_by_id(id=catid)
+    def get(self, cat_id):
+        productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
             return {"product_category": schema.dump(productcat)}, 201
         return {"message": NOT_FOUND.format("productcats")}, 400
@@ -51,7 +51,7 @@ class ProductCat(Resource):
         return schema.dump(productcat), 201
 
     @jwt_required
-    def put(self, catid):
+    def put(self, cat_id):
         claim = get_jwt_claims()
         data = schema.load(ProductCatModel.get_data_())
 
@@ -61,7 +61,7 @@ class ProductCat(Resource):
             unique_input_error,
             status,
         ) = ProductCatModel.put_unique_already_exist(
-            claim=claim, catid=catid, cat_data=data
+            claim=claim, cat_id=cat_id, cat_data=data
         )
 
         if unique_input_error:
@@ -71,12 +71,6 @@ class ProductCat(Resource):
         if productcat:
             for each in data.keys():
                 productcat.__setattr__(each, data[each])
-            # else:
-            #     # check if data already exist
-            #     unique_input_error, status = ProductCatModel.post_unique_already_exist(claim, data)
-            #     if unique_input_error:
-            #         return unique_input_error, status
-            #     productcat = ProductCatModel(**data)
 
             # save
             try:
@@ -92,13 +86,13 @@ class ProductCat(Resource):
         }, 400  # 400 is for bad request
 
     @jwt_required
-    def delete(self, catid):
+    def delete(self, cat_id):
         claim = get_jwt_claims()
         if not claim["is_admin"] or not claim["is_root"]:
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product category")
             }, 401
-        productcat = ProductCatModel.find_by_id(id=catid)
+        productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
             productcat.delete_from_db()
             return {"message": DELETED.format("Product category")}, 200  # 200 ok

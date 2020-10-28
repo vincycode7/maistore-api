@@ -21,8 +21,8 @@ class ProductSizeList(Resource):
 # class to add product sizes
 class ProductSize(Resource):
     @jwt_required
-    def get(self, sizeid):
-        productsize = ProductSizeModel.find_by_id(id=sizeid)
+    def get(self, size_id):
+        productsize = ProductSizeModel.find_by_id(id=size_id)
         if productsize:
             return {"productsize": schema.dump(productsize)}, 201
         return {"message": NOT_FOUND.format("productsize")}, 400
@@ -52,7 +52,7 @@ class ProductSize(Resource):
         return schema.dump(productsize), 201
 
     @jwt_required
-    def put(self, sizeid):
+    def put(self, size_id):
         claim = get_jwt_claims()
         data = schema.load(ProductSizeModel.get_data_())
 
@@ -62,7 +62,7 @@ class ProductSize(Resource):
             unique_input_error,
             status,
         ) = ProductSizeModel.put_unique_already_exist(
-            claim=claim, sizeid=sizeid, size_data=data
+            claim=claim, size_id=size_id, size_data=data
         )
 
         if unique_input_error:
@@ -72,13 +72,6 @@ class ProductSize(Resource):
         if productsize:
             for each in data.keys():
                 productsize.__setattr__(each, data[each])
-            # else:
-            #     # check if data already exist
-            #     unique_input_error, status = ProductSizeModel.post_unique_already_exist(claim, data)
-            #     if unique_input_error:
-            #         return unique_input_error, status
-            #     productsize= ProductSizeModel(**data)
-
             # save
             try:
                 productsize.save_to_db()
@@ -93,13 +86,13 @@ class ProductSize(Resource):
         }, 400  # 400 is for bad request
 
     @jwt_required
-    def delete(self, sizeid):
+    def delete(self, size_id):
         claim = get_jwt_claims()
         if not claim["is_admin"] or not claim["is_root"]:
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product size")
             }, 401
-        productsize = ProductSizeModel.find_by_id(id=sizeid)
+        productsize = ProductSizeModel.find_by_id(id=size_id)
         if productsize:
             productsize.delete_from_db()
             return {"message": DELETED.format("Product size")}, 200  # 200 ok

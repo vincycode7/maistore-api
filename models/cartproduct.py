@@ -18,6 +18,6 @@ class CartProductModel(db.Model, ModelsHelper):
     )
 
     @classmethod
-    def find_by_productid(cls, productid=None):
-        result = cls.query.filter_by(productid=productid).first()
+    def find_by_productid(cls, product_id=None):
+        result = cls.query.filter_by(product_id=product_id).first()
         return result
