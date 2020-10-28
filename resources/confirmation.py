@@ -38,6 +38,7 @@ class Confirmation(Resource):
 
         try:
             confirmation.confirmed = True
+            confirmation.force_to_expire()
             confirmation.save_to_db()
         except Exception as e:
             print(e)
@@ -58,8 +59,7 @@ class ConfirmationByUser(Resource):
     def get(cls, user_id: int):
         """ Returns confirmations for a given user. Use for testing """
         claim = get_jwt_claims()
-        print(f"user_id --> {claim}")
-        if not claim or not claim["is_admin"]:
+        if not claim or not claim["is_admin"] or not claim["is_root"]:
             return {
                 "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get user confirmations")
             }, 401
