@@ -79,12 +79,12 @@ class ConfirmationByUser(Resource):
         )
 
     @classmethod
-    def post(cls, user_id: int = None):
+    def post(cls, email: str = None):
         """ Resend confirmation email """
-        user = UserModel.find_by_id(id=user_id)
+        user = UserModel.find_by_email(email=email)
 
         if not user:
-            return {"message": NOT_FOUND.format("user id")}, 404
+            return {"message": NOT_FOUND.format("user email")}, 404
 
         try:
             confirmation = user.most_recent_confirmation
@@ -96,11 +96,11 @@ class ConfirmationByUser(Resource):
                         )
                     }, 400
                 confirmation.force_to_expire()
-                new_confirmation = ConfirmationModel(user_id)
-                new_confirmation.save_to_db()
-                user.send_confirmation_email()
+            new_confirmation = ConfirmationModel(user_id)
+            new_confirmation.save_to_db()
+            user.send_confirmation_toemail()
 
-                return {"message": CONFIRMATION_RESEND_SUCCESSFUL}, 201
+            return {"message": CONFIRMATION_RESEND_SUCCESSFUL}, 201
         except MailerException as e:
             return {"message": str(e)}, 500
 

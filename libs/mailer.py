@@ -4,7 +4,7 @@ import os
 
 FAILED_LOAD_USR = "email username not found"
 FAILED_LOAD_PWD = "email password not found"
-ERR_SENDING_EMAIL = "Error in sending confirmation email. (check mailer credentials or network connection)"
+ERR_SENDING_EMAIL = "Error in sending confirmation email. (check mailer credentials , network connection or email recipient)"
 
 
 class MailerException(Exception):

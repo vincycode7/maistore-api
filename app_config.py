@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 from flask_restful import Api
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import JWTManager
+from libs.mailer import MailerException
 from sqlalchemy import exc
 import os
 
@@ -43,39 +44,29 @@ def create_usr_from_root(app):
         "email": os.environ.get("ROOT_USR_EMAIL"),
         "phoneno": os.environ.get("ROOT_USR_PHONE"),
     }
-    claim = {}
+    # creat root user
+    # check if data already exist
+    unique_input_error, status = UserModel.post_unique_already_exist(data_usr)
+    if unique_input_error:
+        print(
+            f"Error creating root user --> {unique_input_error}"
+        )
+        return unique_input_error, status
+
     try:
-        # creat root user
-        root_usr = UserModel(**data_usr)
-        email, user = UserModel.check_unique_inputs(user_data=data_usr)
-        if email or user:
-            print(
-                "Error creating root user --> "
-                + ALREADY_EXISTS.format("user or email", "")
-            )
-            return
-
-        root_usr.save_to_db()
-
-        try:
-            confirmation = root_usr.create_confirmation()
-            confirmation.confirmed = True
-            confirmation.save_to_db()
-            confirmation.force_to_expire()
-        except exc.SQLAlchemyError as e:
-            print(ERROR_OCCURED_CONFIRMING_ROOT_USR.format(e))
-            confirmation.rollback_error()
-        try:
-            os.environ["ROOT_USR_ID"] = root_usr.id
-        except:
-            print(
-                "warning error while setting environment variable for root id, set to None"
-            )
-
-    except exc.SQLAlchemyError as e:
-        print(ERROR_OCCURED_CREATING_ROOT_USR.format(e))
+        root_usr = UserModel.create_user(**data_usr)
+    except:
+        print(ERROR_WHILE_INSERTING.format("user"))
         root_usr.rollback_error()
-
+        
+    try:
+        confirmation = root_usr.create_confirmation()
+        confirmation.confirmed = True
+        confirmation.save_to_db()
+        confirmation.force_to_expire()
+    except exc.SQLAlchemyError as e:
+        print(ERROR_OCCURED_CONFIRMING_ROOT_USR.format(e))
+        confirmation.rollback_error()
 
 def create_api(app):
     api = Api(app=app)
@@ -109,13 +100,8 @@ def jwt_error_handler(jwt):
     def add_claims_to_jwt(identity=None):
         from models.user import UserModel
 
-        root_id = os.environ.get("ROOT_USR_ID", None)
         usr = UserModel.find_by_id(id=identity)
-        if (
-            root_id and identity == root_id
-        ):  # best to read this from a config file or database
-            return {"userid": root_id, "is_root": True, "is_admin": True}
-        elif usr and usr.admin:
+        if usr:
             return {"userid": identity, "is_root": usr.rootusr, "is_admin": usr.admin}
         return {"userid": identity, "is_root": False, "is_admin": False}
 
@@ -126,14 +112,14 @@ def jwt_error_handler(jwt):
     @jwt.expired_token_loader
     def expire_token_callback():
         return (
-            jsonify({"description": "The token has expired", "error": "token_expired"}),
+            jsonify({"message" : "token_expired"}),
             401,
         )
 
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
         return (
-            jsonify({"description": "Token is not valid", "error": "invalid_expired"}),
+            jsonify({"message" : "invalid_token"}),
             401,
         )
 
@@ -142,8 +128,7 @@ def jwt_error_handler(jwt):
         return (
             jsonify(
                 {
-                    "description": "Request does not contain an access token.",
-                    "error": "authorization_required",
+                    "message" : "authorization_required",
                 }
             ),
             401,
@@ -153,7 +138,7 @@ def jwt_error_handler(jwt):
     def token_not_fresh_callback():
         return (
             jsonify(
-                {"description": "token not fresh.", "error": "fresh_token_required"}
+                {"message": "fresh_token_required"}
             ),
             401,
         )
@@ -162,7 +147,7 @@ def jwt_error_handler(jwt):
     def revoked_token_callback():
         return (
             jsonify(
-                {"description": "The token has been revoked", "error": "token_revoked"}
+                {"message" : "token_revoked"}
             ),
             401,
         )

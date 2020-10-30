@@ -38,7 +38,7 @@ class UserModel(db.Model, ModelsHelper):
     )
     password = db.Column(db.String(80), index=False, unique=False, nullable=False)
     email = db.Column(db.String(100), index=False, unique=True, nullable=False)
-    phoneno = db.Column(db.String(15), index=False, unique=True, nullable=False)
+    phoneno = db.Column(db.String(15), index=False, unique=True, nullable=True)
 
     # merge (for sqlalchemy to link tables)
     stores = db.relationship(
@@ -69,8 +69,14 @@ class UserModel(db.Model, ModelsHelper):
         confirmation = ConfirmationModel(self.id)
         confirmation.save_to_db()
         return confirmation
+    
+    @classmethod
+    def create_user(cls, data):
+        user = cls(**data)  # create user
+        user.save_to_db() # save user
+        return user
 
-    def send_confirmation_email(self) -> Response:
+    def send_confirmation_toemail(self) -> Response:
         link = request.url_root[:-1] + url_for(
             "confirmation", confirmation_id=self.most_recent_confirmation.id
         )  # get e.g http://maistore.com + /user_confirmation/1
@@ -81,14 +87,32 @@ class UserModel(db.Model, ModelsHelper):
         sender = Sender()
         return sender.send_email(to=to, subject=subject, html=html, text=None)
 
+    @property
+    def confirmed(self):
+        confirmation = self.most_recent_confirmation
+        if confirmation:
+            return confirmation.confirmed
+        return False
+
+    @classmethod
+    def create_send_confirmation_for_user(cls, user):
+        confirmation = user.most_recent_confirmation
+        if confirmation:
+            confirmation.force_to_expire()
+        confirmation = user.create_confirmation()
+        try:
+            user.send_confirmation_toemail()
+        except Exception as e:
+            confirmation = user.most_recent_confirmation
+            confirmation.delete_from_db()
+            raise e
+        return user
+        
     @classmethod
     def create_user_send_confirmation(cls, data):
-
-        user = cls(**data)  # create user
-
         # save user
         try:
-            user.save_to_db()
+            user = cls.create_user(data)
         except:
             traceback.print_exc()
             return {
@@ -97,8 +121,7 @@ class UserModel(db.Model, ModelsHelper):
 
         # send confirmation
         try:
-            user.create_confirmation()
-            user.send_confirmation_email()
+            user = cls.create_send_confirmation_for_user(user=user)
         except MailerException as e:
             user.delete_from_db()
             print(e)
@@ -116,12 +139,6 @@ class UserModel(db.Model, ModelsHelper):
     def find_by_phoneno(cls, phoneno: str = None):
         result = cls.query.filter_by(phoneno=phoneno).first()
         return result
-
-    @classmethod
-    def check_unique_inputs(cls, user_data):
-        email = cls.find_by_email(email=user_data["email"])
-        phoneno = cls.find_by_phoneno(phoneno=user_data["phoneno"])
-        return email, phoneno
 
     @classmethod
     def login_checker(cls, user_data):
@@ -148,75 +165,59 @@ class UserModel(db.Model, ModelsHelper):
         return {"message": INVALID_CREDENTIALS}, 400
 
     @classmethod
-    def post_unique_already_exist(cls, claim, user_data):
-        email, phoneno = cls.check_unique_inputs(user_data=user_data)
+    def post_unique_already_exist(cls, user_data):
+        phoneno = cls.find_by_phoneno(phoneno=user_data.get("phoneno"))
+        email = cls.find_by_email(email=user_data.get("email"))
         if email:
             return {
                 "message": ALREADY_EXISTS.format("email", user_data["email"])
             }, 400  # 400 is for bad request
-        elif phoneno:
+        if phoneno:
             return {
                 "message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])
             }, 400  # 400 is for bad request
-        elif claim and not claim["is_root"] and user_data.get("rootusr", False) == True:
-            return {
-                "message": ROOT_PRIVILEDGE_REQUIRED.format(
-                    "set rootuser status to true"
-                )
-            }, 401
-        elif (not claim and user_data.get("admin", False) == True) or (
-            claim and not claim["is_admin"] and user_data.get("admin", False) == True
-        ):
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("set admin status to true")
-            }, 401
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, user_id, user_data):
+    def put_unique_already_exist(cls, user_id, user_data):
         user = cls.find_by_id(id=user_id)
-        email, phoneno = cls.check_unique_inputs(user_data=user_data)
+        phoneno = cls.find_by_phoneno(phoneno=user_data.get("phoneno"))
 
-        # check user permission, edit and parse data
-        if not claim or (claim and not claim["is_admin"] and claim["userid"] != userid):
+        # check if phone number already exist for another user
+        if user and phoneno and user.phoneno != phoneno.phoneno:
             return (
-                user,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit user data")},
-                401,
-            )
-        elif claim and not claim["is_root"] and user_data.get("rootusr", False) == True:
-            return (
-                user,
-                {
-                    "message": ROOT_PRIVILEDGE_REQUIRED.format(
-                        "set rootuser status to true"
-                    )
-                },
-                401,
-            )
-        elif claim and not claim["is_admin"] and user_data.get("admin", False) == True:
-            return (
-                user,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("change admin status")},
-                401,
-            )
-        elif user and email and user.email != email.email:
-            return (
-                user,
-                {
-                    "message": ALREADY_EXISTS.format(
-                        "email", user_data.get("email", False)
-                    )
-                },
-                400,
-            )  # 400 is for bad request
-        elif user and phoneno and user.phoneno != phoneno.phoneno:
-            return (
-                user,
+                None,
                 {"message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])},
                 400,
             )  # 400 is for bad request
         return user, False, 200
+
+    @classmethod
+    def email_already_exist(cls, user_id, email):
+        user_by_id = cls.find_by_id(id=user_id)
+        user_by_email = cls.find_by_email(email=email)
+
+        # check if phone number already exist for another user
+        if user_by_id and user_by_email and user_by_id.email != user_by_email.email:
+            return (
+                None,
+                {"message": ALREADY_EXISTS.format("phoneno", user_data["phoneno"])},
+                400,
+            )  # 400 is for bad request
+        return user_by_id, False, 200
+
+    @classmethod
+    def send_confirmation_on_email_change(cls, user):
+
+        #check if mail will be sent to new email
+        try:
+            user = cls.create_send_confirmation_for_user(user=user)
+        except MailerException as e:
+            print(f"error is {e}")
+            return {
+                "message": ERROR_WHILE.format("sending confirmation to new email")
+            }, 500  # Internal server error
+        return {"message": EMAIL_CHANGE_SUCCESSFULLY.format(user.email)}, 201
 
     def __repr__(self) -> str:
         return f"{self.email}"

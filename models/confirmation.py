@@ -31,6 +31,16 @@ class ConfirmationModel(db.Model, ModelsHelper):
     def expired(self) -> bool:
         return time() > self.expire_at
 
+    def force_to_unconfirm(self) -> None:
+        if self.confirmed:
+            self.confirmed = False
+            self.save_to_db()
+
+    def force_to_confirm(self) -> None:
+        if not self.confirmed:
+            self.confirmed = True
+            self.save_to_db()
+
     def force_to_expire(self) -> None:
         if not self.expired:
             self.expire_at = int(time())

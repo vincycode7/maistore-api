@@ -5,6 +5,7 @@ from error_messages import *
 from datetime import datetime as dt
 from blacklist import BLACKLIST_ACCESS
 from flask import request, json
+from marshmallow import INCLUDE, EXCLUDE
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -146,6 +147,43 @@ class ModelsHelper:
     def find_by_id(cls, id):
         result = cls.query.filter_by(id=id).first()
         return result
+
+    @staticmethod
+    def auth_by_admin_root_or_user(user_id, err_msg):
+        claim = get_jwt_claims()
+        print(claim["userid"] , user_id)
+        if not claim["is_admin"] and not claim["is_root"] and claim["userid"] != user_id:
+            return {
+                "message": ADMIN_PRIVILEDGE_REQUIRED.format(err_msg)
+            }, 401, claim
+        return False, 200, claim
+
+    @staticmethod
+    def auth_by_admin_root(err_msg):
+        claim = get_jwt_claims()
+        if not claim["is_admin"] and not claim["is_root"]:
+            return {
+                "message": ADMIN_PRIVILEDGE_REQUIRED.format(err_msg)
+            }, 401, claim
+        return False, 200, claim
+
+    @staticmethod
+    def auth_by_root(err_msg):
+        claim = get_jwt_claims()
+        if  not claim["is_root"]:
+            return {
+                "message": ROOT_PRIVILEDGE_REQUIRED.format(err_msg)
+            }, 401, claim
+        return False, 200, claim
+    
+    @staticmethod
+    def auth_by_admin(err_msg):
+        claim = get_jwt_claims()
+        if not claim["is_admin"]:
+            return {
+                "message": ADMIN_PRIVILEDGE_REQUIRED.format(err_msg)
+            }, 401, claim
+        return False, 200, claim
 
     @staticmethod
     def get_data_():

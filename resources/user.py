@@ -10,7 +10,11 @@ import traceback
 
 _5MIN = dt.timedelta(minutes=5)
 schema = UserSchema()
+usr_reg_schema = UserSchema(only=("email", "password","phoneno"))
 login_schema = UserSchema(only=("email", "password"))
+user_put_schema = UserSchema(exclude=("email", "password", "image", "admin", "rootusr"))
+# email_reset_post_schema = UserSchema(only=("email", "new_email", "confirm_new_email"), unknown=EXCLUDE)
+# password_reset_post_schema = UserSchema(exclude=("password", "new_password", "confirm_new_phoneno"))
 schema_many = UserSchema(many=True)
 
 # class to login usersdt.datetime.now() +
@@ -31,10 +35,10 @@ class UserRegister(Resource):
     @jwt_optional
     def post(cls):
         claim = get_jwt_claims()
-        data = schema.load(UserModel.get_data_())
+        data = usr_reg_schema.load(UserModel.get_data_())
 
         # check if data already exist
-        unique_input_error, status = UserModel.post_unique_already_exist(claim, data)
+        unique_input_error, status = UserModel.post_unique_already_exist(data)
         if unique_input_error:
             return unique_input_error, status
 
@@ -50,11 +54,9 @@ class UserList(Resource):
     @classmethod
     @jwt_required
     def get(cls):
-        claim = get_jwt_claims()
-        if not claim or not claim["is_admin"]:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get all users")
-            }, 401
+        msg, status_code, _ = UserModel.auth_by_admin_root(err_msg="to get all users")
+        if status_code != 200:
+            return msg, status_code
 
         users = UserModel.find_all()
         if users:
@@ -67,11 +69,9 @@ class User(Resource):
     @classmethod
     @jwt_required
     def get(cls, user_id=None):
-        claim = get_jwt_claims()
-        if not claim["is_admin"] and claim["userid"] != user_id:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get this users")
-            }, 401
+        msg, status_code, _ = UserModel.auth_by_admin_root_or_user(user_id=user_id, err_msg="to get this users")
+        if status_code != 200:
+            return msg, status_code
 
         user = UserModel.find_by_id(id=user_id)
         if user:
@@ -82,17 +82,18 @@ class User(Resource):
     @classmethod
     @jwt_required
     def put(cls, user_id):
-        claim = get_jwt_claims()
-        data = schema.load(UserModel.get_data_())
+        msg, status_code, claim = UserModel.auth_by_admin_root_or_user(user_id=user_id, err_msg="to edit user's details")
+        if status_code != 200:
+            return msg, status_code
+
+        data = user_put_schema.load(UserModel.get_data_())
 
         # confirm the unique key to be same with the product route
-        user, unique_input_error, status = UserModel.put_unique_already_exist(
-            claim=claim, user_id=user_id, user_data=data
+        user, unique_input_error, status = UserModel.put_unique_already_exist( 
+            user_id=user_id, user_data=data
         )
         if unique_input_error:
             return unique_input_error, status
-        if not claim["is_admin"]:
-            data["admin"] = False
 
         # if user already exist update the dictionary
         if user:
@@ -105,7 +106,7 @@ class User(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("item")
+                    "message": ERROR_WHILE_INSERTING.format("user")
                 }, 500  # Internal server error
         return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request
 
@@ -113,18 +114,21 @@ class User(Resource):
     @classmethod
     @jwt_required
     def delete(cls, user_id):
-        claim = get_jwt_claims()
+        msg, status_code, _ = UserModel.auth_by_admin_root_or_user(user_id=user_id, err_msg="delete user")
+        print(status_code)
+        if status_code != 200:
+            print("yam")
+            return msg, status_code
+
         user = UserModel.find_by_id(id=user_id)
-        if claim and user:
-            if not claim["is_root"] and user.rootusr:
-                return {"message": CANNOT_DELETE_ROOT}, 401
-            if not claim["is_admin"] and claim["user_id"] != user_id:
-                return {
-                    "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete users")
-                }, 401
+        password = UserModel.get_data_().get("password", None)
+        print(f"b1 --> {user}")
         if user:
-            user.delete_from_db()
-            return {"message": DELETED.format("User")}, 200  # 200 ok
+            if user.password == password:
+                user.delete_from_db()
+                return {"message": DELETED.format("User")}, 200  # 200 ok
+            elif user.password != password:
+                return {"messgae" : AUTH_REQUIRED_TO_DELETE.format("user (check password)")}
         return {"message": NOT_FOUND.format("User")}, 400  # 400 is for bad request
 
 
@@ -134,11 +138,233 @@ class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(cls):
         user_identity = get_jwt_identity()
+        user = UserModel.find_user_by_id(user_identity)
+        print(f"identity --> {user_identity}, {user.confirmed}")
+        if not user.confirmed:
+            jti = get_raw_jwt()['jti']
+            BLACKLIST_ACCESS.add(jti)
+            return {"message" : "token_revoked"}, 401
         new_token = create_access_token(
             identity=user_identity, fresh=False, expires_delta=_5MIN
         )
         return {"access_token": new_token}, 200
 
+# to refresh token when it expires
+class Change_User_Email(Resource):
+    @classmethod
+    @jwt_required
+    def post(cls, user_id):
+        msg, status_code, _ = UserModel.auth_by_admin_root_or_user(user_id=user_id, err_msg="to get this users")
+        if status_code != 200:
+            return msg, status_code
+
+        old_email = UserModel.get_data_().get("old_email", None)
+        new_email = UserModel.get_data_().get("new_email", None)
+        password = UserModel.get_data_().get("password", None)
+
+        if old_email == None:
+            return {"message": NOT_FOUND.format("old_email parameter")}, 400  # 400 is for bad request 
+
+        if new_email == None:
+            return {"message": NOT_FOUND.format("new_email parameter")}, 400  # 400 is for bad request 
+
+        if password == None:
+            return {"message": NOT_FOUND.format("password parameter")}, 400  # 400 is for bad request 
+
+        user, unique_input_error, status = UserModel.email_already_exist(user_id=user_id, email=new_email)
+
+        if unique_input_error:
+            return unique_input_error, status
+
+        # if user already exist update the dictionary
+        if user:
+            if user.email != old_email:
+                return {"message" : INVALID_CREDENTIALS_FOR.format("email")}, 400
+            elif user.password != password:
+                return {"message" : INVALID_CREDENTIALS_FOR.format("password")}, 400
+
+            user.__setattr__("email", new_email)
+            print(f"user after updated --> {user}")
+            # save
+            try:
+                user.save_to_db()
+                # send confirmation to new email
+                message, status_code = user.send_confirmation_on_email_change(user)
+                if status_code == 201:
+                    jti = get_raw_jwt()['jti']
+                    BLACKLIST_ACCESS.add(jti)
+                    return message, status_code
+                user.__setattr__("email", old_email)
+                user.save_to_db()
+                return message, status_code
+            except Exception as e:
+                print(f"error is {e}")
+                return {
+                    "message": ERROR_WHILE_INSERTING.format("user")
+                }, 500  # Internal server error
+        return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request             
+
+# to refresh token when it expires
+class Forgot_Password(Resource):
+    @classmethod
+    @jwt_required
+    def post(cls, user_id):
+        msg, status_code, _ = UserModel.auth_by_admin_root_or_user(user_id=user_id, err_msg="to get this users")
+        if status_code != 200:
+            return msg, status_code
+
+        old_email = UserModel.get_data_().get("old_email", None)
+        new_email = UserModel.get_data_().get("new_email", None)
+        password = UserModel.get_data_().get("password", None)
+        user, unique_input_error, status = UserModel.email_already_exist(user_id=user_id, email=new_email)
+
+        if unique_input_error:
+            return unique_input_error, status
+
+        # if user already exist update the dictionary
+        print(f"user --> {user}")
+        if user:
+            if user.email != old_email:
+                return {"message" : INVALID_CREDENTIALS_FOR.format("email")}, 400
+            elif user.password != password:
+                return {"message" : INVALID_CREDENTIALS_FOR.format("password")}, 400
+
+            user.__setattr__("email", new_email)
+            print(f"user after updated --> {user}")
+            # save
+            try:
+                user.save_to_db()
+                # send confirmation to new email
+                print(f"user before send")
+                message, status_code = user.send_confirmation_on_email_change(user)
+                print(f"user after send")
+                if status_code == 201:
+                    jti = get_raw_jwt()['jti']
+                    BLACKLIST_ACCESS.add(jti)
+                    return message, status_code
+                user.__setattr__("email", old_email)
+                user.save_to_db()
+                return message, status_code
+            except Exception as e:
+                print(f"error is {e}")
+                return {
+                    "message": ERROR_WHILE_INSERTING.format("user")
+                }, 500  # Internal server error
+        return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request   
+
+# to refresh token when it expires
+class Change_User_Password(Resource):
+    @classmethod
+    @jwt_required
+    def post(cls, user_id):
+        msg, status_code, _ = UserModel.auth_by_admin_root_or_user(user_id=user_id, err_msg="to get this users")
+        if status_code != 200:
+            return msg, status_code
+
+        old_password = UserModel.get_data_().get("old_password", None)
+        new_password = UserModel.get_data_().get("new_password", None)
+
+        if old_password == None:
+            return {"message": NOT_FOUND.format("old_password parameter")}, 400  # 400 is for bad request 
+
+        if new_password == None:
+            return {"message": NOT_FOUND.format("new_password parameter")}, 400  # 400 is for bad request 
+
+        user = UserModel.find_by_id(id=user_id)
+        if not user:
+            return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request 
+
+        # if user already exist update the dictionary
+        if user:
+            if user.password != old_password:
+                return {"message" : INVALID_CREDENTIALS_FOR.format("password")}, 400
+
+            user.__setattr__("password", new_password)
+            # save
+            try:
+                user.save_to_db()
+            except Exception as e:
+                print(f"error is {e}")
+                return {
+                    "message": ERROR_WHILE_INSERTING.format("new password")
+                }, 500  # Internal server error
+        return {"message": SUCCESS_UPDATE.format("new password")}, 200  # 200 ok
+
+# to refresh token when it expires
+class Change_User_Image(Resource):
+    @classmethod
+    @jwt_refresh_token_required
+    def post(cls, user_id):
+        user_identity = get_jwt_identity()
+        user = UserModel.find_user_by_id(user_id)
+        print(f"identity --> {user_identity}, {user.confirmed}")
+        if not user.confirmed:
+            jti = get_raw_jwt()['jti']
+            BLACKLIST_ACCESS.add(jti)
+            return {"message" : "token_revoked"}, 401
+        new_token = create_access_token(
+            identity=user_identity, fresh=False, expires_delta=_5MIN
+        )
+        return {"access_token": new_token}, 200
+
+# to refresh token when it expires
+class Change_User_Admin_Status(Resource):
+    @classmethod
+    @jwt_required
+    def post(cls, user_id):
+        msg, status_code, _ = UserModel.auth_by_admin_root(err_msg="to change admin status")
+        if status_code != 200:
+            return msg, status_code
+
+        is_admin = UserModel.get_data_().get("is_admin", None)
+        if is_admin == None:
+            return {"message": NOT_FOUND.format("is_admin parameter")}, 400  # 400 is for bad request
+
+        user = UserModel.find_by_id(id=user_id)
+        if not user:
+            return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request 
+
+        # if user already exist update the dictionary
+        if user:
+            user.__setattr__("admin", is_admin)
+            # save
+            try:
+                user.save_to_db()
+            except Exception as e:
+                print(f"error is {e}")
+                return {
+                    "message": ERROR_WHILE_INSERTING.format("admin status")
+                }, 500  # Internal server error
+        return {"message": SUCCESS_UPDATE.format("admin status")}, 200  # 200 ok
+
+# to refresh token when it expires
+class Change_User_Root_Status(Resource):
+    @classmethod
+    @jwt_required
+    def post(cls, user_id):
+        msg, status_code, _ = UserModel.auth_by_root(err_msg="to change root status")
+        if status_code != 200:
+            return msg, status_code
+
+        is_root = UserModel.get_data_().get("is_root", None)
+        if is_root == None:
+            return {"message": NOT_FOUND.format("is_root parameter")}, 400  # 400 is for bad request 
+        user = UserModel.find_by_id(id=user_id)
+
+        if not user:
+            return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request 
+        # if user already exist update the dictionary
+        if user:
+            user.__setattr__("rootusr", is_root)
+            # save
+            try:
+                user.save_to_db()
+            except Exception as e:
+                print(f"error is {e}")
+                return {
+                    "message": ERROR_WHILE_INSERTING.format("root status")
+                }, 500  # Internal server error
+        return {"message": SUCCESS_UPDATE.format("root status")}, 200  # 200 ok
 
 # class to login users
 class UserLogout(Resource):
@@ -155,3 +381,6 @@ class UserLogout(Resource):
         BLACKLIST_ACCESS.add(jti1)
         BLACKLIST_ACCESS.add(jti2)
         return {"message": LODDED_OUT}, 200
+
+
+    # @jwt_refresh_token_required

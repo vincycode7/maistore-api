@@ -6,6 +6,12 @@ from resources.user import (
     UserLogin,
     TokenRefresh,
     UserLogout,
+    Forgot_Password,
+    Change_User_Email,
+    Change_User_Password,
+    Change_User_Image,
+    Change_User_Root_Status,
+    Change_User_Admin_Status
 )
 from resources.confirmation import Confirmation, ConfirmationByUser
 from resources.store import Store, StoreList, StorePagenate
@@ -36,7 +42,7 @@ route_path = [
     ],  # https://mistore.com/user_confirmation/1
     [
         ConfirmationByUser,
-        [api_version + "/confirmation/user/<string:user_id>"],
+        [api_version + "/confirmation/user/<string:email>"],
     ],  # https://mistore.com/confirmation/user/1
     [UserLogin, [api_version + "/login"]],  # https://mistore.com/register
     [UserLogout, [api_version + "/logout"]],  # https://mistore.com/register
@@ -103,6 +109,42 @@ route_path = [
             api_version + "/productcolor/<string:productcolor_id>",
         ],
     ],  # https://maistore.com/productcolor
+    [
+        Change_User_Email,
+        [
+            api_version + "/change_user_email/<string:user_id>",
+        ],
+    ],  # https://maistore.com/change_user_email/1
+    [
+        Change_User_Password,
+        [
+            api_version + "/change_user_password/<string:user_id>",
+        ],
+    ],  # https://maistore.com/change_user_password/1
+    [
+        Change_User_Admin_Status,
+        [
+            api_version + "/change_user_admin_status/<string:user_id>",
+        ],
+    ],  # https://maistore.com/change_user_admin_status/1
+    [
+        Change_User_Root_Status,
+        [
+            api_version + "/change_user_root_status/<string:user_id>",
+        ],
+    ],  # https://maistore.com/change_user_root_status/1
+    [
+        Forgot_Password,
+        [
+            api_version + "/forgot_password/<string:user_id>",
+        ],
+    ],  # https://maistore.com/forgot_password/1
+    [
+        Change_User_Image,
+        [
+            api_version + "/change_user_image/<string:user_id>",
+        ],
+    ],  # https://maistore.com/change_user_image/1
 ]
 
 # i want to comment all the Resources i have created
