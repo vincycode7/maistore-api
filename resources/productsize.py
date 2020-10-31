@@ -10,7 +10,6 @@ schema_many = ProductSizeSchema(many=True)
 # class to list all productsize
 class ProductSizeList(Resource):
     @classmethod
-    @jwt_required
     def get(cls):
         productsizes = ProductSizeModel.find_all()
         if productsizes:
@@ -20,7 +19,6 @@ class ProductSizeList(Resource):
 
 # class to add product sizes
 class ProductSize(Resource):
-    @jwt_required
     def get(self, size_id):
         productsize = ProductSizeModel.find_by_id(id=size_id)
         if productsize:

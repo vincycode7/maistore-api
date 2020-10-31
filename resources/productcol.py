@@ -11,7 +11,6 @@ schema_many = ProductColorSchema(many=True)
 # class to list all ProductColors
 class ProductColorList(Resource):
     @classmethod
-    @jwt_required
     def get(cls):
         productcolors = ProductColorModel.find_all()
         if productcolors:
@@ -21,7 +20,6 @@ class ProductColorList(Resource):
 
 # class to add product colors
 class ProductColor(Resource):
-    @jwt_required
     def get(self, productcolor_id):
         productcolor = ProductColorModel.find_by_id(id=productcolor_id)
         if productcolor:

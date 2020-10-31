@@ -4,25 +4,25 @@ from marshmallow_sqlalchemy import fields
 
 
 class ProductCatSchema(ma.SQLAlchemyAutoSchema):
-    productsubcat = fields.Nested(
-        "ProductSubCatSchema",
-        many=True,
-        exclude=(
-            "productcat",
-            "products",
-            "productsize",
-        ),
-    )
-    productsize = fields.Nested(
-        "ProductSizeSchema",
-        many=True,
-        exclude=(
-            "productcat",
-            "products",
-            "productcat_id",
-            "productsubcat",
-        ),
-    )
+    # productsubcat = fields.Nested(
+    #     "ProductSubCatSchema",
+    #     many=True,
+    #     exclude=(
+    #         "productcat",
+    #         "products",
+    #         "productsize",
+    #     ),
+    # )
+    # productsize = fields.Nested(
+    #     "ProductSizeSchema",
+    #     many=True,
+    #     exclude=(
+    #         "productcat",
+    #         "products",
+    #         "productcat_id",
+    #         "productsubcat",
+    #     ),
+    # )
 
     class Meta:
         model = ProductCatModel

@@ -1,7 +1,7 @@
 import sqlite3
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_claims
-from models.product import ProductModel
+from models.product import *
 from error_messages import *
 from schemas.product import ProductSchema
 
@@ -12,6 +12,7 @@ schema_many = ProductSchema(many=True)
 class ProductList(Resource):
     # use for authentication before calling get
     @classmethod
+    @jwt_optional
     def get(cls, pagenate=False):
         products = ProductModel.find_all()
         if products:
@@ -24,6 +25,7 @@ class ProductList(Resource):
 class ProductPagenate(Resource):
     # use for authentication before calling get
     @classmethod
+    @jwt_optional
     def get(cls, page=1):
         args_ = ProductModel.get_data_() 
         products = ProductModel.find_all_pagenate(page=page, **args_)
@@ -37,9 +39,9 @@ class ProductPagenate(Resource):
 
 
 class Product(Resource):
-
     # use for authentication before calling get
     @classmethod
+    @jwt_optional
     def get(cls, product_id):
 
         product = ProductModel.find_by_id(id=product_id)

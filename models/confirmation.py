@@ -19,7 +19,7 @@ class ConfirmationModel(db.Model, ModelsHelper):
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
 
     # merge (for sqlalchemy to link tables)
-    user = db.relationship("UserModel")
+    # user = db.relationship("UserModel")
 
     def __init__(self, user_id: int, **kwargs):
         super().__init__(**kwargs)

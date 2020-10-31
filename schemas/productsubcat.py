@@ -5,17 +5,17 @@ from marshmallow_sqlalchemy import fields
 
 
 class ProductSubCatSchema(ma.SQLAlchemyAutoSchema):
-    productcat = fields.Nested(lambda: ProductCatSchema(only=("desc", "id")))
-    productsize = fields.Nested(
-        "ProductSizeSchema",
-        many=True,
-        exclude=(
-            "productcat",
-            "products",
-            "productcat_id",
-            "productsubcat",
-        ),
-    )
+    # productcat = fields.Nested(lambda: ProductCatSchema(only=("desc", "id")))
+    # productsize = fields.Nested(
+    #     "ProductSizeSchema",
+    #     many=True,
+    #     exclude=(
+    #         "productcat",
+    #         "products",
+    #         "productcat_id",
+    #         "productsubcat",
+    #     ),
+    # )
 
     class Meta:
         model = ProductSubCatModel

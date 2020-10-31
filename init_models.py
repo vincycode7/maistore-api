@@ -13,3 +13,5 @@ from models.productcat import ProductCatModel
 from models.productcol import ProductColorModel
 from models.productsize import ProductSizeModel
 from models.review import ReviewModel
+from models.confirmation import ConfirmationModel
+from models.forgot_password import ForgotPasswordModel

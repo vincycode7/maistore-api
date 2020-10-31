@@ -6,14 +6,19 @@ from resources.user import (
     UserLogin,
     TokenRefresh,
     UserLogout,
-    Forgot_Password,
     Change_User_Email,
     Change_User_Password,
     Change_User_Image,
     Change_User_Root_Status,
     Change_User_Admin_Status
 )
-from resources.confirmation import Confirmation, ConfirmationByUser
+from resources.forgot_password import ( 
+                                            RequestForgotPasswordDigit, 
+                                            GetForgotPasswordId,
+                                            ViewForgotPasswordRequests,
+                                            ResetPassword
+                                        )
+from resources.confirmation import ConfirmUser, ViewConfirmation, ResendConfirmation
 from resources.store import Store, StoreList, StorePagenate
 from resources.product import Product, ProductList, ProductPagenate
 from resources.productcat import ProductCatList, ProductCat
@@ -37,15 +42,19 @@ route_path = [
     [TokenRefresh, [api_version + "/refresh"]],  # https://mistore.com/refresh
     [UserRegister, [api_version + "/register"]],  # https://mistore.com/register
     [
-        Confirmation,
-        [api_version + "/user_confirmation/<string:confirmation_id>"],
-    ],  # https://mistore.com/user_confirmation/1
+        ConfirmUser,
+        [api_version + "/confirm_user/<string:confirmation_id>"],
+    ],  # https://mistore.com/confirm_user/1
     [
-        ConfirmationByUser,
-        [api_version + "/confirmation/user/<string:email>"],
-    ],  # https://mistore.com/confirmation/user/1
-    [UserLogin, [api_version + "/login"]],  # https://mistore.com/register
-    [UserLogout, [api_version + "/logout"]],  # https://mistore.com/register
+        ViewConfirmation,
+        [api_version + "/view_confirmation/user/<string:email>"],
+    ],  # https://mistore.com/view_confirmation/user/v@gm.com
+    [
+        ResendConfirmation,
+        [api_version + "/resend_confirmation/user/<string:email>"],
+    ],  # https://mistore.com/resend_confirmation/user/v@gm.com
+    [UserLogin, [api_version + "/login"]],  # https://mistore.com/login
+    [UserLogout, [api_version + "/logout"]],  # https://mistore.com/logout
     [User, [api_version + "/user/<string:user_id>"]],  # https://mistore.com/user/1
     [UserList, [api_version + "/users"]],  # https://mistore.com/users
     [
@@ -92,7 +101,7 @@ route_path = [
     [
         ProductSize,
         [api_version + "/productsize", api_version + "/productsize/<string:size_id>"],
-    ],  # https://maistore.com/productsizes
+    ],  # https://maistore.com/productsize
     [ColorList, [api_version + "/colors"]],  # https://maistore.com/colors
     [
         Color,
@@ -134,17 +143,33 @@ route_path = [
         ],
     ],  # https://maistore.com/change_user_root_status/1
     [
-        Forgot_Password,
-        [
-            api_version + "/forgot_password/<string:user_id>",
-        ],
-    ],  # https://maistore.com/forgot_password/1
-    [
         Change_User_Image,
         [
             api_version + "/change_user_image/<string:user_id>",
         ],
     ],  # https://maistore.com/change_user_image/1
+    [
+        RequestForgotPasswordDigit,
+        [api_version + "/request_forgot_password_digit"],
+    ],  # https://mistore.com/request_forgot_password_digit
+    [
+        GetForgotPasswordId,
+        [
+            api_version + "/get_forgot_password_id/user/<string:email>",
+        ],
+    ],  # https://maistore.com/get_forgot_password_id/user/v@gm.com
+    [
+        ViewForgotPasswordRequests,
+        [
+            api_version + "/view_forgot_password_requests/user/<string:email>",
+        ],
+    ],  # https://maistore.com/view_forgot_password_requests/user/v@gm.com
+    [
+        ResetPassword,
+        [
+            api_version + "/reset_password/<string:forgotpassword_id>",
+        ],
+    ],  # https://maistore.com/reset_password/1
 ]
 
 # i want to comment all the Resources i have created

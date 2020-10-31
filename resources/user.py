@@ -28,13 +28,11 @@ class UserLogin(Resource):
         msg, status = UserModel.login_checker(user_data=data)
         return msg, status
 
-
 # class to register user
 class UserRegister(Resource):
     @classmethod
     @jwt_optional
     def post(cls):
-        claim = get_jwt_claims()
         data = usr_reg_schema.load(UserModel.get_data_())
 
         # check if data already exist
@@ -47,7 +45,6 @@ class UserRegister(Resource):
         if status_code != 201:
             return msg, status_code
         return msg, status_code
-
 
 # class to list all user
 class UserList(Resource):
@@ -62,7 +59,6 @@ class UserList(Resource):
         if users:
             return {"users": schema_many.dump(users)}, 201
         return {"message": NOT_FOUND.format("users")}, 400
-
 
 # class to create user and get user
 class User(Resource):
@@ -131,7 +127,6 @@ class User(Resource):
                 return {"messgae" : AUTH_REQUIRED_TO_DELETE.format("user (check password)")}
         return {"message": NOT_FOUND.format("User")}, 400  # 400 is for bad request
 
-
 # to refresh token when it expires
 class TokenRefresh(Resource):
     @classmethod
@@ -171,86 +166,8 @@ class Change_User_Email(Resource):
         if password == None:
             return {"message": NOT_FOUND.format("password parameter")}, 400  # 400 is for bad request 
 
-        user, unique_input_error, status = UserModel.email_already_exist(user_id=user_id, email=new_email)
-
-        if unique_input_error:
-            return unique_input_error, status
-
-        # if user already exist update the dictionary
-        if user:
-            if user.email != old_email:
-                return {"message" : INVALID_CREDENTIALS_FOR.format("email")}, 400
-            elif user.password != password:
-                return {"message" : INVALID_CREDENTIALS_FOR.format("password")}, 400
-
-            user.__setattr__("email", new_email)
-            print(f"user after updated --> {user}")
-            # save
-            try:
-                user.save_to_db()
-                # send confirmation to new email
-                message, status_code = user.send_confirmation_on_email_change(user)
-                if status_code == 201:
-                    jti = get_raw_jwt()['jti']
-                    BLACKLIST_ACCESS.add(jti)
-                    return message, status_code
-                user.__setattr__("email", old_email)
-                user.save_to_db()
-                return message, status_code
-            except Exception as e:
-                print(f"error is {e}")
-                return {
-                    "message": ERROR_WHILE_INSERTING.format("user")
-                }, 500  # Internal server error
-        return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request             
-
-# to refresh token when it expires
-class Forgot_Password(Resource):
-    @classmethod
-    @jwt_required
-    def post(cls, user_id):
-        msg, status_code, _ = UserModel.auth_by_admin_root_or_user(user_id=user_id, err_msg="to get this users")
-        if status_code != 200:
-            return msg, status_code
-
-        old_email = UserModel.get_data_().get("old_email", None)
-        new_email = UserModel.get_data_().get("new_email", None)
-        password = UserModel.get_data_().get("password", None)
-        user, unique_input_error, status = UserModel.email_already_exist(user_id=user_id, email=new_email)
-
-        if unique_input_error:
-            return unique_input_error, status
-
-        # if user already exist update the dictionary
-        print(f"user --> {user}")
-        if user:
-            if user.email != old_email:
-                return {"message" : INVALID_CREDENTIALS_FOR.format("email")}, 400
-            elif user.password != password:
-                return {"message" : INVALID_CREDENTIALS_FOR.format("password")}, 400
-
-            user.__setattr__("email", new_email)
-            print(f"user after updated --> {user}")
-            # save
-            try:
-                user.save_to_db()
-                # send confirmation to new email
-                print(f"user before send")
-                message, status_code = user.send_confirmation_on_email_change(user)
-                print(f"user after send")
-                if status_code == 201:
-                    jti = get_raw_jwt()['jti']
-                    BLACKLIST_ACCESS.add(jti)
-                    return message, status_code
-                user.__setattr__("email", old_email)
-                user.save_to_db()
-                return message, status_code
-            except Exception as e:
-                print(f"error is {e}")
-                return {
-                    "message": ERROR_WHILE_INSERTING.format("user")
-                }, 500  # Internal server error
-        return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request   
+        msg, status_code = UserModel.change_user_email(user_id=user_id, old_email=old_email, new_email=new_email, password=password)           
+        return msg, status_code
 
 # to refresh token when it expires
 class Change_User_Password(Resource):
@@ -269,26 +186,8 @@ class Change_User_Password(Resource):
 
         if new_password == None:
             return {"message": NOT_FOUND.format("new_password parameter")}, 400  # 400 is for bad request 
-
-        user = UserModel.find_by_id(id=user_id)
-        if not user:
-            return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request 
-
-        # if user already exist update the dictionary
-        if user:
-            if user.password != old_password:
-                return {"message" : INVALID_CREDENTIALS_FOR.format("password")}, 400
-
-            user.__setattr__("password", new_password)
-            # save
-            try:
-                user.save_to_db()
-            except Exception as e:
-                print(f"error is {e}")
-                return {
-                    "message": ERROR_WHILE_INSERTING.format("new password")
-                }, 500  # Internal server error
-        return {"message": SUCCESS_UPDATE.format("new password")}, 200  # 200 ok
+        msg, status_code = UserModel.change_user_password(user_id=user_id, old_password=old_password, new_password=new_password)
+        return msg, status_code
 
 # to refresh token when it expires
 class Change_User_Image(Resource):
@@ -316,26 +215,12 @@ class Change_User_Admin_Status(Resource):
         if status_code != 200:
             return msg, status_code
 
-        is_admin = UserModel.get_data_().get("is_admin", None)
+        is_admin = cls.get_data_().get("is_admin", None)
         if is_admin == None:
             return {"message": NOT_FOUND.format("is_admin parameter")}, 400  # 400 is for bad request
 
-        user = UserModel.find_by_id(id=user_id)
-        if not user:
-            return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request 
-
-        # if user already exist update the dictionary
-        if user:
-            user.__setattr__("admin", is_admin)
-            # save
-            try:
-                user.save_to_db()
-            except Exception as e:
-                print(f"error is {e}")
-                return {
-                    "message": ERROR_WHILE_INSERTING.format("admin status")
-                }, 500  # Internal server error
-        return {"message": SUCCESS_UPDATE.format("admin status")}, 200  # 200 ok
+        msg, status_code = UserModel.change_user_admin_status(user_id=user_id, is_admin=is_admin)
+        return msg, status_code
 
 # to refresh token when it expires
 class Change_User_Root_Status(Resource):
@@ -346,25 +231,12 @@ class Change_User_Root_Status(Resource):
         if status_code != 200:
             return msg, status_code
 
-        is_root = UserModel.get_data_().get("is_root", None)
+        is_root = cls.get_data_().get("is_root", None)
         if is_root == None:
             return {"message": NOT_FOUND.format("is_root parameter")}, 400  # 400 is for bad request 
-        user = UserModel.find_by_id(id=user_id)
-
-        if not user:
-            return {"message": NOT_FOUND.format("user id")}, 400  # 400 is for bad request 
-        # if user already exist update the dictionary
-        if user:
-            user.__setattr__("rootusr", is_root)
-            # save
-            try:
-                user.save_to_db()
-            except Exception as e:
-                print(f"error is {e}")
-                return {
-                    "message": ERROR_WHILE_INSERTING.format("root status")
-                }, 500  # Internal server error
-        return {"message": SUCCESS_UPDATE.format("root status")}, 200  # 200 ok
+        
+        msg, status_code = UserModel.change_user_root_status(user_id=user_id, is_root=is_root)
+        return msg, status_code
 
 # class to login users
 class UserLogout(Resource):

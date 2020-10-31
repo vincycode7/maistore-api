@@ -9,7 +9,6 @@ schema_many = ProductCatSchema(many=True)
 # class to list all productcat
 class ProductCatList(Resource):
     @classmethod
-    @jwt_required
     def get(cls):
         productcats = ProductCatModel.find_all()
         if productcats:
@@ -19,7 +18,6 @@ class ProductCatList(Resource):
 
 # class to add product categories
 class ProductCat(Resource):
-    @jwt_required
     def get(self, cat_id):
         productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:

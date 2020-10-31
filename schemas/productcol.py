@@ -6,8 +6,8 @@ from schemas.colors import ColorsSchema
 
 
 class ProductColorSchema(ma.SQLAlchemyAutoSchema):
-    product = fields.Nested(lambda: ProductSchema(only=("id", "productname", "store")))
-    colors = fields.Nested(lambda: ColorsSchema(only=("desc", "id")))
+    # product = fields.Nested(lambda: ProductSchema(only=("id", "productname", "store")))
+    # colors = fields.Nested(lambda: ColorsSchema(only=("desc", "id")))
 
     class Meta:
         model = ProductColorModel

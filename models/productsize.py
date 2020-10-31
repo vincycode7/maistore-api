@@ -13,12 +13,12 @@ class ProductSizeModel(db.Model, ModelsHelper):
     desc = db.Column(db.String(256), nullable=False)
 
     # merge
-    products = db.relationship(
-        "ProductModel",
-        lazy="dynamic",
-        backref="productsize",
-        cascade="all, delete-orphan",
-    )
+    # products = db.relationship(
+    #     "ProductModel",
+    #     lazy="dynamic",
+    #     backref="productsize",
+    #     cascade="all, delete-orphan",
+    # )
 
     @classmethod
     def find_by_sizedesc(cls, sizedesc=None):

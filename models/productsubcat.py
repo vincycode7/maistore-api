@@ -13,19 +13,19 @@ class ProductSubCatModel(db.Model, ModelsHelper):
     desc = db.Column(db.String(256), unique=True, nullable=False)
 
     # merge
-    products = db.relationship(
-        "ProductModel",
-        lazy="dynamic",
-        backref="productsubcat",
-        cascade="all, delete-orphan",
-    )
+    # products = db.relationship(
+    #     "ProductModel",
+    #     lazy="dynamic",
+    #     backref="productsubcat",
+    #     cascade="all, delete-orphan",
+    # )
 
-    productsize = db.relationship(
-        "ProductSizeModel",
-        lazy="dynamic",
-        backref="productsubcat",
-        cascade="all, delete-orphan",
-    )
+    # productsize = db.relationship(
+    #     "ProductSizeModel",
+    #     lazy="dynamic",
+    #     backref="productsubcat",
+    #     cascade="all, delete-orphan",
+    # )
 
     @classmethod
     def find_by_subcatdesc(cls, subcatdesc=None):

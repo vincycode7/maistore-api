@@ -22,6 +22,7 @@ from flask_jwt_extended import (
 
 
 class ModelsHelper:
+
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
@@ -33,11 +34,6 @@ class ModelsHelper:
 
     def rollback_error(self):
         db.session.rollback()
-
-    @classmethod
-    def find_all(cls):
-        result = cls.query.all()
-        return result
 
     @classmethod
     def find_all(cls):
@@ -104,8 +100,12 @@ class ModelsHelper:
     @classmethod
     def find_user_by_id(cls, user_id):
         from models.user import UserModel
-
         return UserModel.find_by_id(id=user_id)
+
+    @classmethod
+    def find_user_by_email(cls, user_email):
+        from models.user import UserModel
+        return UserModel.find_by_email(email=user_email)
 
     @classmethod
     def find_productcat_by_id(cls, productcat_id):

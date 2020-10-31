@@ -17,7 +17,7 @@ confirimation_schema_many = ConfirmationSchema(many=True)
 
 
 # use to confirm user
-class Confirmation(Resource):
+class ConfirmUser(Resource):
     @classmethod
     def get(cls, confirmation_id: str):
         """ Return confirmation HTML """
@@ -51,20 +51,17 @@ class Confirmation(Resource):
             headers,
         )
 
-
-# use to view or resend confirmations
-class ConfirmationByUser(Resource):
+# use to view confirmations
+class ViewConfirmation(Resource):
     @classmethod
     @jwt_required
-    def get(cls, user_id: int):
+    def get(cls, email: str):
         """ Returns confirmations for a given user. Use for testing """
-        claim = get_jwt_claims()
-        if not claim or not claim["is_admin"] or not claim["is_root"]:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("to get user confirmations")
-            }, 401
+        msg, status_code, _ = UserModel.auth_by_admin_root(err_msg="to get user confirmations")
+        if status_code != 200:
+            return msg, status_code
 
-        user = UserModel.find_by_id(id=user_id)
+        user = UserModel.find_by_email(email=email)
         if not user:
             return {"message": NOT_FOUND.format("user")}, 404
         return (
@@ -78,8 +75,10 @@ class ConfirmationByUser(Resource):
             200,
         )
 
+# use to resend confirmations
+class ResendConfirmation(Resource):
     @classmethod
-    def post(cls, email: str = None):
+    def post(cls, email: int = None):
         """ Resend confirmation email """
         user = UserModel.find_by_email(email=email)
 
@@ -87,23 +86,23 @@ class ConfirmationByUser(Resource):
             return {"message": NOT_FOUND.format("user email")}, 404
 
         try:
-            confirmation = user.most_recent_confirmation
-            if confirmation:
-                if confirmation.confirmed:
-                    return {
-                        "message": ALREADY_CONFIRMED.format(
-                            "user confirmation id", confirmation.id
-                        )
-                    }, 400
-                confirmation.force_to_expire()
-            new_confirmation = ConfirmationModel(user_id)
-            new_confirmation.save_to_db()
-            user.send_confirmation_toemail()
-
+            # confirmation = user.most_recent_confirmation
+            # if confirmation:
+            #     if confirmation.confirmed:
+            #         return {
+            #             "message": ALREADY_CONFIRMED.format(
+            #                 "user confirmation id", confirmation.id
+            #             )
+            #         }, 400
+            #     confirmation.force_to_expire()
+            # new_confirmation = ConfirmationModel(user.id)
+            # new_confirmation.save_to_db()
+            # user.send_confirmation_email()
+            reply, status_code = UserModel.create_send_confirmation_for_user(user=user, resend=True)
+            if status_code != 200:
+                return reply, status_code
             return {"message": CONFIRMATION_RESEND_SUCCESSFUL}, 201
-        except MailerException as e:
-            return {"message": str(e)}, 500
 
-        except:
-            traceback.print_exc()
+        except Exception as e:
+            print(e)
             return {"message": CONFIRMATION_RESEND_FAILED}, 500

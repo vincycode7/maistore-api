@@ -9,7 +9,6 @@ schema_many = ProductSubCatSchema(many=True)
 # class to list all productsubcat
 class ProductSubCatList(Resource):
     @classmethod
-    @jwt_required
     def get(cls):
         productsubcats = ProductSubCatModel.find_all()
         if productsubcats:
@@ -19,7 +18,6 @@ class ProductSubCatList(Resource):
 
 # class to add product subcategories
 class ProductSubCat(Resource):
-    @jwt_required
     def get(self, subcat_id):
         productsubcat = ProductSubCatModel.find_by_id(id=subcat_id)
         if productsubcat:
@@ -71,12 +69,6 @@ class ProductSubCat(Resource):
         if productsubcat:
             for each in data.keys():
                 productsubcat.__setattr__(each, data[each])
-            # else:
-            #     # check if data already exist
-            #     unique_input_error, status = ProductSubCatModel.post_unique_already_exist(claim, data)
-            #     if unique_input_error:
-            #         return unique_input_error, status
-            #     productsubcat = ProductSubCatModel(**data)
 
             # save
             try:
