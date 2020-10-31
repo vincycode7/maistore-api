@@ -13,7 +13,7 @@ class StoreSchema(ma.SQLAlchemyAutoSchema):
 
     class Meta:
         model = StoreModel
-        load_only = ("user_id",)
+        # load_only = ("user_id",)
         dump_only = ("id",)
         include_fk = True
         include_relationships = True

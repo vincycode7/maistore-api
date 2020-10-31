@@ -19,7 +19,7 @@ class ProductSubCatSchema(ma.SQLAlchemyAutoSchema):
 
     class Meta:
         model = ProductSubCatModel
-        load_only = ("categorycat_id",)
+        # load_only = ("categorycat_id",)
         dump_only = ("id",)
         include_fk = True
         include_relationships = True

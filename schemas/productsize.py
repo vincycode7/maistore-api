@@ -11,7 +11,7 @@ class ProductSizeSchema(ma.SQLAlchemyAutoSchema):
 
     class Meta:
         model = ProductSizeModel
-        load_only = ("productsubcat_id", "productcat_id")
+        # load_only = ("productsubcat_id", "productcat_id")
         dump_only = ("id",)
         include_fk = True
         include_relationships = True

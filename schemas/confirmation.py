@@ -6,7 +6,7 @@ from ma import ma
 class ConfirmationSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ConfirmationModel
-        load_only = ("user_id",)
+        # load_only = ("user_id",)
         dump_only = (
             "id",
             "expired_at",

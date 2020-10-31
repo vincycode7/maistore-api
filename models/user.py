@@ -42,29 +42,29 @@ class UserModel(db.Model, ModelsHelper):
     phoneno = db.Column(db.String(15), index=False, unique=True, nullable=True)
 
     # merge (for sqlalchemy to link tables)
-    stores = db.relationship(
-        "StoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    )
-    bitcoins = db.relationship(
-        "BitcoinPayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    )
-    cards = db.relationship(
-        "CardpayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    )
-    favstores = db.relationship(
-        "FavStoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    )
-    carts = db.relationship(
-        "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    )
+    # stores = db.relationship(
+    #     "StoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    # )
+    # bitcoins = db.relationship(
+    #     "BitcoinPayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    # )
+    # cards = db.relationship(
+    #     "CardpayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    # )
+    # favstores = db.relationship(
+    #     "FavStoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    # )
+    # carts = db.relationship(
+    #     "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    # )
 
-    confirmation = db.relationship(
-        "ConfirmationModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    )
+    # confirmation = db.relationship(
+    #     "ConfirmationModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    # )
 
-    forgotpassword = db.relationship(
-        "ForgotPasswordModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    )
+    # forgotpassword = db.relationship(
+    #     "ForgotPasswordModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    # )
 
     @property
     def confirmed(self):

@@ -14,35 +14,35 @@ class ProductSchema(ma.SQLAlchemyAutoSchema):
     # to create fields to dump
     # Note: variable name must the the same as name
     # in backref
-    store = fields.Nested(
-        lambda: StoreSchema(
-            only=(
-                "storename",
-                "user",
-                "id",
-            )
-        )
-    )
-    productsize = fields.Nested(lambda: ProductSizeSchema(only=("desc", "id")))
-    productcat = fields.Nested(lambda: ProductCatSchema(only=("desc", "id")))
-    productsubcat = fields.Nested(lambda: ProductSubCatSchema(only=("desc", "id")))
-    productcol = fields.Nested(
-        "ProductColorSchema",
-        many=True,
-        exclude=(
-            "product",
-            "product_id",
-        ),
-    )
+    # store = fields.Nested(
+    #     lambda: StoreSchema(
+    #         only=(
+    #             "storename",
+    #             "user",
+    #             "id",
+    #         )
+    #     )
+    # )
+    # productsize = fields.Nested(lambda: ProductSizeSchema(only=("desc", "id")))
+    # productcat = fields.Nested(lambda: ProductCatSchema(only=("desc", "id")))
+    # productsubcat = fields.Nested(lambda: ProductSubCatSchema(only=("desc", "id")))
+    # productcol = fields.Nested(
+    #     "ProductColorSchema",
+    #     many=True,
+    #     exclude=(
+    #         "product",
+    #         "product_id",
+    #     ),
+    # )
 
     class Meta:
         model = ProductModel
-        load_only = (
-            "productcat_id",
-            "store_id",
-            "productsubcat_id",
-            "size_id",
-        )
+        # load_only = (
+        #     "productcat_id",
+        #     "store_id",
+        #     "productsubcat_id",
+        #     "size_id",
+        # )
         dump_only = "is_available"
         include_fk = True
         include_relationships = True

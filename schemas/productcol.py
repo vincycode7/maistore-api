@@ -11,7 +11,7 @@ class ProductColorSchema(ma.SQLAlchemyAutoSchema):
 
     class Meta:
         model = ProductColorModel
-        load_only = ("color_id", "product_id")
+        # load_only = ("color_id", "product_id")
         dump_only = ("id",)
         include_fk = True
         include_relationships = True

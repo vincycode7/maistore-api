@@ -6,7 +6,7 @@ from ma import ma
 class ForgotPasswordSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ForgotPasswordModel
-        load_only = ("user_id",)
+        # load_only = ("user_id",)
         dump_only = (
             "id",
             "expired_at",

@@ -25,24 +25,24 @@ class StoreModel(db.Model, ModelsHelper):
     country = db.Column(db.String(30), nullable=True)
 
     # merge (for sqlalchemy to link tables)
-    products = db.relationship(
-        "ProductModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
-    )
-    customers = db.relationship(
-        "FavStoreModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
-    )
-    orders = db.relationship(
-        "CartSystemModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
-    )
-    locations = db.relationship(
-        "StorelocModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
-    )
-    phonenos = db.relationship(
-        "StorephoneModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
-    )
-    emails = db.relationship(
-        "StoreemailModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
-    )
+    # products = db.relationship(
+    #     "ProductModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
+    # )
+    # customers = db.relationship(
+    #     "FavStoreModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
+    # )
+    # orders = db.relationship(
+    #     "CartSystemModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
+    # )
+    # locations = db.relationship(
+    #     "StorelocModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
+    # )
+    # phonenos = db.relationship(
+    #     "StorephoneModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
+    # )
+    # emails = db.relationship(
+    #     "StoreemailModel", lazy="dynamic", backref="store", cascade="all, delete-orphan"
+    # )
 
     @classmethod
     def find_by_name(cls, storename: str = None) -> "StoreModel":

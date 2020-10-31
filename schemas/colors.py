@@ -4,11 +4,11 @@ from marshmallow_sqlalchemy import fields
 
 
 class ColorsSchema(ma.SQLAlchemyAutoSchema):
-    productcol = fields.Nested(
-        "ProductColorSchema",
-        many=True,
-        exclude=("colors",),
-    )
+    # productcol = fields.Nested(
+    #     "ProductColorSchema",
+    #     many=True,
+    #     exclude=("colors",),
+    # )
 
     class Meta:
         model = ColorsModel

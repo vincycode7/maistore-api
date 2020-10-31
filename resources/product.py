@@ -12,7 +12,7 @@ schema_many = ProductSchema(many=True)
 class ProductList(Resource):
     # use for authentication before calling get
     @classmethod
-    @jwt_optional
+    # @jwt_optional
     def get(cls, pagenate=False):
         products = ProductModel.find_all()
         if products:
@@ -25,7 +25,7 @@ class ProductList(Resource):
 class ProductPagenate(Resource):
     # use for authentication before calling get
     @classmethod
-    @jwt_optional
+    # @jwt_optional
     def get(cls, page=1):
         args_ = ProductModel.get_data_() 
         products = ProductModel.find_all_pagenate(page=page, **args_)
@@ -41,7 +41,7 @@ class ProductPagenate(Resource):
 class Product(Resource):
     # use for authentication before calling get
     @classmethod
-    @jwt_optional
+    # @jwt_optional
     def get(cls, product_id):
 
         product = ProductModel.find_by_id(id=product_id)

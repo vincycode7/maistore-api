@@ -8,12 +8,12 @@ class ColorsModel(db.Model, ModelsHelper):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     desc = db.Column(db.String(256), nullable=False)
 
-    productcol = db.relationship(
-        "ProductColorModel",
-        lazy="dynamic",
-        backref="colors",
-        cascade="all, delete-orphan",
-    )
+    # productcol = db.relationship(
+    #     "ProductColorModel",
+    #     lazy="dynamic",
+    #     backref="colors",
+    #     cascade="all, delete-orphan",
+    # )
 
     @classmethod
     def find_by_colordesc(cls, colordesc=None):

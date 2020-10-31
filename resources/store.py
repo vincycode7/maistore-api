@@ -11,7 +11,7 @@ schema_many = StoreSchema(many=True)
 
 class Store(Resource):
     @classmethod
-    @jwt_required
+    # @jwt_required
     def get(cls, store_id):
         store = StoreModel.find_by_id(store_id)
         if store:
