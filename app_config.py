@@ -36,6 +36,7 @@ def create_usr_from_root(app):
         ERROR_OCCURED_CONFIRMING_ROOT_USR,
         ALREADY_EXISTS,
         ERROR_WHILE_INSERTING,
+        ERROR_N_WHILE
     )
 
     data_usr = {
@@ -64,7 +65,7 @@ def create_usr_from_root(app):
     try:
         confirmation = root_usr.create_confirmation()
     except Exception as e:
-        print(ERROR_N_WHILE.format(e, "creating confirmation"))
+        print(ERROR_N_WHILE.format(e,"creating confirmation"))
         UserModel.rollback_error()
         return
 
