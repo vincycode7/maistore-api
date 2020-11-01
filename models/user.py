@@ -241,6 +241,31 @@ class UserModel(db.Model, ModelsHelper):
         return {"message": SUCCESS_REGISTER_MESSAGE.format(user.email)}, 201
 
     @classmethod
+    def create_user_send_confirmation_digit(cls, data):
+        # save user
+        try:
+            user = cls.create_user(data)
+        except:
+            traceback.print_exc()
+            return {
+                "message": ERROR_WHILE_INSERTING.format("user")
+            }, 500  # Internal server error
+
+        # send confirmation
+        try:
+            reply, status_code = cls.create_send_confirmation_digit_for_user(user=user, email_change=False)
+
+        except Exception as e:
+            user.delete_from_db()
+            print(e)
+            return {
+                "message": ERROR_WHILE.format("sending confirmation")
+            }, 500  # Internal server error
+        if status_code != 200:
+                return reply, status_code
+        return {"message": SUCCESS_REGISTER_MESSAGE.format(user.email)}, 201
+
+    @classmethod
     def find_by_email(cls, email: str = None):
         result = cls.query.filter_by(email=email).first()
         return result

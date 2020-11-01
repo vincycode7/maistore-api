@@ -41,7 +41,7 @@ class UserRegister(Resource):
             return unique_input_error, status
 
         # create user and send confirmation email
-        msg, status_code = UserModel.create_user_send_confirmation(data=data)
+        msg, status_code = UserModel.create_user_send_confirmation_digit(data=data)
         if status_code != 201:
             return msg, status_code
         return msg, status_code
