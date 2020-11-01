@@ -52,14 +52,14 @@ def create_usr_from_root(app):
         print(
             f"Error creating root user --> {unique_input_error}"
         )
-        exit(status_code)
+        return
 
     try:
         root_usr = UserModel.create_user(data = data_usr)
     except Exception as e:
         print(ERROR_OCCURED_CREATING_ROOT_USR.format(e))
         UserModel.rollback_error()
-        exit(0)
+        return
 
     try:
         confirmation = root_usr.create_confirmation()
@@ -68,7 +68,7 @@ def create_usr_from_root(app):
     except Exception as e:
         print(ERROR_OCCURED_CONFIRMING_ROOT_USR.format(e))
         UserModel.rollback_error()
-        exit(0)
+        return
     
 
 def create_api(app):
