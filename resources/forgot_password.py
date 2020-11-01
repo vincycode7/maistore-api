@@ -50,7 +50,7 @@ class ViewForgotPasswordRequests(Resource):
         if status_code != 200:
             return msg, status_code
 
-        user = ForgotPasswordModel.user.find_by_email(email=email)
+        user = ForgotPasswordModel.find_user_by_email(user_email=email)
         if not user:
             return {"message": NOT_FOUND.format("user")}, 404
 
