@@ -65,8 +65,8 @@ def create_usr_from_root(app):
     try:
         confirmation = root_usr.create_confirmation()
     except Exception as e:
-        print(ERROR_N_WHILE.format(e,"creating confirmation"))
         root_usr.delete_from_db()
+        print(ERROR_N_WHILE.format(e,"creating confirmation"))
         UserModel.rollback_error()
         return
 
@@ -74,8 +74,8 @@ def create_usr_from_root(app):
         confirmation.force_to_confirm()
         confirmation.force_to_expire()
     except Exception as e:
-        print(ERROR_OCCURED_CONFIRMING_ROOT_USR.format(e))
         root_usr.delete_from_db()
+        print(ERROR_OCCURED_CONFIRMING_ROOT_USR.format(e))
         UserModel.rollback_error()
         return
     
