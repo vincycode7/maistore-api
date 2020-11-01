@@ -35,6 +35,7 @@ def create_usr_from_root(app):
         ERROR_OCCURED_CREATING_ROOT_USR,
         ERROR_OCCURED_CONFIRMING_ROOT_USR,
         ALREADY_EXISTS,
+        ERROR_WHILE_INSERTING,
     )
 
     data_usr = {
@@ -46,27 +47,29 @@ def create_usr_from_root(app):
     }
     # creat root user
     # check if data already exist
-    unique_input_error, status = UserModel.post_unique_already_exist(data_usr)
+    unique_input_error, status_code = UserModel.post_unique_already_exist(data_usr)
     if unique_input_error:
         print(
             f"Error creating root user --> {unique_input_error}"
         )
-        return unique_input_error, status
+        exit(status_code)
 
     try:
-        root_usr = UserModel.create_user(**data_usr)
-    except:
-        print(ERROR_WHILE_INSERTING.format("user"))
-        root_usr.rollback_error()
-        
+        root_usr = UserModel.create_user(data = data_usr)
+    except Exception as e:
+        print(ERROR_OCCURED_CREATING_ROOT_USR.format(e))
+        UserModel.rollback_error()
+        exit(0)
+
     try:
         confirmation = root_usr.create_confirmation()
-        confirmation.confirmed = True
-        confirmation.save_to_db()
+        confirmation.force_to_confirm()
         confirmation.force_to_expire()
-    except exc.SQLAlchemyError as e:
+    except Exception as e:
         print(ERROR_OCCURED_CONFIRMING_ROOT_USR.format(e))
-        confirmation.rollback_error()
+        UserModel.rollback_error()
+        exit(0)
+    
 
 def create_api(app):
     api = Api(app=app)

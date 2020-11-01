@@ -14,7 +14,7 @@ class CartSystemModel(db.Model, ModelsHelper):
 
     # merge
     # user = db.relationship("UserModel")
-    products = db.relationship("CartProductModel", backref="cartsystem", lazy="dynamic")
+    products = db.relationship("CartProductModel", backref="cartsystem", lazy="dynamic", cascade="all, delete-orphan",)
 
     @classmethod
     def find_by_store_id(cls, store_id=None):

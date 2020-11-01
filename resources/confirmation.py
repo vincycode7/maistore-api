@@ -16,41 +16,31 @@ confirmation_schema = ConfirmationSchema()
 confirimation_schema_many = ConfirmationSchema(many=True)
 
 
+# use to request for an eight digit forgot password code
+class RequestConfirmationDigit(Resource):
+    @classmethod
+    def post(cls):
+        """ send confirmation email """
+        email = ConfirmationModel.get_data_().get("email", None)
+
+        if email == None:
+            return {"message": NOT_FOUND.format("email parameter")}, 400  # 400 is for bad request 
+
+        msg, status_code = ConfirmationModel.request_confirmation_digit(email=email, email_change=False)
+        return msg, status_code
+
 # use to confirm user
 class ConfirmUser(Resource):
     @classmethod
-    def get(cls, confirmation_id: str):
-        """ Return confirmation HTML """
-        confirmation = ConfirmationModel.find_by_id(id=confirmation_id)
+    def post(cls, email: str):
+        eight_digit = ConfirmationModel.get_data_().get("eight_digit", None)
 
-        if not confirmation:
-            return {"message": NOT_FOUND.format("user confirmation")}, 404
+        if eight_digit == None:
+            return {"message": NOT_FOUND.format("eight_digit parameter")}, 400  # 400 is for bad request 
 
-        elif confirmation.confirmed:
-            return {
-                "message": ALREADY_CONFIRMED.format(
-                    "user confirmation id", confirmation.id
-                )
-            }, 400
-
-        elif confirmation.expired:
-            return {"message": EXPIRED.format("user confirmation")}, 400
-
-        try:
-            confirmation.confirmed = True
-            confirmation.force_to_expire()
-            confirmation.save_to_db()
-        except Exception as e:
-            print(e)
-            return ERROR_WHILE.format("confirming user"), 500
-
-        headers = {"Content-Type": "text/html"}
-        return make_response(
-            render_template("confirmation_page.html", email=confirmation.user.email),
-            200,
-            headers,
-        )
-
+        msg, status_code = ConfirmationModel.auth_confirmation(email=email, eight_digit=eight_digit)
+        return msg, status_code
+        
 # use to view confirmations
 class ViewConfirmation(Resource):
     @classmethod
@@ -74,35 +64,3 @@ class ViewConfirmation(Resource):
             },
             200,
         )
-
-# use to resend confirmations
-class ResendConfirmation(Resource):
-    @classmethod
-    def post(cls, email: int = None):
-        """ Resend confirmation email """
-        user = UserModel.find_by_email(email=email)
-
-        if not user:
-            return {"message": NOT_FOUND.format("user email")}, 404
-
-        try:
-            # confirmation = user.most_recent_confirmation
-            # if confirmation:
-            #     if confirmation.confirmed:
-            #         return {
-            #             "message": ALREADY_CONFIRMED.format(
-            #                 "user confirmation id", confirmation.id
-            #             )
-            #         }, 400
-            #     confirmation.force_to_expire()
-            # new_confirmation = ConfirmationModel(user.id)
-            # new_confirmation.save_to_db()
-            # user.send_confirmation_email()
-            reply, status_code = UserModel.create_send_confirmation_for_user(user=user, resend=True)
-            if status_code != 200:
-                return reply, status_code
-            return {"message": CONFIRMATION_RESEND_SUCCESSFUL}, 201
-
-        except Exception as e:
-            print(e)
-            return {"message": CONFIRMATION_RESEND_FAILED}, 500

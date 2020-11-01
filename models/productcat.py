@@ -9,25 +9,25 @@ class ProductCatModel(db.Model, ModelsHelper):
     desc = db.Column(db.String(256), unique=True, nullable=False)
 
     # merge
-    # products = db.relationship(
-    #     "ProductModel",
-    #     lazy="dynamic",
-    #     backref="productcat",
-    #     cascade="all, delete-orphan",
-    # )
-    # productsubcat = db.relationship(
-    #     "ProductSubCatModel",
-    #     lazy="dynamic",
-    #     backref="productcat",
-    #     cascade="all, delete-orphan",
-    # )
+    products = db.relationship(
+        "ProductModel",
+        lazy="dynamic",
+        backref="productcat",
+        cascade="all, delete-orphan",
+    )
+    productsubcat = db.relationship(
+        "ProductSubCatModel",
+        lazy="dynamic",
+        backref="productcat",
+        cascade="all, delete-orphan",
+    )
 
-    # productsize = db.relationship(
-    #     "ProductSizeModel",
-    #     lazy="dynamic",
-    #     backref="productcat",
-    #     cascade="all, delete-orphan",
-    # )
+    productsize = db.relationship(
+        "ProductSizeModel",
+        lazy="dynamic",
+        backref="productcat",
+        cascade="all, delete-orphan",
+    )
 
     @classmethod
     def find_by_catdesc(cls, catdesc=None):

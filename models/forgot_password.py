@@ -21,7 +21,6 @@ class ForgotPasswordModel(db.Model, ModelsHelper):
     eight_digit = db.Column(db.String(8), nullable=False)
 
     # merge (for sqlalchemy to link tables)
-    # user = db.relationship("UserModel")
 
     def __init__(self, user_id: int, **kwargs):
         super().__init__(**kwargs)
@@ -91,7 +90,7 @@ class ForgotPasswordModel(db.Model, ModelsHelper):
 
     @classmethod
     def reset_password(cls, forgotpassword_id, new_password):
-        forgotpassword = ForgotPasswordModel.find_by_id(id=forgotpassword_id)
+        forgotpassword = cls.find_by_id(id=forgotpassword_id)
 
         if not forgotpassword:
             return {"message": NOT_FOUND.format("no forgot password request found for user")}, 404 # Not found

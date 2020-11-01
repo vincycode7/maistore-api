@@ -42,34 +42,33 @@ class UserModel(db.Model, ModelsHelper):
     phoneno = db.Column(db.String(15), index=False, unique=True, nullable=True)
 
     # merge (for sqlalchemy to link tables)
-    # stores = db.relationship(
-    #     "StoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    # )
-    # bitcoins = db.relationship(
-    #     "BitcoinPayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    # )
-    # cards = db.relationship(
-    #     "CardpayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    # )
-    # favstores = db.relationship(
-    #     "FavStoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    # )
-    # carts = db.relationship(
-    #     "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    # )
+    stores = db.relationship(
+        "StoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    bitcoins = db.relationship(
+        "BitcoinPayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    cards = db.relationship(
+        "CardpayModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    favstores = db.relationship(
+        "FavStoreModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
+    carts = db.relationship(
+        "CartSystemModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
 
-    # confirmation = db.relationship(
-    #     "ConfirmationModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    # )
+    confirmation = db.relationship(
+        "ConfirmationModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
 
-    # forgotpassword = db.relationship(
-    #     "ForgotPasswordModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
-    # )
+    forgotpassword = db.relationship(
+        "ForgotPasswordModel", lazy="dynamic", backref="user", cascade="all, delete-orphan"
+    )
 
     @property
     def confirmed(self):
         confirmation = self.most_recent_confirmation
-        print(confirmation.id)
         if confirmation:
             return confirmation.confirmed
         return False
@@ -102,6 +101,15 @@ class UserModel(db.Model, ModelsHelper):
         to = [self.email]
         subject = "Registration confirmation"
         html = render_template("activate_email.html", link=link)
+        sender = Sender()
+        return sender.send_email(to=to, subject=subject, html=html, text=None)
+
+    def send_confirmation_digit_toemail(self):
+        from_ = "MAISTORE"
+        eight_digit = self.most_recent_confirmation.eight_digit
+        to = [self.email]
+        subject = "Confirmation 8-Digit Code"
+        html = render_template("confirm_user.html", eight_digit=eight_digit)
         sender = Sender()
         return sender.send_email(to=to, subject=subject, html=html, text=None)
 
@@ -152,12 +160,40 @@ class UserModel(db.Model, ModelsHelper):
         return None, 200
 
     @classmethod
-    def create_send_confirmation_for_user(cls, user, resend=False):
+    def create_send_confirmation_digit_for_user(cls, user, email_change=False):
         try:
             confirmation = user.most_recent_confirmation
             print("yaya")
             if confirmation:
-                if resend and confirmation.confirmed:
+                if not email_change and confirmation.confirmed:
+                    return {
+                        "message": ALREADY_CONFIRMED.format(
+                            "user confirmation id", confirmation.id
+                        )
+                    }, 400
+                confirmation.force_to_expire()
+            print("bibi")
+            confirmation = user.create_confirmation()
+            print("kuku")
+        except Exception as e:
+            raise e
+
+        try:
+            user.send_confirmation_digit_toemail()
+        except Exception as e:
+            confirmation = user.most_recent_confirmation
+            confirmation.delete_from_db()
+            print("bloblo")
+            raise e
+        return None, 200
+
+    @classmethod
+    def create_send_confirmation_for_user(cls, user, email_change=False):
+        try:
+            confirmation = user.most_recent_confirmation
+            print("yaya")
+            if confirmation:
+                if not email_change and confirmation.confirmed:
                     return {
                         "message": ALREADY_CONFIRMED.format(
                             "user confirmation id", confirmation.id
@@ -192,7 +228,7 @@ class UserModel(db.Model, ModelsHelper):
 
         # send confirmation
         try:
-            reply, status_code = cls.create_send_confirmation_for_user(user=user, resend=False)
+            reply, status_code = cls.create_send_confirmation_for_user(user=user, email_change=False)
 
         except Exception as e:
             user.delete_from_db()
@@ -285,8 +321,24 @@ class UserModel(db.Model, ModelsHelper):
 
         #check if mail will be sent to new email
         try:
-            reply, status_code = cls.create_send_confirmation_for_user(user=user)
+            reply, status_code = cls.create_send_confirmation_for_user(user=user,email_change=True)
 
+        except Exception as e:
+            print(f"error is {e}")
+            return {
+                "message": ERROR_WHILE.format("sending confirmation to new email")
+            }, 500  # Internal server error
+
+        if status_code != 200:
+                return reply, status_code
+        return {"message": EMAIL_CHANGE_SUCCESSFULLY.format(user.email)}, 201
+
+    @classmethod
+    def send_confirmation_digit_on_email_change(cls, user):
+
+        #check if mail will be sent to new email
+        try:
+            reply, status_code = cls.create_send_confirmation_digit_for_user(user=user, email_change=True)
         except Exception as e:
             print(f"error is {e}")
             return {
@@ -317,7 +369,7 @@ class UserModel(db.Model, ModelsHelper):
             try:
                 user.save_to_db()
                 # send confirmation to new email
-                message, status_code = user.send_confirmation_on_email_change(user)
+                message, status_code = user.send_confirmation_digit_on_email_change(user)
                 if status_code == 201:
                     jti = get_raw_jwt()['jti']
                     BLACKLIST_ACCESS.add(jti)

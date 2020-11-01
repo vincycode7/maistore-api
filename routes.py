@@ -18,7 +18,11 @@ from resources.forgot_password import (
                                             ViewForgotPasswordRequests,
                                             ResetPassword
                                         )
-from resources.confirmation import ConfirmUser, ViewConfirmation, ResendConfirmation
+from resources.confirmation import (
+                                            ConfirmUser, 
+                                            ViewConfirmation, 
+                                            RequestConfirmationDigit
+                                    )
 from resources.store import Store, StoreList, StorePagenate
 from resources.product import Product, ProductList, ProductPagenate
 from resources.productcat import ProductCatList, ProductCat
@@ -43,15 +47,15 @@ route_path = [
     [UserRegister, [api_version + "/register"]],  # https://mistore.com/register
     [
         ConfirmUser,
-        [api_version + "/confirm_user/<string:confirmation_id>"],
-    ],  # https://mistore.com/confirm_user/1
+        [api_version + "/confirm_user/user/<string:email>n"],
+    ],  # https://mistore.com/confirm_user/v@gm.com
     [
         ViewConfirmation,
-        [api_version + "/view_confirmation/user/<string:email>"],
-    ],  # https://mistore.com/view_confirmation/user/v@gm.com
+        [api_version + "/view_user_confirmations/user/<string:email>"],
+    ],  # https://mistore.com/view_user_confirmations/user/v@gm.com
     [
-        ResendConfirmation,
-        [api_version + "/resend_confirmation/user/<string:email>"],
+        RequestConfirmationDigit,
+        [api_version + "/request_confirmation_digit"],
     ],  # https://mistore.com/resend_confirmation/user/v@gm.com
     [UserLogin, [api_version + "/login"]],  # https://mistore.com/login
     [UserLogout, [api_version + "/logout"]],  # https://mistore.com/logout

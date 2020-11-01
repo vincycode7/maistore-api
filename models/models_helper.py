@@ -32,7 +32,8 @@ class ModelsHelper:
         db.session.add(self)
         db.session.commit()
 
-    def rollback_error(self):
+    @classmethod
+    def rollback_error(cls):
         db.session.rollback()
 
     @classmethod

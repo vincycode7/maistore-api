@@ -73,16 +73,16 @@ class ProductModel(db.Model, ModelsHelper):
     )
 
     # merge
-    # reviews = db.relationship(
-    #     "ReviewModel", lazy="dynamic", backref="product", cascade="all, delete-orphan"
-    # )
+    reviews = db.relationship(
+        "ReviewModel", lazy="dynamic", backref="product", cascade="all, delete-orphan"
+    )
 
-    # productcol = db.relationship(
-    #     "ProductColorModel",
-    #     lazy="dynamic",
-    #     backref="product",
-    #     cascade="all, delete-orphan",
-    # )
+    productcol = db.relationship(
+        "ProductColorModel",
+        lazy="dynamic",
+        backref="product",
+        cascade="all, delete-orphan",
+    )
 
     @classmethod
     def find_by_name(cls, productname=None):
