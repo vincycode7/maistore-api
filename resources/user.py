@@ -134,8 +134,7 @@ class TokenRefresh(Resource):
     def post(cls):
         user_identity = get_jwt_identity()
         user = UserModel.find_user_by_id(user_identity)
-        print(f"identity --> {user_identity}, {user.confirmed}")
-        if not user.confirmed:
+        if user and not user.confirmed:
             jti = get_raw_jwt()['jti']
             BLACKLIST_ACCESS.add(jti)
             return {"message" : "token_revoked"}, 401
