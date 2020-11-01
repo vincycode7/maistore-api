@@ -10,7 +10,7 @@ class ProductSubCatModel(db.Model, ModelsHelper):
     category_id = db.Column(
         db.Integer, db.ForeignKey("productcat.id"), nullable=False
     )
-    desc = db.Column(db.String(256), unique=True, nullable=False)
+    desc = db.Column(db.String(256), unique=False, nullable=False)
 
     # merge
     products = db.relationship(
