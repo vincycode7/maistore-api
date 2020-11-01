@@ -134,10 +134,17 @@ class TokenRefresh(Resource):
     def post(cls):
         user_identity = get_jwt_identity()
         user = UserModel.find_user_by_id(user_identity)
-        if not user or not user.confirmed:
-            jti = get_raw_jwt()['jti']
-            BLACKLIST_ACCESS.add(jti)
-            return {"message" : "token_revoked"}, 401
+        print(user)
+        if user:
+            if not user.confirmed:
+                jti = get_raw_jwt()['jti']
+                BLACKLIST_ACCESS.add(jti)
+                return {"message" : "token_revoked"}, 401
+        elif not user:
+                jti = get_raw_jwt()['jti']
+                BLACKLIST_ACCESS.add(jti)
+                return {"message" : "invalid_revoked"}, 401
+
         new_token = create_access_token(
             identity=user_identity, fresh=False, expires_delta=_5MIN
         )
