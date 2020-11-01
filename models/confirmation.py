@@ -5,7 +5,7 @@ from flask import request, url_for, make_response, render_template
 from libs.mailer import Sender
 from uuid import uuid4
 from time import time
-# from random import randint
+from random import randint
 
 CONFIRMATION_EXPIRATION_DELTA = 1800  # 30 MINUTES
 
