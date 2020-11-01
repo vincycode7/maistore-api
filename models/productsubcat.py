@@ -33,26 +33,33 @@ class ProductSubCatModel(db.Model, ModelsHelper):
         return result
 
     @classmethod
+    def find_by_subcatdesc_catid(cls, subcatdesc=None, productcat_id=None):
+        result = cls.query.filter_by(desc=subcatdesc, category_id=productcat_id).first()
+        return result
+
+    @classmethod
     def check_unique_inputs(cls, subcat_data=None):
         desc = cls.find_by_subcatdesc(subcatdesc=subcat_data.get("desc", None))
+        subcatdesc_catid = cls.find_by_subcatdesc_catid(
+                                        subcatdesc=subcat_data.get("desc", None), 
+                                        productcat_id=subcat_data.get("category_id", None)
+                                    )
         productcat = cls.find_productcat_by_id(productcat_id=subcat_data.get("category_id", None))
-        return desc, productcat
+        return subcatdesc_catid,desc, productcat
 
     @classmethod
     def post_unique_already_exist(cls, claim, subcat_data):
-        desc, productcat = cls.check_unique_inputs(subcat_data=subcat_data)
+        subcatdesc_catid,_, productcat = cls.check_unique_inputs(subcat_data=subcat_data)
         
-        if not claim or (claim and (not claim["is_admin"] or not claim["is_root"])):
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format(
-                    "post product subcategories"
-                )
-            }, 401
+        # check subcat permission, edit and parse data
+        msg, status_code, _ = cls.auth_by_admin_root(err_msg="post product subcategories")
+        if status_code != 200:
+            return msg, status_code
 
-        if desc:
+        if subcatdesc_catid:
             return {
                 "message": ALREADY_EXISTS.format(
-                    "product subcategory", subcat_data["desc"]
+                    "product subcategory", subcat_data["desc"] + "for category "+subcatdesc_catid.category_id
                 )
             }, 400  # 400 is for bad request
 
@@ -66,34 +73,40 @@ class ProductSubCatModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, subcat_id, subcat_data):
+    def put_unique_already_exist(cls,subcat_id, subcat_data):
         productsubcat = cls.find_by_id(id=subcat_id)
-        desc = cls.check_unique_inputs(subcat_data=subcat_data)
+        subcatdesc_catid,_, productcat = cls.check_unique_inputs(subcat_data=subcat_data)
 
         # check subcat permission, edit and parse data
-        if not claim or (claim and (not claim["is_admin"] or not claim["is_root"])):
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format(
-                    "post product subcategories"
-                )
-            }, 401
+        msg, status_code, _ = cls.auth_by_admin_root(err_msg="edit product subcategories")
+        if status_code != 200:
+            return None, msg, status_code
 
         # check if productid exist
         if not productcat:
-            return {
+            return None, {
                 "message": DOES_NOT_EXIST.format(
                     "product category"
                 )
             }, 400  # 400 is for bad request
 
-        if desc and productsubcat and desc.id != productsubcat.id:
+        # check if productid exist
+        if not productsubcat:
+            return None,{
+                "message": DOES_NOT_EXIST.format(
+                    "product sub category"
+                )
+            }, 400  # 400 is for bad request
+
+        if subcatdesc_catid and productsubcat and subcatdesc_catid.id != productsubcat.id:
             return (
-                productsubcat,
-                {
+                None,
+                    {
                     "message": ALREADY_EXISTS.format(
-                        "product subcategory", subcat_data["desc"]
-                    )
-                },
-                400,
+                                                    "product subcategory", 
+                                                    subcat_data["desc"] + "for category "+subcatdesc_catid.category_id
+                                                    )
+                    }, 
+                    400  # 400 is for bad request
             )  # 400 is for bad request
         return productsubcat, False, 200

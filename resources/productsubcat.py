@@ -26,12 +26,11 @@ class ProductSubCat(Resource):
 
     @jwt_required
     def post(self):
-        claim = get_jwt_claims()
         data = schema.load(ProductSubCatModel.get_data_())
 
         # check if data already exist
         unique_input_error, status = ProductSubCatModel.post_unique_already_exist(
-            claim, data
+        data
         )
         if unique_input_error:
             return unique_input_error, status
@@ -59,7 +58,7 @@ class ProductSubCat(Resource):
             unique_input_error,
             status,
         ) = ProductSubCatModel.put_unique_already_exist(
-            claim=claim, subcat_id=subcat_id, subcat_data=data
+            subcat_id=subcat_id, subcat_data=data
         )
 
         if unique_input_error:
