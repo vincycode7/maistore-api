@@ -48,7 +48,7 @@ class ProductSubCatModel(db.Model, ModelsHelper):
         return subcatdesc_catid,desc, productcat
 
     @classmethod
-    def post_unique_already_exist(cls, claim, subcat_data):
+    def post_unique_already_exist(cls, subcat_data):
         subcatdesc_catid,_, productcat = cls.check_unique_inputs(subcat_data=subcat_data)
         
         # check subcat permission, edit and parse data
