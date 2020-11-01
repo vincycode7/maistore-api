@@ -47,7 +47,7 @@ route_path = [
     [UserRegister, [api_version + "/register"]],  # https://mistore.com/register
     [
         ConfirmUser,
-        [api_version + "/confirm_user/user/<string:email>n"],
+        [api_version + "/confirm_user/user/<string:email>"],
     ],  # https://mistore.com/confirm_user/v@gm.com
     [
         ViewConfirmation,

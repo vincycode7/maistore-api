@@ -31,7 +31,7 @@ SENT = "{} was sent"
 SENT_TO = "{} was sent to {}"
 RESET_SUCCESSFUL = "{} reset successful"
 SUCCESS_REGISTER_MESSAGE = "Account created successfuly, an email with an \
-activation link has been sent to this <{}> email address, please check."
+your 8-digit confirmation code has been sent to this <{}> email address, please check."
 CONFIRMATION_SUCCESSFUL = "{} confirmation successful."
 CONFIRMATION_RESEND_SUCCESSFUL = "E-mail confirmation successfully resent."
 CONFIRMATION_RESEND_FAILED = "Failed to resend e-mail confirmation."
