@@ -59,7 +59,7 @@ class ProductSubCatModel(db.Model, ModelsHelper):
         if subcatdesc_catid:
             return {
                 "message": ALREADY_EXISTS.format(
-                    "product subcategory", subcat_data["desc"] + "for category "+subcatdesc_catid.category_id
+                    "product subcategory", subcat_data["desc"] + "for category "+ str(subcatdesc_catid.category_id)
                 )
             }, 400  # 400 is for bad request
 
@@ -104,7 +104,7 @@ class ProductSubCatModel(db.Model, ModelsHelper):
                     {
                     "message": ALREADY_EXISTS.format(
                                                     "product subcategory", 
-                                                    subcat_data["desc"] + "for category "+subcatdesc_catid.category_id
+                                                    subcat_data["desc"] + "for category "+str(subcatdesc_catid.category_id)
                                                     )
                     }, 
                     400  # 400 is for bad request
