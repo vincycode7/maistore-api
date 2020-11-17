@@ -5,7 +5,6 @@ from app_setup import *
 from init_models import *
 from routes import *
 
-
 """
 
     Flask is the main framework for the project
@@ -20,15 +19,13 @@ from routes import *
 # set up config for app, jwt and api
 app = Flask(__name__)
 app, cors, jwt, api = create_and_config_app(app=app, route_path=route_path)
+
 if __name__ == "__main__":
-    from db import db
-    from ma import ma
 
     @app.before_first_request
     def create_tables():
         db.create_all()
         create_usr_from_root(app=app)
 
-    db.init_app(app)
-    ma.init_app(app)
+
     app.run(port=7001, debug=True)

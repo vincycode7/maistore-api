@@ -15,11 +15,29 @@ class IMAGEDELETEEXCEPTION(Exception):
     def __init__(self, message: str):
         super().__init__(message)
 
+
+class FileHelper:
+    pass
+
+
+class LocalStoreHelper:
+    pass
+
+
+class CloudinaryHelper:
+    pass
+
+
+class S3BucketHelper:
+    pass
+
+
 def send_image(folder: str, filename: str, name: str = None):
     if name:
         return send_file(filename_or_fp=name)
     name = folder+filename
     return send_file(filename_or_fp=name)
+
 
 def save_image(image: FileStorage, folder: str = None, name: str = None) -> str:
     """ Takes a filestorage and saves it to a folder"""

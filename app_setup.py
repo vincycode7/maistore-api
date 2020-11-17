@@ -5,11 +5,14 @@ from flask_restful import Api
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import JWTManager
 from flask_uploads import configure_uploads, patch_request_class
+from flask_migrate import Migrate
 from libs.mailer import MailerException
 from sqlalchemy import exc
 from dotenv import load_dotenv
 from libs.strings import gettext
 from libs.image_helper import IMAGE_SET
+from db import db
+from ma import ma
 import os
 
 
@@ -157,4 +160,7 @@ def create_and_config_app(app, route_path):
     mash_err_handler(app=app)
     jwt_error_handler(jwt)
     link_route_path(api=api, route_path=route_path)
+    db.init_app(app)
+    ma.init_app(app)
+    migrate = Migrate(app=app, db=db)
     return app, cors, jwt, api

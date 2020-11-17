@@ -23,6 +23,7 @@ class StoreModel(db.Model, ModelsHelper):
         db.DateTime, index=False, unique=False, nullable=False, default=dt.now
     )
     country = db.Column(db.String(30), nullable=True)
+    image = db.Column(db.String(100), nullable=True, default=None)
 
     # merge (for sqlalchemy to link tables)
     products = db.relationship(
