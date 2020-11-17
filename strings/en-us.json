@@ -1,0 +1,215 @@
+{
+"Internal_server_error" : "Internal server error",
+"err_key_not_found" : "error key not found",
+"err_creating_root_usr" : "error {} while creating root user",
+"err_confirming_root_usr" : "error {} while confirming root user",
+"work_in_progress" : "our developers are currently working on this feature",
+
+"token_revoked" : "token_revoked",
+"token_expired" : "token_expired",
+"invalid_revoked" : "invalid_revoked",
+"invalid_token" : "invalid_token",
+"authorization_required" : "authorization_required",
+"fresh_token_required" : "fresh_token_required",
+"image_illegal_extension" : "exention '{}' not allowed.",
+"mailer_failed_to_load_username" : "Failed to load mailer username.",
+"mailer_failed_to_logging" : "Failed to logging.",
+"mailer_sent_mail_success" : "mailer successfully sent email",
+"mailer_failed_to_load_password" : "Failed to load mailer password.",
+"mailer_failed_to_send_confirmation" : "Error {} in sending confirmation email, (check mailer credentials , network connection or email recipient).",
+"mailer_failed_to_send" : "Error {} in sending email, (check mailer credentials , network connection or email recipient).",
+
+"modelhelper_err_getting_value_frm_request" : "Error occurred while trying to get inputs from request.",
+"modelhelper_err_loading_equest_value_to_json" : "Error occured while trying to load values from request to json.",
+
+"bitcoin_not_found" : "bitcoin not found",
+"cardpay_not_found" : "cardpay not found",
+"cardproduct_not_found" : "cardproduct not found",
+"email_parameter_not_found" : "email parameter not found.",
+
+"eight_digit_parameter_not_found" : "eight digit parameter not found.",
+
+"old_password_parameter_not_found" : "old password parameter not found",
+"new_password_parameter_not_found" : "new password parameter not found",
+"new_email_parameter_not_found" : "new email parameter not found",
+"old_email_parameter_not_found" : "old email parameter not found",
+"password_parameter_not_found" : "password parameter not found",
+"is_admin_parameter_not_found" : "is_admin parameter not found",
+"is_root_parameter_not_found" : "is_root parameter not found",
+
+
+
+"password_reset_success" : "password has successfully be reset.",
+
+"product_err_get_by_name" : "error {} getting product by name.",
+"product_err_insertion_failed" : "error occured while trying to insert product",
+"product_err_get_sub_cat_by_catdesc" : "error {} occured while trying to get product sub category by description",
+
+"product_deleted" : "product deleted",
+"product_not_found" : "product not found",
+
+"product_insert_not_for_user" : "product to establish relation for not for user",
+
+"product_req_ad_priv_to_edit" : "Admin priviledge required to edit existing product.",
+"product_req_ad_priv_to_delete" : "Admin priviledge required to delete existing product.",
+
+"product_subcat_not_found" : "product sub category not found.",
+"product_subcat_not_found_in_cat" : "product sub category not found in product category.",
+
+"product_subcat_size_not_found" : "product sub cat size not found.",
+"product_subcat_for_cat_exist" : "product sub category for category already exist.",
+"product_subcat_req_ad_priv_to_post" : "Admin priviledge required to post product sub category.",
+"product_subcat_req_ad_priv_to_edit" : "Admin priviledge required to edit product sub category.",
+"product_subcat_req_ad_priv_to_delete" : "Admin priviledge required to delete product sub category.",
+
+"product_size_exist" : "product size already exist.",
+"product_size_not_found" : "product size not found.",
+"product_size_deleted" : "product size deleted.",
+
+"product_cat_not_found" : "product category not found",
+"product_cat_exit" : "product category already exit.",
+"product_cat_deleted" : "product category deleted.",
+
+"product_cat_req_ad_priv_to_post" : "Admin priviledge required to post product category.",
+"product_cat_req_ad_priv_to_delete" : "Admin priviledge required to delete product category.",
+"product_cat_req_ad_priv_to_edit" : "Admin priviledge required to edit existing product category.",
+
+"product_cat_for_subcat_not_found" : "product category for sub category not found.",
+
+"product_cat_err_saving" : "product catgory did not save in database.",
+"product_cat_err_getby_catdesc" : "error {} occured when trying to get productcat by it's description.",
+
+"product_color_already_exist" : "product color already exist.",
+"product_color_req_ad_priv_to_post" : "Admin priviledge required to post new product color.",
+"product_color_req_ad_priv_to_edit" : "Admin priviledge required to edit existing product color.",
+"product_color_req_ad_priv_to_delete" : "Admin priviledge required to delete product color.",
+"product_color_rel_deleted" : "product deleted",
+"prduct_color_rel_exist" : "instance with the same product-color relationship exist for this product.",
+"prduct_color_rel_exist_not_found" : "instance with the same product-color relationship not found.",
+"prduct_color_rel_not_found" : "instance with the same product-color relationship not found.",
+"prduct_color_product_not_for_user" : "can not use product id, because product not for user.",
+
+"color_not_found" : "color not found",
+"color_already_exist" : "color already exist.",
+"color_req_ad_priv_to_post" : "Admin priviledge required to post new color.",
+"color_req_ad_priv_to_edit" : "Admin priviledge required to edit existing color.",
+"color_err_get_by_desc" : "error {} while trying to get color by description.",
+"color_err_get_unique" : "error {} while trying to get unique color.",
+"color_deleted" : "color has been deleted",
+
+"favorite_store" : "favorite store",
+"favorite_store_not_found" : "favorite store not found",
+
+"message" : "message",
+
+"user_logged_out" : "user logged out",
+"user_deleted" : "user has been deleted.",
+"user_confirmed" : "user account has been confirmed.",
+"user_password_auth_req_to_delete_user" : "correct user password required to delete user.",
+"user_not_found" : "user not found.",
+"user_email_exist" : "user email {} already exist",
+"user_email_not_confirmed" : "You have not confirmed registration please check you {} <{}> for your confirmation code",
+
+"user_confirmation_already_confirmed" : "user confirmation id {} already confirmed",
+"user_confirmed_status_failed_to_check" : "error while trying to check user confirmed status.",
+
+"user_err_get_mst_rct_conf" : "error {} occured while trying to get user most recent confirmation.",
+"user_err_get_mst_rct_fpass" : "error {} occured while trying to get user most recent forgot password request.",
+
+"user_err_failed_to_create_confirmation" : "error {} occured while creating a user confirmation",
+"user_err_failed_to_save_confirmation" : "error {} occured while saving a user confirmation to database.",
+"user_err_failed_to_create_fpass" : "error {} occured while creating a user forgot password request",
+"user_err_failed_to_save_fpass" : "error {} occured while saving a user forgot password request to database.",
+"user_err_failed_to_create_user" : "error {} while trying to create user because {}",
+"user_err_failed_to_save" : "error {} while trying to save user because {}",
+"user_err_falied_to_delete" : "error {} occured whilt trying to delete user from database",
+
+"user_err_no_confirmation_for_user" : "no active confirmation for user.",
+"user_err_no_forgotpassreq_for_user" : "no active forgot password request for user.",
+
+"user_err_getting_conf_html" : "error {} getting html page to send confirmation to user.",
+"user_err_getting_conf_code_html" : "error {} getting html page to send confirmation code to user.",
+"user_err_getting_fpass_html" : "error getting html page to send forgot password code to user.",
+"user_err_sending_forgot_password_digit" : "error {} occured while sending forgot password digit to email.",
+"user_err_find_by_email" : "error {} occurred while trying to find user by email.",
+"user_err_find_by_phoneno" : "error {} occurred while trying to find user by phone number.",
+
+"user_err_creating_access_refresh_token" : "error {} occurred while trying to create access token or refresh token.",
+
+"user_err_sending_conf_code" : "error {} occured sending code to email",
+"user_err_sending_confirmation_on_email_change" : "error {} occured while sending confirmation to email on email change.",
+"user_err_sending_confirmation_digit_on_email_change" : "error {} occured while sending confirmation digit to email on email change.",
+"user_err_sending_confirmation_digit" : "error {} occured while sending confirmation digit to email.",
+"user_err_sending_confirmation" : "error {} occured while sending confirmation to email on email change.",
+
+"user_err_saving_forgot_password_request" : "error {} occured while saving forgot password to database.",
+
+"user_req_ad_priv_to_edit" : "Admin priviledge required to edit existing User.",
+"user_req_ad_priv_to_get_user" : "Admin priviledge required to get User.",
+"user_req_ad_priv_to_get_users" : "Admin priviledge required to get Users.",
+"user_req_ad_priv_to_change_email" : "Admin priviledge required to change user email.",
+"user_req_ad_priv_to_change_password" : "Admin priviledge required to change user password.",
+"user_req_ad_priv_to_change_upload_image" : "Admin priviledge required to change or upload image.",
+
+"user_auth_req_to_change_admin_status" : "Admin priviledge required to change user admin status.",
+"user_auth_req_to_change_root_status" : "Admin priviledge required to change user root status.",
+
+"user_phoneno_exist" : "user phoneno {} already exisit",
+
+"user_success_register_link" : "Account created successfuly, an email with your confirmation link has been sent to this <{}> email address, please check.",
+"user_success_register_digit" : "Account created successfuly, an email with your 8-digit confirmation code has been sent to this <{}> email address, please check.",
+"user_success_send_confirmation" : "Success sending confirmation to email",
+"user_success_confirm_confirmation" : "Success confirming user email",
+"user_success_send_confirmation_digit" : "Success sending confirmation digit to email",
+"user_success_update_password" : "Success updating user's password",
+"user_success_update_admin_status" : "Success updating user's admin status",
+"user_success_update_root_status" : "Success updating user's root status",
+"user_invalid_login_credential" : "Invalid credentials for login",
+
+"user_incorrect_password" : "Password provided is incorrect",
+
+
+"confirmation_non_found" : "no confirmation not found.",
+"confirmation_already_comfirmed" : "confirmation {} already confirmed.",
+"confirmation_invalid_8_digit" : "invalid 8 digit code",
+"confirmation_8_digit_expired" : "8 digit code {} expired",
+"confirmation_code_sent" : "confirmation code successfully sent to {}.",
+
+"confirmation_err_forceunconfirm_failed_to_save" : "error {} occured while trying to forced unconfirmed confirmation to save in database.",
+"confirmation_err_forceconfirm_failed_to_save" : "error {} occured while trying to forced confirmed confirmation to save in database.",
+"confirmation_err_forceexpire_failed_to_save" : "ferror {} occured while trying to forced expire confirmation to save in database.",
+
+"confirmation_err_get_expired" : "error {} occured while trying to get confirmation expired status.",
+"confirmation_err_get_mst_rct_conf" : "error {} while trying to get most recent confirmation.",
+"confirmation_err_failed_delete" : "error {} occured whilt trying to delete confirmation from database",
+"confirmation_req_ad_priv_to_view_user_conf" : "Admin priviledge required to view user confirmation history.",
+
+"fpass_err_getting_expired" : "error {} occured while trying to get expired status of fargot password request.",
+"fpass_err_forceunused" : "error {} occured while trying to force forgot password request to be unused.",
+"fpass_err_saving_fpass" : "error {} occured while trying to save forgot password request to database.",
+"fpass_err_forceused" : "error {} occured while trying to force forgot password request to be used.",
+"fpass_err_forceexpire" :  "error {} occured while trying to force forgot password request to be expire.",
+"fpass_err_getting_user_by_id" : "error {} occured while trying to get user by id.",
+"fpass_code_sent" : "forgot password code successfully sent to {}.",
+"fpass_req_not_found" : "forgot password request not found",
+"fpass_incorrect_8_digit" : "the 8_digit code provided is incorrect",
+"fpass_used" : "forgot password request has been used.",
+"fpass_expired" : "forgot password request has expired.",
+
+
+"store_not_found" : "store not found",
+"store_exist" : "store already exist.",
+"store_deleted" : "store deleted.",
+"store_req_ad_priv_to_post" : "Admin priviledge required to post new store.",
+"store_req_ad_priv_to_edit" : "Admin priviledge required to edit store.",
+"store_req_ad_priv_to_delete" : "Admin priviledge required to edit store.",
+
+"model_helper_err_chk_ad_priv" : "error {} occured while checking user priviledge.",
+"image_illegal_filename" : "image file name is illegal.",
+"image_err_deleting_file" : "error {} occured while deleting image",
+"image_err_500_saving_image" : "Internal server error: error occured while trying to save image",
+"image_err_500_deleting_image" : "Internal server error: error occured while trying to delete image",
+"image_uploaded" : "image '{}' uploaded.",
+"image_deleted" : "image '{}' uploaded.",
+"image_not_found" : "image not found."
+}

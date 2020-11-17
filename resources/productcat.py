@@ -13,7 +13,7 @@ class ProductCatList(Resource):
         productcats = ProductCatModel.find_all()
         if productcats:
             return {"product_categories": schema_many.dump(productcats)}, 201
-        return {"message": NOT_FOUND.format("productcats")}, 400
+        return {"message": gettext("product_cat_not_found")}, 404
 
 
 # class to add product categories
@@ -22,17 +22,14 @@ class ProductCat(Resource):
         productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
             return {"product_category": schema.dump(productcat)}, 201
-        return {"message": NOT_FOUND.format("productcats")}, 400
+        return {"message": gettext("product_cat_not_found")}, 404
 
     @jwt_required
     def post(self):
-        claim = get_jwt_claims()
         data = schema.load(ProductCatModel.get_data_())
 
         # check if data already exist
-        unique_input_error, status = ProductCatModel.post_unique_already_exist(
-            claim, data
-        )
+        unique_input_error, status = ProductCatModel.post_unique_already_exist(data)
         if unique_input_error:
             return unique_input_error, status
 
@@ -44,13 +41,12 @@ class ProductCat(Resource):
         except Exception as e:
             print(f"error is {e}")
             return {
-                "message": ERROR_WHILE_INSERTING.format("product category")
+                "message": gettext("Internal_server_error")
             }, 500  # Internal server error
         return schema.dump(productcat), 201
 
     @jwt_required
     def put(self, cat_id):
-        claim = get_jwt_claims()
         data = schema.load(ProductCatModel.get_data_())
 
         # confirm the unique key to be same with the product route
@@ -58,9 +54,7 @@ class ProductCat(Resource):
             productcat,
             unique_input_error,
             status,
-        ) = ProductCatModel.put_unique_already_exist(
-            claim=claim, cat_id=cat_id, cat_data=data
-        )
+        ) = ProductCatModel.put_unique_already_exist(cat_id=cat_id, cat_data=data)
 
         if unique_input_error:
             return unique_input_error, status
@@ -77,23 +71,23 @@ class ProductCat(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("product category")
+                    "message": gettext("Internal_server_error")
                 }, 500  # Internal server error
         return {
-            "message": NOT_FOUND.format("Product category")
-        }, 400  # 400 is for bad request
+            "message": gettext("product_cat_not_found")
+        }, 404  # 400 is for bad request
 
     @jwt_required
     def delete(self, cat_id):
-        claim = get_jwt_claims()
-        if not claim["is_admin"] or not claim["is_root"]:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product category")
-            }, 401
+        msg, status_code, _ = ProductCatModel.auth_by_admin_root(
+            get_err="product_cat_req_ad_priv_to_delete"
+        )
+        if status_code != 200:
+            return msg, status_code
         productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
             productcat.delete_from_db()
-            return {"message": DELETED.format("Product category")}, 200  # 200 ok
+            return {"message": gettext("product_cat_deleted")}, 200  # 200 ok
         return {
-            "message": NOT_FOUND.format("Product category")
+            "message": gettext("product_cat_not_found")
         }, 400  # 400 is for bad request

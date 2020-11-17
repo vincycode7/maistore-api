@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from app_config import *
+from app_setup import *
 from init_models import *
 from routes import *
 

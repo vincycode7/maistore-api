@@ -13,7 +13,7 @@ class ProductSubCatList(Resource):
         productsubcats = ProductSubCatModel.find_all()
         if productsubcats:
             return {"product_subcategorys": schema_many.dump(productsubcats)}, 201
-        return {"message": NOT_FOUND.format("productsubcats")}, 400
+        return {"message": gettext("product_subcat_not_found")}, 404
 
 
 # class to add product subcategories
@@ -22,16 +22,14 @@ class ProductSubCat(Resource):
         productsubcat = ProductSubCatModel.find_by_id(id=subcat_id)
         if productsubcat:
             return {"product_subcategory": schema.dump(productsubcat)}, 201
-        return {"message": NOT_FOUND.format("productsubcats")}, 400
+        return {"message": gettext("product_subcat_not_found")}, 404
 
     @jwt_required
     def post(self):
         data = schema.load(ProductSubCatModel.get_data_())
 
         # check if data already exist
-        unique_input_error, status = ProductSubCatModel.post_unique_already_exist(
-        data
-        )
+        unique_input_error, status = ProductSubCatModel.post_unique_already_exist(data)
         if unique_input_error:
             return unique_input_error, status
 
@@ -43,13 +41,12 @@ class ProductSubCat(Resource):
         except Exception as e:
             print(f"error is {e}")
             return {
-                "message": ERROR_WHILE_INSERTING.format("product subcategory")
+                "message": gettext("Internal_server_error")
             }, 500  # Internal server error
         return schema.dump(productsubcat), 201
 
     @jwt_required
     def put(self, subcat_id):
-        claim = get_jwt_claims()
         data = schema.load(ProductSubCatModel.get_data_())
 
         # confirm the unique key to be same with the product route
@@ -76,25 +73,23 @@ class ProductSubCat(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("product subcategory")
+                    "message": gettext("Internal_server_error")
                 }, 500  # Internal server error
-        return {
-            "message": NOT_FOUND.format("Product subcategory")
-        }, 400  # 400 is for bad request
+        return {"message": gettext("product_subcat_not_found")}, 404
 
     @jwt_required
     def delete(self, subcat_id):
-        claim = get_jwt_claims()
-        if not claim["is_admin"] or not claim["is_root"]:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format(
-                    "delete product subcategory"
-                )
-            }, 401
+        # check subcat permission, edit and parse data
+        msg, status_code, _ = cls.auth_by_admin_root(
+            get_err="product_subcat_req_ad_priv_to_delete"
+        )
+        if status_code != 200:
+            return None, msg, status_code
+
         productsubcat = ProductSubCatModel.find_by_id(id=subcat_id)
         if productsubcat:
             productsubcat.delete_from_db()
             return {"message": DELETED.format("Product subcategory")}, 200  # 200 ok
         return {
-            "message": NOT_FOUND.format("Product subcategory")
-        }, 400  # 400 is for bad request
+            "message": gettext("product_subcat_not_found")
+        }, 404  # 400 is for bad request

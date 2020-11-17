@@ -1,11 +1,10 @@
 import traceback
 from db import db
 from typing import List, Dict
-from error_messages import *
 from datetime import datetime as dt
 from blacklist import BLACKLIST_ACCESS
 from flask import request, json
-from marshmallow import INCLUDE, EXCLUDE
+from marshmallow import INCLUDE, EXCLUDE, ValidationError
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -19,22 +18,90 @@ from flask_jwt_extended import (
     get_csrf_token,
     decode_token,
 )
+from libs.mailer import MailerException
+from libs.strings import TranslatorException, gettext, change_locale
+
+class ModelHelperException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class UserException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ConfirmationException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ColorException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ForgotPasswordException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ProductException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ProductCatException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ProductSizeException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class ProductSubCatException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class StoreException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
 
 
 class ModelsHelper:
+    def delete_from_db(self, get_err="Internal_server_error"):
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e:
+            try:
+                raise ModelHelperException(gettext(get_err).format(e))
+            except:
+                raise ModelHelperException(gettext(get_err))
 
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
-
-    def save_to_db(self):
+    def save_to_db(self, get_err="Internal_server_error"):
         # connect to the database
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            try:
+                raise ModelHelperException(gettext(get_err).format(e))
+            except:
+                raise ModelHelperException(gettext(get_err))
 
     @classmethod
-    def rollback_error(cls):
-        db.session.rollback()
+    def rollback_error(cls, get_err="Internal_server_error"):
+        try:
+            db.session.rollback()
+        except Exception as e:
+            try:
+                raise ModelHelperException(gettext(get_err).format(e))
+            except:
+                raise ModelHelperException(gettext(get_err))
 
     @classmethod
     def find_all(cls):
@@ -56,7 +123,10 @@ class ModelsHelper:
 
         # /page=None, per_page=None, error_out=True,max_per_page=None,left_edge=2, left_current=2, right_current=5, right_edge=2"
         result = cls.query.paginate(
-            page=int(page), per_page=int(per_page), error_out=int(error_out), max_per_page=max_per_page
+            page=int(page),
+            per_page=int(per_page),
+            error_out=int(error_out),
+            max_per_page=max_per_page,
         )
         result = {
             "has_next": result.has_next,
@@ -70,11 +140,11 @@ class ModelsHelper:
                     right_edge=int(right_edge),
                 )
             ),
-            "page" : result.page,
-            "pages" : result.pages,
-            "per_page" : result.per_page,
-            "prev_num" : result.prev_num,
-            "total" : result.total
+            "page": result.page,
+            "pages": result.pages,
+            "per_page": result.per_page,
+            "prev_num": result.prev_num,
+            "total": result.total,
         }
         return result
 
@@ -100,12 +170,14 @@ class ModelsHelper:
 
     @classmethod
     def find_user_by_id(cls, user_id):
-        from models.user import UserModel
+        from models.users import UserModel
+
         return UserModel.find_by_id(id=user_id)
 
     @classmethod
     def find_user_by_email(cls, user_email):
-        from models.user import UserModel
+        from models.users import UserModel
+
         return UserModel.find_by_email(email=user_email)
 
     @classmethod
@@ -150,53 +222,101 @@ class ModelsHelper:
         return result
 
     @staticmethod
-    def auth_by_admin_root_or_user(user_id, err_msg):
-        claim = get_jwt_claims()
-        print(claim["userid"] , user_id)
-        if not claim["is_admin"] and not claim["is_root"] and claim["userid"] != user_id:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format(err_msg)
-            }, 401, claim
+    def auth_by_admin_root_or_user(user_id, get_err):
+        try:
+            claim = get_jwt_claims()
+            if (
+                not claim["is_admin"]
+                and not claim["is_root"]
+                and claim["userid"] != user_id
+            ):
+                return {"message": gettext(get_err)}, 401, claim
+        except Exception as e:
+            raise ModelHelperException(
+                gettext("model_helper_err_chk_ad_priv").format(e)
+            )
+        except:
+            raise ModelHelperException(gettext("model_helper_err_chk_ad_priv"))
         return False, 200, claim
 
     @staticmethod
-    def auth_by_admin_root(err_msg):
-        claim = get_jwt_claims()
-        if not claim["is_admin"] and not claim["is_root"]:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format(err_msg)
-            }, 401, claim
+    def auth_by_admin_root(get_err):
+        try:
+            claim = get_jwt_claims()
+            if not claim["is_admin"] and not claim["is_root"]:
+                return {"message": gettext(get_err)}, 401, claim
+        except Exception as e:
+            raise ModelHelperException(
+                gettext("model_helper_err_chk_ad_priv").format(e)
+            )
+        except:
+            raise ModelHelperException(gettext("model_helper_err_chk_ad_priv"))
         return False, 200, claim
 
     @staticmethod
-    def auth_by_root(err_msg):
-        claim = get_jwt_claims()
-        if  not claim["is_root"]:
-            return {
-                "message": ROOT_PRIVILEDGE_REQUIRED.format(err_msg)
-            }, 401, claim
-        return False, 200, claim
-    
-    @staticmethod
-    def auth_by_admin(err_msg):
-        claim = get_jwt_claims()
-        if not claim["is_admin"]:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format(err_msg)
-            }, 401, claim
+    def auth_by_root(get_err):
+        try:
+            claim = get_jwt_claims()
+            if not claim["is_root"]:
+                return {"message": gettext(get_err)}, 401, claim
+        except Exception as e:
+            raise ModelHelperException(
+                gettext("model_helper_err_chk_ad_priv").format(e)
+            )
+        except:
+            raise ModelHelperException(gettext("model_helper_err_chk_ad_priv"))
         return False, 200, claim
 
     @staticmethod
-    def get_data_():
+    def auth_by_admin(get_err):
+        try:
+            claim = get_jwt_claims()
+            if not claim["is_admin"]:
+                return {"message": gettext(get_err)}, 401, claim
+        except Exception as e:
+            raise ModelHelperException(
+                gettext("model_helper_err_chk_ad_priv").format(e)
+            )
+        except:
+            raise ModelHelperException(gettext("model_helper_err_chk_ad_priv"))
+        return False, 200, claim
+
+    @staticmethod
+    def get_data_(get_err="modelhelper_err_getting_value_frm_request"):
         """
         function to get data from user, if first approach fails
         tries the second.
         """
-        data = dict(request.values)
-        print(f"first --> {data} \n second --> {request.get_data(as_text=True)}")
+        try:
+            data = dict(request.values)
+        except Exception as e:
+            try:
+                raise ModelHelperException(gettext(get_err).format(e))
+            except:
+                raise ModelHelperException(gettext(get_err))
+
         if data:
             return data
-        data = request.get_data(as_text=True)
+
+        try:
+            data = request.get_data(as_text=True)
+        except Exception as e:
+            try:
+                raise ModelHelperException(gettext(get_err).format(e))
+            except:
+                raise ModelHelperException(gettext(get_err))
+
         if not data:
             return {}
-        return json.loads(request.get_data(as_text=True))
+
+        try:
+            return json.loads(request.get_data(as_text=True))
+        except Exception as e:
+            try:
+                raise ModelHelperException(
+                    gettext("modelhelper_err_loading_request_value_to_json").format(e)
+                )
+            except:
+                raise ModelHelperException(
+                    gettext("modelhelper_err_loading_request_value_to_json")
+                )

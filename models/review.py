@@ -22,7 +22,7 @@ class ReviewModel(db.Model, ModelsHelper):
     )
     user_id = db.Column(
         db.String(50),
-        db.ForeignKey("user.id"),
+        db.ForeignKey("users.id"),
         index=False,
         unique=False,
         nullable=False,

@@ -8,5 +8,6 @@ class BitcoinList(Resource):
     def get(self):
         bitcoins = BitcoinPayModel.find_all()
         if bitcoins:
-            return {"bitcoins": [bitcoin.json() for bitcoin in bitcoins]}, 201
-        return {"message": "Item not found"}, 400
+            return {"message": gettext("work_in_progress")}, 400
+            # return {"bitcoins": [bitcoin.json() for bitcoin in bitcoins]}, 201
+        return {"message": gettext("bitcoin_not_found")}, 404

@@ -14,7 +14,7 @@ class ProductSizeList(Resource):
         productsizes = ProductSizeModel.find_all()
         if productsizes:
             return {"productsizes": schema_many.dump(productsizes)}, 201
-        return {"message": NOT_FOUND.format("productsizes")}, 400
+        return {"message": gettext("product_size_not_found")}, 404
 
 
 # class to add product sizes
@@ -23,7 +23,7 @@ class ProductSize(Resource):
         productsize = ProductSizeModel.find_by_id(id=size_id)
         if productsize:
             return {"productsize": schema.dump(productsize)}, 201
-        return {"message": NOT_FOUND.format("productsize")}, 400
+        return {"message": gettext("product_size_not_found")}, 404
 
     @jwt_required
     def post(self):
@@ -45,7 +45,7 @@ class ProductSize(Resource):
         except Exception as e:
             print(f"error is {e}")
             return {
-                "message": ERROR_WHILE_INSERTING.format("product size")
+                "message": gettext("Internal_server_error")
             }, 500  # Internal server error
         return schema.dump(productsize), 201
 
@@ -77,23 +77,24 @@ class ProductSize(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("product size")
+                    "message": gettext("Internal_server_error")
                 }, 500  # Internal server error
         return {
-            "message": NOT_FOUND.format("Product size")
-        }, 400  # 400 is for bad request
+            "message": gettext("product_size_not_found")
+        }, 404  # 400 is for bad request
 
     @jwt_required
     def delete(self, size_id):
-        claim = get_jwt_claims()
-        if not claim["is_admin"] or not claim["is_root"]:
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product size")
-            }, 401
+        msg, status_code, _ = cls.auth_by_admin_root(
+            get_err="product_color_req_ad_priv_to_post"
+        )
+        if status_code != 200:
+            return msg, status_code
+
         productsize = ProductSizeModel.find_by_id(id=size_id)
         if productsize:
             productsize.delete_from_db()
-            return {"message": DELETED.format("Product size")}, 200  # 200 ok
+            return {"message": gettext("product_size_deleted")}, 200  # 200 ok
         return {
-            "message": NOT_FOUND.format("Product size")
-        }, 400  # 400 is for bad request
+            "message": gettext("product_size_not_found")
+        }, 404  # 400 is for bad request

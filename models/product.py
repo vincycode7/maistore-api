@@ -86,7 +86,12 @@ class ProductModel(db.Model, ModelsHelper):
 
     @classmethod
     def find_by_name(cls, productname=None):
-        result = cls.query.filter_by(productname=productname).first()
+        try:
+            result = cls.query.filter_by(productname=productname).first()
+        except Exception as e:
+            raise ProductException(gettext("product_err_get_by_name").format(e))
+        except:
+            raise ProductException(gettext("product_err_get_by_name"))
         return result
 
     @classmethod
@@ -109,107 +114,95 @@ class ProductModel(db.Model, ModelsHelper):
 
         # check if store exist
         if not store:
-            return {"message": NOT_FOUND.format("store")}, 401
+            return {"message": gettext("store_not_found")}, 404
 
         # check if user is admin or normal user
-        if (
-            not claim["is_admin"]
-            or not claim["is_root"]
-            or claim["userid"] != store.user.id
-        ):
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")}, 401
+        msg, status_code, _ = cls.auth_by_admin_root_or_user(
+            user_id=store.user_id, get_err="color_req_ad_priv_to_edit"
+        )
+        if status_code != 200:
+            return None, msg, status_code
 
         # check productcat_id
         # check if productcat exist
         if not productcat:
-            return {"message": NOT_FOUND.format("productcat")}, 401
+            return {"message": gettext("product_cat_not_found")}, 404
 
         # check product subcat id
         # check if productsubcat insert exist
         if not productsubcat:
-            return {"message": NOT_FOUND.format("productsubcat")}, 401
+            return {"message": gettext("product_subcat_not_found")}, 404
 
         # check if size is valid
         # check if size exist
         if not size:
-            return {"message": NOT_FOUND.format("size")}, 401
+            return {"message": gettext("product_subcat_size_not_found")}, 404
 
         # check if productsubcat is in product cat
         if productsubcat.productcat.id != productcat.id:
-            return {
-                "message": NOT_FOUND_IN.format(
-                    "product sub category", "product category"
-                )
-            }, 404
+            return {"message": gettext("product_subcat_not_found_in_cat")}, 404
 
         # check if store id is for current user
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, product_id, product_data):
+    def put_unique_already_exist(cls, product_id, product_data):
         # check user permission, edit and parse data
         product = cls.find_by_id(id=product_id)
         store, productcat, productsubcat, size = cls.check_unique_inputs(
             product_data=product_data
         )
 
+        if not product:
+            return {"message": gettext("product_not_found")}, 404
+
+        msg, status_code, _ = ProductModel.auth_by_admin_root_or_user(
+            user_id=product.store.user_id, get_err="product_req_ad_priv_to_edit"
+        )
+        if status_code != 200:
+            return msg, status_code
+
         # check if product exist
         if not product:
-            return None, {"message": NOT_FOUND.format("product")}, 401
+            return None, {"message": gettext("product_not_found")}, 404
 
         # check if store exist
         if not store:
-            return None, {"message": NOT_FOUND.format("store")}, 401
+            return None, {"message": gettext("store_not_found")}, 404
 
-        # check if user is admin or normal user
-        if (
-            not claim["is_admin"]
-            or not claim["is_root"]
-            or claim["userid"] != store.user.id
-        ):
-            return (
-                None,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("to post a store")},
-                401,
-            )
-
-        # check if product is in store
-        if product.store.id != store.id:
-            return (
-                None,
-                {
-                    "message": NOT_EQUAL.format(
-                        "product store id -- " + str(product.store.id),
-                        "store_id -- " + str(store.id),
-                    )
-                },
-                401,
-            )
+        # # check if product is in store
+        # if product.store.id != store.id:
+        #     return (
+        #         None,
+        #         {
+        #             "message": NOT_EQUAL.format(
+        #                 "product store id -- " + str(product.store.id),
+        #                 "store_id -- " + str(store.id),
+        #             )
+        #         },
+        #         401,
+        #     )
 
         # check productcat_id
         # check if productcat exist
         if not productcat:
-            return None, {"message": NOT_FOUND.format("productcat")}, 401
+            return None, {"message": gettext("productcat_not_found")}, 404
 
         # check product subcat id
         # check if productsubcat insert exist
         if not productsubcat:
-            return None, {"message": NOT_FOUND.format("productsubcat")}, 401
+            return None, {"message": gettext("product_subcat_not_found")}, 404
 
         # check if size is valid
         # check if size exist
         if not size:
-            return None, {"message": NOT_FOUND.format("size")}, 401
+            return None, {"message": gettext("product_subcat_size_not_found")}, 404
 
         # check if productsubcat is in product cat
         if productsubcat.productcat.id != productcat.id:
             return (
                 None,
-                {
-                    "message": NOT_FOUND_IN.format(
-                        "product sub category", "product category"
-                    )
-                },
+                {"message": gettext("product_subcat_not_found_in_cat")},
                 404,
             )
 
@@ -220,11 +213,12 @@ class ProductModel(db.Model, ModelsHelper):
         store = StoreModel.find_by_id(store_id)
 
         if not store:
-            return product, {"message": NOT_FOUND.format("store")}, 401
+            return product, {"message": gettext("store_not_found")}, 404
 
-        if store and not claim["is_admin"] and claim["userid"] != store.user_id:
-            return product, {"message": ADMIN_PRIVILEDGE_REQUIRED}, 401
+        # if not claim["is_admin"] and claim["userid"] != store.user_id:
+        #     return product, {"message": gettext("product_req_ad_priv_to_delete")}, 404
         return product, False, 200
+
 
 # TODO: Do pagenate in response, for product (i think it's checked).
 # TODO: check if i did put request side of product (i think it's checked)

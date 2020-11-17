@@ -1,8 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_claims, fresh_jwt_required
-from models.store import StoreModel
-from error_messages import *
+from models.store import *
 from schemas.store import StoreSchema
 
 schema = StoreSchema()
@@ -17,16 +16,15 @@ class Store(Resource):
         if store:
             return schema.dump(store)
         else:
-            return {"message": NOT_FOUND.format("store")}, 404
+            return {"message": gettext("store_not_found")}, 404
 
     @classmethod
     @jwt_required
     def post(cls):
-        claim = get_jwt_claims()
         data = schema.load(StoreModel.get_data_())
 
         # check if data already exist
-        unique_input_error, status = StoreModel.post_unique_already_exist(claim, data)
+        unique_input_error, status = StoreModel.post_unique_already_exist(data)
         if unique_input_error:
             return unique_input_error, status
 
@@ -35,7 +33,7 @@ class Store(Resource):
             store.save_to_db()
         except Exception as e:
             print(f"error is {e}")
-            return {"message": ERROR_WHILE_INSERTING.format("store.")}, 500
+            return {"message": gettext("Internal_server_error")}, 500
 
         return schema.dump(store), 201
 
@@ -43,10 +41,9 @@ class Store(Resource):
     @classmethod
     @jwt_required
     def put(cls, store_id):
-        claim = get_jwt_claims()
         data = schema.load(StoreModel.get_data_())
         store, unique_input_error, status = StoreModel.put_unique_already_exist(
-            claim=claim, store_id=store_id, store_data=data
+            store_id=store_id, store_data=data
         )
         if unique_input_error:
             return unique_input_error, status
@@ -63,17 +60,14 @@ class Store(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("store")
+                    "message": gettext("Internal_server_error")
                 }, 500  # Internal server error
-        return {"message": NOT_FOUND.format("store id")}, 400  # 400 is for bad request
+        return {"message": gettext("store_not_found")}, 404
 
     @classmethod
     @fresh_jwt_required
     def delete(cls, store_id):
-        claim = get_jwt_claims()
-        store, unique_input_error, status = StoreModel.delete_auth(
-            claim=claim, store_id=store_id
-        )
+        store, unique_input_error, status = StoreModel.delete_auth(store_id=store_id)
         if unique_input_error:
             return unique_input_error, status
 
@@ -81,8 +75,8 @@ class Store(Resource):
             store.delete_from_db()
         except Exception as e:
             print(f"error is {e}")
-            return {"message": INTERNAL_ERROR}, 500
-        return {"message": DELETED.format("Store")}
+            return {"message": gettext("Internal_server_error")}, 500
+        return {"message": gettext("store_deleted")}, 200
 
 
 class StoreList(Resource):
@@ -92,14 +86,15 @@ class StoreList(Resource):
         if stores:
             return {"stores": schema_many.dump(stores)}, 201
 
-        return {"message": NOT_FOUND.format("stores")}, 400
+        return {"message": gettext("store_not_found")}, 404
+
 
 # class to get to get stores using pagenate
 class StorePagenate(Resource):
     # use for authentication before calling get
     @classmethod
     def get(cls, page=1):
-        args_ = StoreModel.get_data_() 
+        args_ = StoreModel.get_data_()
         stores = StoreModel.find_all_pagenate(page=page, **args_)
         items = stores.pop("items", None)
         stores["stores"] = schema_many.dump(items)
@@ -107,4 +102,4 @@ class StorePagenate(Resource):
         if stores.get("stores", None):
             return stores, 200
 
-        return {"message": NOT_FOUND.format("stores")}, 400
+        return {"message": gettext("store_not_found")}, 404

@@ -1,5 +1,5 @@
 from resources.productsubcat import ProductSubCatList, ProductSubCat
-from resources.user import (
+from resources.users import (
     User,
     UserList,
     UserRegister,
@@ -10,19 +10,20 @@ from resources.user import (
     Change_User_Password,
     Change_User_Image,
     Change_User_Root_Status,
-    Change_User_Admin_Status
+    Change_User_Admin_Status,
 )
-from resources.forgot_password import ( 
-                                            RequestForgotPasswordDigit, 
-                                            GetForgotPasswordId,
-                                            ViewForgotPasswordRequests,
-                                            ResetPassword
-                                        )
+from resources.image import UserAvatar
+from resources.forgot_password import (
+    RequestForgotPasswordDigit,
+    GetForgotPasswordId,
+    ViewForgotPasswordRequests,
+    ResetPassword,
+)
 from resources.confirmation import (
-                                            ConfirmUser, 
-                                            ViewConfirmation, 
-                                            RequestConfirmationDigit
-                                    )
+    ConfirmUser,
+    ViewConfirmation,
+    RequestConfirmationDigit,
+)
 from resources.store import Store, StoreList, StorePagenate
 from resources.product import Product, ProductList, ProductPagenate
 from resources.productcat import ProductCatList, ProductCat
@@ -174,6 +175,9 @@ route_path = [
             api_version + "/reset_password/<string:forgotpassword_id>",
         ],
     ],  # https://maistore.com/reset_password/1
+    [
+        UserAvatar, [api_version + "/user_avatar/<string:user_id>",]
+    ]
 ]
 
 # i want to comment all the Resources i have created

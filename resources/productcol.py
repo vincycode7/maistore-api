@@ -15,7 +15,7 @@ class ProductColorList(Resource):
         productcolors = ProductColorModel.find_all()
         if productcolors:
             return {"productcolors": schema_many.dump(productcolors)}, 201
-        return {"message": NOT_FOUND.format("productcolors")}, 400
+        return {"message": gettext("prduct_color_rel_exist_not_found")}, 404
 
 
 # class to add product colors
@@ -24,17 +24,14 @@ class ProductColor(Resource):
         productcolor = ProductColorModel.find_by_id(id=productcolor_id)
         if productcolor:
             return {"productcolor": schema.dump(productcolor)}, 201
-        return {"message": NOT_FOUND.format("productcolor")}, 400
+        return {"message": gettext("prduct_color_rel_exist_not_found")}, 404
 
     @jwt_required
     def post(self):
-        claim = get_jwt_claims()
         data = schema.load(ProductColorModel.get_data_())
 
         # check if data already exist
-        unique_input_error, status = ProductColorModel.post_unique_already_exist(
-            claim, data
-        )
+        unique_input_error, status = ProductColorModel.post_unique_already_exist(data)
         if unique_input_error:
             return unique_input_error, status
 
@@ -46,13 +43,12 @@ class ProductColor(Resource):
         except Exception as e:
             print(f"error is {e}")
             return {
-                "message": ERROR_WHILE_INSERTING.format("product color")
+                "message": gettext("Internal_server_error")
             }, 500  # Internal server error
         return schema.dump(productcolor), 201
 
     @jwt_required
     def put(self, productcolor_id):
-        claim = get_jwt_claims()
         data = schema.load(ProductColorModel.get_data_())
 
         # confirm the unique key to be same with the product route
@@ -61,7 +57,7 @@ class ProductColor(Resource):
             unique_input_error,
             status,
         ) = ProductColorModel.put_unique_already_exist(
-            claim=claim, productcolor_id=productcolor_id, productcol_data=data
+            productcolor_id=productcolor_id, productcol_data=data
         )
 
         if unique_input_error:
@@ -78,31 +74,27 @@ class ProductColor(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("product color")
+                    "message": gettext("Internal_server_error")
                 }, 500  # Internal server error
         return {
-            "message": NOT_FOUND.format("product color")
-        }, 400  # 400 is for bad request
+            "message": gettext("prduct_color_rel_not_found")
+        }, 404  # 400 is for bad request
 
     @jwt_required
     def delete(self, productcolor_id):
-        claim = get_jwt_claims()
         productcolor = ProductColorModel.find_by_id(id=productcolor_id)
         if not productcolor:
-            return {"message": NOT_FOUND.format("product color")}, 401
+            return {"message": gettext("prduct_color_rel_not_found")}, 404
 
-        if (
-            not claim["is_admin"]
-            or not claim["is_root"]
-            or productcolor.product.store.user.id != claim["userid"]
-        ):
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product color")
-            }, 401
+        msg, status_code, _ = ProductColorModel.auth_by_admin_root_or_user(
+            user_id=product.store.user_id, get_err="product_color_req_ad_priv_to_delete"
+        )
+        if status_code != 200:
+            return msg, status_code
 
         try:
             productcolor.delete_from_db()
         except Exception as e:
             print(f"error is {e}")
-            return {"message": INTERNAL_ERROR}, 500
-        return {"message": DELETED.format("product color")}, 200  # 200 ok
+            return {"message": gettext("Internal_server_error")}, 500
+        return {"message": gettext("product_color_rel_deleted")}, 200  # 200 ok

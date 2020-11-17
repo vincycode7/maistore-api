@@ -8,5 +8,5 @@ class FavStoreList(Resource):
     def get(self):
         favs = FavStoreModel.find_all()
         if favs:
-            return {"favorites": [fav.json() for fav in favs]}, 201
-        return {"message": "Item not found"}, 400
+            return {gettext("favorites"): [fav.json() for fav in favs]}, 201
+        return {gettext("message"): gettext("favorite_store_not_found")}, 400

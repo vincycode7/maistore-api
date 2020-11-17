@@ -1,11 +1,11 @@
 from ma import ma
 from models.store import StoreModel
-from schemas.user import UserSchema
+from schemas.users import UserSchema
 from marshmallow_sqlalchemy import fields
 
 
 class StoreSchema(ma.SQLAlchemyAutoSchema):
-    user = fields.Nested(
+    users = fields.Nested(
         lambda: UserSchema(only=("id", "firstname", "middlename", "lastname"))
     )
 

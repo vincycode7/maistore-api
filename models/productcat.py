@@ -31,7 +31,14 @@ class ProductCatModel(db.Model, ModelsHelper):
 
     @classmethod
     def find_by_catdesc(cls, catdesc=None):
-        result = cls.query.filter_by(desc=catdesc).first()
+        try:
+            result = cls.query.filter_by(desc=catdesc).first()
+        except Exception as e:
+            raise ProductCatException(
+                gettext("product_cat_err_getby_catdesc").format(e)
+            )
+        except:
+            raise ProductCatException(gettext("product_cat_err_getby_catdesc"))
         return result
 
     @classmethod
@@ -41,37 +48,34 @@ class ProductCatModel(db.Model, ModelsHelper):
 
     @classmethod
     def post_unique_already_exist(cls, claim, cat_data):
+        msg, status_code, _ = cls.auth_by_admin_root(
+            get_err="product_cat_req_ad_priv_to_post"
+        )
+        if status_code != 200:
+            return msg, status_code
         desc = cls.check_unique_inputs(cat_data=cat_data)
         if desc:
             return {
-                "message": ALREADY_EXISTS.format("product category", cat_data["desc"])
+                "message": gettext("product_cat_exit")
             }, 400  # 400 is for bad request
-        elif not claim or (claim and (not claim["is_admin"] or not claim["is_root"])):
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("post product categories")
-            }, 401
         return False, 200
 
     @classmethod
     def put_unique_already_exist(cls, claim, cat_id, cat_data):
+        # check cat permission, edit and parse data
+        msg, status_code, _ = cls.auth_by_admin_root(
+            get_err="product_cat_req_ad_priv_to_put"
+        )
+        if status_code != 200:
+            return msg, status_code
+
         productcat = cls.find_by_id(id=cat_id)
         desc = cls.check_unique_inputs(cat_data=cat_data)
 
-        # check cat permission, edit and parse data
-        if not claim or not claim["is_admin"]:
-            return (
-                productcat,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("edit product category")},
-                401,
-            )
         if desc and productcat and desc.id != productcat.id:
             return (
                 productcat,
-                {
-                    "message": ALREADY_EXISTS.format(
-                        "product category", cat_data["desc"]
-                    )
-                },
+                {"message": gettext("product_cat_exit")},
                 400,
             )  # 400 is for bad request
         return productcat, False, 200

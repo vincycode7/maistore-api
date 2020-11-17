@@ -4,40 +4,23 @@ from marshmallow import ValidationError
 from flask_restful import Api
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import JWTManager
+from flask_uploads import configure_uploads, patch_request_class
 from libs.mailer import MailerException
 from sqlalchemy import exc
+from dotenv import load_dotenv
+from libs.strings import gettext
+from libs.image_helper import IMAGE_SET
 import os
 
 
 def config_app(app):
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-        "DATABASE_URL", "sqlite:///data.db"
-    )
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["PROPAGATE_EXCEPTIONS"] = True
-    app.config["JWT_BLACKLIST_ENABLED"] = True
-    app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
-    app.config["DEFAULT_PARSERS"] = [
-        "flask.ext.api.parsers.JSONParser",
-        "flask.ext.api.parsers.URLEncodedParser",
-        "flask.ext.api.parsers.MultiPartParser",
-    ]
-    app.config["CORS_HEADERS"] = "Content-Type"
-    app.secret_key = os.environ.get(
-        "SECRET_KEY", "vvvvv dclnf qnwiefnn"
-    )  # always remember to get the apps's secret key, also this key should be hidden from the public.
+    app.config.from_object("config")
+    app.config.from_envvar("APPLICATION_SETTINGS")
     return app
 
 
 def create_usr_from_root(app):
-    from models.user import (
-        UserModel,
-        ERROR_OCCURED_CREATING_ROOT_USR,
-        ERROR_OCCURED_CONFIRMING_ROOT_USR,
-        ALREADY_EXISTS,
-        ERROR_WHILE_INSERTING,
-        ERROR_N_WHILE
-    )
+    from models.users import UserModel, gettext
 
     data_usr = {
         "admin": True,
@@ -48,17 +31,14 @@ def create_usr_from_root(app):
     }
     # creat root user
     # check if data already exist
-    unique_input_error, status_code = UserModel.post_unique_already_exist(data_usr)
+    unique_input_error, _ = UserModel.post_unique_already_exist(data_usr)
     if unique_input_error:
-        print(
-            f"Error creating root user --> {unique_input_error}"
-        )
+        print(f"{gettext('err_creating_root_usr').format(unique_input_error)}")
         return
 
     try:
-        root_usr = UserModel.create_user(data = data_usr)
+        root_usr, _ = UserModel.create_user(data=data_usr)
     except Exception as e:
-        print(ERROR_OCCURED_CREATING_ROOT_USR.format(e))
         UserModel.rollback_error()
         return
 
@@ -66,7 +46,6 @@ def create_usr_from_root(app):
         confirmation = root_usr.create_confirmation()
     except Exception as e:
         root_usr.delete_from_db()
-        print(ERROR_N_WHILE.format(e,"creating confirmation"))
         UserModel.rollback_error()
         return
 
@@ -76,14 +55,13 @@ def create_usr_from_root(app):
     except Exception as e:
         root_usr.delete_from_db()
         confirmation.delete_from_db()
-        print(ERROR_OCCURED_CONFIRMING_ROOT_USR.format(e))
+        print(gettext("err_confirming_root_usr").format(e))
         UserModel.rollback_error()
         return
-    
+
 
 def create_api(app):
-    api = Api(app=app)
-    return api
+    return Api(app=app)
 
 
 def link_jwt(app):
@@ -111,7 +89,7 @@ def jwt_error_handler(jwt):
 
     @jwt.user_claims_loader
     def add_claims_to_jwt(identity=None):
-        from models.user import UserModel
+        from models.users import UserModel
 
         usr = UserModel.find_by_id(id=identity)
         if usr:
@@ -125,14 +103,14 @@ def jwt_error_handler(jwt):
     @jwt.expired_token_loader
     def expire_token_callback():
         return (
-            jsonify({"message" : "token_expired"}),
+            jsonify({"message": gettext("token_expired")}),
             401,
         )
 
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
         return (
-            jsonify({"message" : "invalid_token"}),
+            jsonify({"message": gettext("invalid_token")}),
             401,
         )
 
@@ -141,7 +119,7 @@ def jwt_error_handler(jwt):
         return (
             jsonify(
                 {
-                    "message" : "authorization_required",
+                    "message": gettext("authorization_required"),
                 }
             ),
             401,
@@ -150,18 +128,14 @@ def jwt_error_handler(jwt):
     @jwt.needs_fresh_token_loader
     def token_not_fresh_callback():
         return (
-            jsonify(
-                {"message": "fresh_token_required"}
-            ),
+            jsonify({"message": gettext("fresh_token_required")}),
             401,
         )
 
     @jwt.revoked_token_loader
     def revoked_token_callback():
         return (
-            jsonify(
-                {"message" : "token_revoked"}
-            ),
+            jsonify({"message": gettext("token_revoked")}),
             401,
         )
 
@@ -173,9 +147,12 @@ def mash_err_handler(app):
 
 
 def create_and_config_app(app, route_path):
+    load_dotenv(".env", verbose=True)
     cors = CORS(app)
     app = config_app(app)
     api = create_api(app)
+    patch_request_class(app, size=10 * 1024 * 1024)  # 10MB max size upload
+    configure_uploads(app, IMAGE_SET)
     jwt = link_jwt(app)
     mash_err_handler(app=app)
     jwt_error_handler(jwt)

@@ -6,7 +6,9 @@ class ProductSizeModel(db.Model, ModelsHelper):
 
     # class variables
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    productcat_id = db.Column(db.Integer, db.ForeignKey("productcat.id"), nullable=False)
+    productcat_id = db.Column(
+        db.Integer, db.ForeignKey("productcat.id"), nullable=False
+    )
     productsubcat_id = db.Column(
         db.Integer, db.ForeignKey("productsubcat.id"), nullable=False
     )
@@ -21,8 +23,15 @@ class ProductSizeModel(db.Model, ModelsHelper):
     )
 
     @classmethod
-    def find_by_sizedesc(cls, sizedesc=None):
-        result = cls.query.filter_by(desc=sizedesc).first()
+    def find_by_sizedesc(
+        cls, sizedesc=None, get_err="product_size_err_find_by_sizedesc"
+    ):
+        try:
+            result = cls.query.filter_by(desc=sizedesc).first()
+        except Exception as e:
+            raise ProductSizeException(gettext(get_err).format(e))
+        except:
+            raise ProductSizeException(gettext(get_err))
         return result
 
     @classmethod
@@ -43,74 +52,58 @@ class ProductSizeModel(db.Model, ModelsHelper):
     @classmethod
     def post_unique_already_exist(cls, claim, size_data):
         # check if admin
-        if not claim or (claim and (not claim["is_admin"] or not claim["is_root"])):
-            return {
-                "message": ADMIN_PRIVILEDGE_REQUIRED.format("post product sizes")
-            }, 401
+        msg, status_code, _ = cls.auth_by_admin_root(
+            get_err="product_color_req_ad_priv_to_post"
+        )
+        if status_code != 200:
+            return msg, status_code
+
         productsize, productcat, productsubcat = cls.check_unique_inputs(
             size_data=size_data
         )
         # check if the post exist already
         if productsize:
             return {
-                "message": ALREADY_EXISTS.format("product size", size_data["desc"])
+                "message": gettext("product_size_exist")
             }, 400  # 400 is for bad request
 
         # check if productcatid exist
         if not productcat:
-            return {
-                "message": DOES_NOT_EXIST.format(
-                    "product category" + " " + str(size_data["productcat_id"])
-                )
-            }, 400  # 400 is for bad request
+            return {"message": gettext("product_cat_not_found")}, 404
 
         # check if productid exist
         if not productsubcat:
-            return {
-                "message": DOES_NOT_EXIST.format(
-                    "product sub category for" + " " + str(size_data["productsubcat_id"])
-                )
-            }, 400  # 400 is for bad request
+            return {"message": gettext("product_subcat_not_found")}, 404
 
         # check if productid exist
         if not productsubcat.productcat:
-            return {
-                "message": DOES_NOT_EXIST.format(
-                    "category for product subcategory"
-                )
-            }, 400  # 400 is for bad request
+            return {"message": gettext("product_cat_for_subcat_not_found")}, 404
 
         # (before we got here that means we are sure productcat
         # and productsubcat exist) check if productsubcat is
         # not in productcat
         if productsubcat.productcat.id != productcat.id:
-            return {
-                "message": NOT_FOUND_IN.format(
-                    "product sub category",
-                    "for category id " + str(size_data["productsubcat_id"]),
-                )
-            }, 400  # 400 is for bad request
+            return {"message": gettext("product_cat_for_subcat_not_found")}, 404
 
         return False, 200
 
     @classmethod
     def put_unique_already_exist(cls, claim, size_id, size_data):
         # check if admin
-        if not claim or (claim and (not claim["is_admin"] or not claim["is_root"])):
-            return (
-                None,
-                {"message": ADMIN_PRIVILEDGE_REQUIRED.format("post product sizes")},
-                401,
-            )
+        msg, status_code, _ = cls.auth_by_admin_root(
+            get_err="product_color_req_ad_priv_to_post"
+        )
+        if status_code != 200:
+            return msg, status_code
 
         # chcek if record to edit exist
         productsize_record = cls.find_by_id(id=size_id)
         if not productsize_record:
             return (
                 None,
-                {"message": NOT_FOUND.format("productsize record")},
-                400,
-            )  # 400 is for bad request
+                {"message": gettext("product_size_not_found")},
+                404,
+            )
 
         # check if the put exist already
         productsize, productcat, productsubcat = cls.check_unique_inputs(
@@ -119,7 +112,7 @@ class ProductSizeModel(db.Model, ModelsHelper):
         if productsize and productsize.id != productsize_record.id:
             return (
                 None,
-                {"message": ALREADY_EXISTS.format("product size", size_data["desc"])},
+                {"message": gettext("product_size_exist")},
                 400,
             )  # 400 is for bad request
 
@@ -127,25 +120,17 @@ class ProductSizeModel(db.Model, ModelsHelper):
         if not productcat:
             return (
                 None,
-                {
-                    "message": DOES_NOT_EXIST.format(
-                        "product category" + " " + str(size_data["productcat_id"])
-                    )
-                },
-                400,
-            )  # 400 is for bad request
+                {"message": gettext("product_cat_not_found")},
+                404,
+            )
 
         # check if productid exist
         if not productsubcat:
             return (
                 None,
-                {
-                    "message": DOES_NOT_EXIST.format(
-                        "product sub category for" + " " + str(size_data["productsubcat_id"])
-                    )
-                },
-                400,
-            )  # 400 is for bad request
+                {"message": gettext("product_subcat_not_found")},
+                404,
+            )
 
         # (before we got here that means we are sure productcat
         # and productsubcat exist) check if productsubcat is
@@ -153,14 +138,10 @@ class ProductSizeModel(db.Model, ModelsHelper):
         if productsubcat.productcat.id != productcat.id:
             return (
                 None,
-                {
-                    "message": NOT_FOUND_IN.format(
-                        "product sub category",
-                        "category id " + str(size_data["productsubcat_id"]),
-                    )
-                },
+                {"message": gettext("product_cat_for_subcat_not_found")},
                 400,
             )  # 400 is for bad request
         return productsize_record, False, 200
+
 
 # TODO: make sure to check all options of error when posting or puting

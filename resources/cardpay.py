@@ -8,5 +8,6 @@ class CardPayList(Resource):
     def get(self):
         cardpays = CardpayModel.find_all()
         if cardpays:
-            return {"cardpays": [cardpay.json() for cardpay in cardpays]}, 201
-        return {"message": "Item not found"}, 400
+            return {"message": gettext("work_in_progress")}, 400
+            # return {"cardpays": [cardpay.json() for cardpay in cardpays]}, 201
+        return {"message": gettext("cardpay_not_found")}, 404

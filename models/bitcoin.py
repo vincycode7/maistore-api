@@ -8,5 +8,5 @@ class BitcoinPayModel(db.Model, ModelsHelper):
 
     # class variables
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    user_id = db.Column(db.String(50), db.ForeignKey("user.id"))
+    user_id = db.Column(db.String(50), db.ForeignKey("users.id"))
     wallet_address = db.Column(db.String(256))

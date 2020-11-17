@@ -1,4 +1,7 @@
-from models.user import UserModel
+""" 
+    imports all model before app begins to run.
+"""
+from models.users import UserModel
 from models.store import StoreModel
 from models.bitcoin import BitcoinPayModel
 from models.cardpay import CardpayModel

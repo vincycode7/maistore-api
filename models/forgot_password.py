@@ -16,7 +16,7 @@ class ForgotPasswordModel(db.Model, ModelsHelper):
     # columns
     id = db.Column(db.String(50), primary_key=True, unique=True)
     expire_at = db.Column(db.Integer, unique=False, nullable=False)
-    user_id = db.Column(db.String(50), db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.String(50), db.ForeignKey("users.id"), nullable=False)
     used = db.Column(db.Boolean, nullable=False, default=False)
     eight_digit = db.Column(db.String(8), nullable=False)
 
@@ -30,98 +30,118 @@ class ForgotPasswordModel(db.Model, ModelsHelper):
         self.eight_digit = str(randint(00000000, 99999999))
 
     @property
-    def expired(self) -> bool:
-        return time() > self.expire_at
+    def expired(self, get_err="fpass_err_getting_expired") -> bool:
+        try:
+            return time() > self.expire_at
+        except Exception as e:
+            raise ForgotPasswordException(gettext(get_err).format(e))
 
-    def force_to_unused(self) -> None:
-        if self.used:
-            self.used = False
-            self.save_to_db()
+    def force_to_unused(self, get_err="fpass_err_forceunused") -> None:
+        try:
+            if self.used:
+                self.used = False
+                self.save_to_db(get_err="fpass_err_saving_fpass")
+        except Exception as e:
+            raise ForgotPasswordException(gettext(get_err).format(e))
 
-    def force_to_used(self) -> None:
-        if not self.used:
-            self.used = True
-            self.save_to_db()
+    def force_to_used(self, get_err="fpass_err_forceused") -> None:
+        try:
+            if not self.used:
+                self.used = True
+                self.save_to_db(get_err="fpass_err_saving_fpass")
+        except Exception as e:
+            raise ForgotPasswordException(gettext(get_err).format(e))
 
-    def force_to_expire(self) -> None:
-        if not self.expired:
-            self.expire_at = int(time())
-            self.save_to_db()
+    def force_to_expire(self, get_err="fpass_err_forceexpire") -> None:
+        try:
+            if not self.expired:
+                self.expire_at = int(time())
+                self.save_to_db(get_err="fpass_err_saving_fpass")
+        except Exception as e:
+            raise ForgotPasswordException(gettext(get_err).format(e))
 
     @classmethod
-    def most_recent_fp_by_user_id(cls, user_id):
-        return cls.query.filter_by(user_id=user_id).order_by(db.desc(cls.expire_at)).first()
+    def most_recent_fp_by_user_id(cls, user_id, get_err="fpass_err_getting_user_by_id"):
+        try:
+            return (
+                cls.query.filter_by(user_id=user_id)
+                .order_by(db.desc(cls.expire_at))
+                .first()
+            )
+        except Exception as e:
+            raise ForgotPasswordException(gettext(get_err).format(e))
 
     @classmethod
-    def request_forgot_password_digit(cls,email):
+    def request_forgot_password_digit(cls, email):
         user = cls.find_user_by_email(user_email=email)
 
         if not user:
-            return {"message": NOT_FOUND.format("user email")}, 400
+            return {"message": gettext("user_not_found")}, 404
 
         try:
-            reply, status_code = user.create_send_forgotpassword_digit_for_user(user=user)
-
+            reply, status_code = user.create_send_forgotpassword_digit_for_user(
+                user=user
+            )
         except Exception as e:
-            print(e)
-            return {"message" : ERROR_WHILE.format("creating or sending forgot password digit")}, 500
+            print(f"yaya --> {e}")
+            return {"message": gettext("Internal_server_error")}, 500
 
         if status_code != 200:
             return reply, status_code
 
-        return {"message" : SENT_TO.format("8-digit code", user.email)}, 200
+        return {"message": gettext("fpass_code_sent").format(user.email)}, 200
 
     @classmethod
     def get_forgot_password(cls, email, eight_digit):
         user = cls.find_user_by_email(user_email=email)
 
         if not user:
-            return {"message": NOT_FOUND.format("user email")}, 404
+            return {"message": gettext("user_not_found")}, 404
 
         forgotpassword = user.most_recent_forgotpassword
 
         if not forgotpassword:
-            return {"message": NOT_FOUND.format("no forgot password request found for user")}, 404
-        
-        if forgotpassword.eight_digit != eight_digit:
-            return {"message": INVALID.format("8-digit code")}, 400
+            return {"message": gettext("fpass_req_not_found")}, 404
 
-        return {"forgotpassword_id" : forgotpassword.id}, 200
+        if forgotpassword.eight_digit != eight_digit:
+            return {"message": gettext("fpass_incorrect_8_digit")}, 400
+
+        return {"forgotpassword_id": forgotpassword.id}, 200
 
     @classmethod
     def reset_password(cls, forgotpassword_id, new_password):
+        if new_password == None:
+            return {
+                "message": gettext("new_password_parameter_not_found")
+            }, 404  # 404 is for bad request
+
         forgotpassword = cls.find_by_id(id=forgotpassword_id)
 
         if not forgotpassword:
-            return {"message": NOT_FOUND.format("no forgot password request found for user")}, 404 # Not found
+            return {"message": gettext("fpass_req_not_found")}, 404  # Not found
 
         elif forgotpassword.used:
-            return {
-                "message": ALREADY_USED.format(
-                    "user forgot password request", forgotpassword.id
-                )
-            }, 400 # bad request
+            return {"message": gettext("fpass_used")}, 400  # bad request
 
         elif forgotpassword.expired:
-            return {"message": EXPIRED.format("user forgot password request")}, 400 # bad request
+            return {"message": gettext("fpass_expired")}, 400  # bad request
 
         try:
-            reply, status_code = forgotpassword.user.change_user_password(
-                                                                user_id=forgotpassword.user_id, 
-                                                                new_password=new_password, 
-                                                                forgot_old_password=True
-                                                            )
+            reply, status_code = forgotpassword.users.change_user_password(
+                user_id=forgotpassword.user_id,
+                new_password=new_password,
+                forgot_old_password=True,
+            )
             if status_code != 201:
                 return reply, status_code
 
         except Exception as e:
-            print(e)
-            return {"message" : ERROR_WHILE.format("changing password")}
+            print(f"jarvis --> {e}")
+            return {"message": gettext("Internal_server_error")}, 500
         try:
             forgotpassword.force_to_used()
             forgotpassword.force_to_expire()
         except Exception as e:
             print(e)
-            return {"message" : ERROR_WHILE.format("using forgot password request")}, 500
-        return {"message" : RESET_SUCCESSFUL.format("password")}, 200
-
+            return {"message": gettext("Internal_server_error")}, 500
+        return {"message": gettext("password_reset_success")}, 200

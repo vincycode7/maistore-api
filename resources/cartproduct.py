@@ -8,7 +8,8 @@ class CartProductList(Resource):
     def get(self):
         cartproducts = CartProductModel.find_all()
         if cartproducts:
-            return {
-                "cartproducts": [cartproduct.json() for cartproduct in cartproducts]
-            }, 201
-        return {"message": "Item not found"}, 400
+            return {"message": gettext("work_in_progress")}, 400
+            # return {
+            #     "cartproducts": [cartproduct.json() for cartproduct in cartproducts]
+            # }, 201
+        return {"message": gettext("cardproduct_not_found")}, 404

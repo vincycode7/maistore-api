@@ -2,10 +2,10 @@ import sqlite3
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from models.product import *
-from error_messages import *
 from schemas.product import ProductSchema
 
 schema = ProductSchema()
+put_schema = ProductSchema(exclude=("store_id",))
 schema_many = ProductSchema(many=True)
 
 # class to get all product
@@ -18,7 +18,7 @@ class ProductList(Resource):
         if products:
             return {"products": schema_many.dump(products)}, 201
 
-        return {"message": NOT_FOUND.format("products")}, 400
+        return {"message": gettext("products_not_found")}, 400
 
 
 # class to get to get products using pagenate
@@ -27,7 +27,7 @@ class ProductPagenate(Resource):
     @classmethod
     # @jwt_optional
     def get(cls, page=1):
-        args_ = ProductModel.get_data_() 
+        args_ = ProductModel.get_data_()
         products = ProductModel.find_all_pagenate(page=page, **args_)
         items = products.pop("items", None)
         products["products"] = schema_many.dump(items)
@@ -35,7 +35,7 @@ class ProductPagenate(Resource):
         if products.get("products", None):
             return products, 200
 
-        return {"message": NOT_FOUND.format("products")}, 400
+        return {"message": gettext("products_not_found")}, 400
 
 
 class Product(Resource):
@@ -48,7 +48,7 @@ class Product(Resource):
 
         if product:
             return {"product": schema.dump(product)}, 201
-        return {"message": NOT_FOUND.format("product")}, 400
+        return {"message": gettext("product_not_found")}, 400
 
     # use for authentication before calling post
     @classmethod
@@ -72,7 +72,7 @@ class Product(Resource):
         except Exception as e:
             print(f"error is {e}")
             return {
-                "message": ERROR_WHILE_INSERTING.format("product")
+                "message": gettext("product_err_insertion_failed")
             }, 500  # Internal server error
         return schema.dump(product), 201
 
@@ -81,33 +81,29 @@ class Product(Resource):
     @jwt_required
     def delete(cls, product_id):
         product = ProductModel.find_by_id(id=product_id)
-        claim = get_jwt_claims()
-
         if not product:
-            return {"message": NOT_FOUND.format("product")}, 401
+            return {"message": gettext("product_not_found")}, 404
 
-        if (
-            not claim["is_admin"]
-            or not claim["is_root"]
-            or product.user.id != claim["userid"]
-        ):
-            return {"message": ADMIN_PRIVILEDGE_REQUIRED.format("delete product")}, 401
+        msg, status_code, _ = ProductModel.auth_by_admin_root_or_user(
+            user_id=product.users.id, get_err="product_req_ad_priv_to_delete"
+        )
+        if status_code != 200:
+            return msg, status_code
 
         try:
             product.delete_from_db()
         except Exception as e:
             print(f"error is {e}")
-            return {"message": INTERNAL_ERROR}, 500
-        return {"message": DELETED.format("product")}, 200  # 200 ok
+            return {"message": gettext("Internal_server_error")}, 500
+        return {"message": gettext("product_deleted")}, 200  # 200 ok
 
     # use for authentication before calling post
     @classmethod
     @jwt_required
     def put(cls, product_id):
-        claim = get_jwt_claims()
-        data = schema.load(ProductModel.get_data_())
+        data = put_schema.load(ProductModel.get_data_())
         product, unique_input_error, status = ProductModel.put_unique_already_exist(
-            claim=claim, product_id=product_id, product_data=data
+            product_id=product_id, product_data=data
         )
 
         if unique_input_error:
@@ -124,7 +120,7 @@ class Product(Resource):
             except Exception as e:
                 print(f"error is {e}")
                 return {
-                    "message": ERROR_WHILE_INSERTING.format("Product")
+                    "message": gettext("product_err_insertion_failed")
                 }, 500  # Internal server error
 
-        return {"message": NOT_FOUND.format("Product")}, 400  # 400 is for bad request
+        return {"message": gettext("product_not_found")}, 404  # 400 is for bad request
