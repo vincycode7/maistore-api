@@ -18,7 +18,7 @@ class ProductList(Resource):
         if products:
             return {"products": schema_many.dump(products)}, 201
 
-        return {"message": gettext("products_not_found")}, 400
+        return {"message": gettext("product_not_found")}, 404
 
 
 # class to get to get products using pagenate

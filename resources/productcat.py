@@ -13,17 +13,19 @@ class ProductCatList(Resource):
         productcats = ProductCatModel.find_all()
         if productcats:
             return {"productcats": schema_many.dump(productcats)}, 201
-        return {"message": gettext("productcat_not_found")}, 404
+        return {"message": gettext("product_cat_not_found")}, 404
 
 
 # class to add product productcat
 class ProductCat(Resource):
+    @classmethod
     def get(cls, cat_id):
         productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
             return {"productcat": schema.dump(productcat)}, 201
-        return {"message": gettext("productcat_not_found")}, 404
+        return {"message": gettext("product_cat_not_found")}, 404
 
+    @classmethod
     @jwt_required
     def post(cls):
         data = schema.load(ProductCatModel.get_data_())
@@ -45,6 +47,7 @@ class ProductCat(Resource):
             }, 500  # Internal server error
         return schema.dump(productcat), 201
 
+    @classmethod
     @jwt_required
     def put(cls, cat_id):
         data = schema.load(ProductCatModel.get_data_())
@@ -74,9 +77,10 @@ class ProductCat(Resource):
                     "message": gettext("Internal_server_error")
                 }, 500  # Internal server error
         return {
-            "message": gettext("productcat_not_found")
+            "message": gettext("product_cat_not_found")
         }, 404  # 400 is for bad request
 
+    @classmethod
     @jwt_required
     def delete(cls, cat_id):
         msg, status_code, _ = ProductCatModel.auth_by_admin_root(
@@ -87,7 +91,7 @@ class ProductCat(Resource):
         productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
             productcat.delete_from_db()
-            return {"message": gettext("productcat_deleted")}, 200  # 200 ok
+            return {"message": gettext("product_cat_deleted")}, 200  # 200 ok
         return {
-            "message": gettext("productcat_not_found")
+            "message": gettext("product_cat_not_found")
         }, 400  # 400 is for bad request

@@ -47,7 +47,7 @@ class ProductCatModel(db.Model, ModelsHelper):
         return desc
 
     @classmethod
-    def post_unique_already_exist(cls, claim, cat_data):
+    def post_unique_already_exist(cls, cat_data):
         msg, status_code, _ = cls.auth_by_admin_root(
             get_err="product_cat_req_ad_priv_to_post"
         )
@@ -61,7 +61,7 @@ class ProductCatModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def put_unique_already_exist(cls, claim, cat_id, cat_data):
+    def put_unique_already_exist(cls, cat_id, cat_data):
         # check cat permission, edit and parse data
         msg, status_code, _ = cls.auth_by_admin_root(
             get_err="product_cat_req_ad_priv_to_put"

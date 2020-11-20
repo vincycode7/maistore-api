@@ -77,6 +77,7 @@
 "product_cat_for_subcat_not_found" : "product category for sub category not found.",
 
 "product_cat_err_saving" : "product catgory did not save in database.",
+"product_cat_err_saving" : "product catgory did not save in database.",
 "product_cat_err_getby_catdesc" : "error {} occured when trying to get productcat by it's description.",
 
 "product_color_already_exist" : "product color already exist.",
