@@ -12,7 +12,7 @@ from resources.users import (
     Change_User_Root_Status,
     Change_User_Admin_Status,
 )
-from resources.image import UserAvatar
+from resources.image import UserAvatar, StoreAvatar, ProductAvatar
 from resources.forgot_password import (
     RequestForgotPasswordDigit,
     GetForgotPasswordId,
@@ -177,6 +177,12 @@ route_path = [
     ],  # https://maistore.com/reset_password/1
     [
         UserAvatar, [api_version + "/user_avatar/<string:user_id>",]
+    ],
+    [
+        StoreAvatar, [api_version + "/store_avatar/<string:store_id>",]
+    ],
+    [
+        ProductAvatar, [api_version + "/product_avatar/<string:product_id>",]
     ]
 ]
 

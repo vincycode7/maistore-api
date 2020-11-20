@@ -13,6 +13,8 @@ from models.forgot_password import ForgotPasswordModel
 def create_id(context):
     return "USER-V1-" + uuid4().hex
 
+def _images(context):
+    return context.image
 
 # class to create user and get user
 class UserModel(db.Model, ModelsHelper):
@@ -23,7 +25,6 @@ class UserModel(db.Model, ModelsHelper):
     lga = db.Column(db.String(30), nullable=True)
     state = db.Column(db.String(30), nullable=True)
     address = db.Column(db.String(300), nullable=True)
-    image = db.Column(db.String(300), nullable=True, default=None)
     middlename = db.Column(db.String(30), index=False, unique=False, nullable=True)
     lastname = db.Column(db.String(30), index=False, unique=False, nullable=True)
     firstname = db.Column(db.String(30), index=False, unique=False, nullable=True)
@@ -40,7 +41,7 @@ class UserModel(db.Model, ModelsHelper):
     password = db.Column(db.String(80), index=False, unique=False, nullable=False)
     email = db.Column(db.String(100), index=False, unique=True, nullable=False)
     phoneno = db.Column(db.String(15), index=False, unique=True, nullable=True)
-    image = db.Column(db.String(100), nullable=True)
+    avatar = db.Column(db.String, nullable=True, default=None)
     
     # merge (for sqlalchemy to link tables)
     stores = db.relationship(

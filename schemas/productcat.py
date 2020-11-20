@@ -8,7 +8,7 @@ class ProductCatSchema(ma.SQLAlchemyAutoSchema):
     #     "ProductSubCatSchema",
     #     many=True,
     #     exclude=(
-    #         "productcat",
+    #         "ProductCat",
     #         "products",
     #         "productsize",
     #     ),
@@ -17,9 +17,9 @@ class ProductCatSchema(ma.SQLAlchemyAutoSchema):
     #     "ProductSizeSchema",
     #     many=True,
     #     exclude=(
-    #         "productcat",
+    #         "ProductCat",
     #         "products",
-    #         "productcat_id",
+    #         "ProductCat_id",
     #         "productsubcat",
     #     ),
     # )

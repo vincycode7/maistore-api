@@ -12,20 +12,20 @@ class ProductCatList(Resource):
     def get(cls):
         productcats = ProductCatModel.find_all()
         if productcats:
-            return {"product_categories": schema_many.dump(productcats)}, 201
-        return {"message": gettext("product_cat_not_found")}, 404
+            return {"productcats": schema_many.dump(productcats)}, 201
+        return {"message": gettext("productcat_not_found")}, 404
 
 
-# class to add product categories
+# class to add product productcat
 class ProductCat(Resource):
-    def get(self, cat_id):
+    def get(cls, cat_id):
         productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
-            return {"product_category": schema.dump(productcat)}, 201
-        return {"message": gettext("product_cat_not_found")}, 404
+            return {"productcat": schema.dump(productcat)}, 201
+        return {"message": gettext("productcat_not_found")}, 404
 
     @jwt_required
-    def post(self):
+    def post(cls):
         data = schema.load(ProductCatModel.get_data_())
 
         # check if data already exist
@@ -46,7 +46,7 @@ class ProductCat(Resource):
         return schema.dump(productcat), 201
 
     @jwt_required
-    def put(self, cat_id):
+    def put(cls, cat_id):
         data = schema.load(ProductCatModel.get_data_())
 
         # confirm the unique key to be same with the product route
@@ -74,20 +74,20 @@ class ProductCat(Resource):
                     "message": gettext("Internal_server_error")
                 }, 500  # Internal server error
         return {
-            "message": gettext("product_cat_not_found")
+            "message": gettext("productcat_not_found")
         }, 404  # 400 is for bad request
 
     @jwt_required
-    def delete(self, cat_id):
+    def delete(cls, cat_id):
         msg, status_code, _ = ProductCatModel.auth_by_admin_root(
-            get_err="product_cat_req_ad_priv_to_delete"
+            get_err="productcat_req_ad_priv_to_delete"
         )
         if status_code != 200:
             return msg, status_code
         productcat = ProductCatModel.find_by_id(id=cat_id)
         if productcat:
             productcat.delete_from_db()
-            return {"message": gettext("product_cat_deleted")}, 200  # 200 ok
+            return {"message": gettext("productcat_deleted")}, 200  # 200 ok
         return {
-            "message": gettext("product_cat_not_found")
+            "message": gettext("productcat_not_found")
         }, 400  # 400 is for bad request

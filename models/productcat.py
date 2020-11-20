@@ -7,27 +7,28 @@ class ProductCatModel(db.Model, ModelsHelper):
     # columns
     id = db.Column(db.Integer, primary_key=True, unique=True)
     desc = db.Column(db.String(256), unique=True, nullable=False)
-
+    avatar = db.Column(db.String(100), nullable=True, default=None)
     # merge
-    products = db.relationship(
-        "ProductModel",
-        lazy="dynamic",
-        backref="productcat",
-        cascade="all, delete-orphan",
-    )
-    productsubcat = db.relationship(
-        "ProductSubCatModel",
-        lazy="dynamic",
-        backref="productcat",
-        cascade="all, delete-orphan",
-    )
+    # products = db.relationship(
+    #     "ProductModel",
+    #     lazy="dynamic",
+    #     backref="productcat",
+    #     cascade="all, delete-orphan",
+    # )
+    # productsubcat = db.relationship(
+    #     "ProductSubCatModel",
+    #     lazy="dynamic",
+    #     backref="productcat",
+    #     cascade="all, delete-orphan",
+    # )
 
-    productsize = db.relationship(
-        "ProductSizeModel",
-        lazy="dynamic",
-        backref="productcat",
-        cascade="all, delete-orphan",
-    )
+    # productsize = db.relationship(
+    #     "ProductSizeModel",
+    #     lazy="dynamic",
+    #     backref="productcat",
+    #     cascade="all, delete-orphan",
+    # )
+    
 
     @classmethod
     def find_by_catdesc(cls, catdesc=None):
@@ -47,7 +48,7 @@ class ProductCatModel(db.Model, ModelsHelper):
         return desc
 
     @classmethod
-    def post_unique_already_exist(cls, claim, cat_data):
+    def post_unique_already_exist(cls, cat_data):
         msg, status_code, _ = cls.auth_by_admin_root(
             get_err="product_cat_req_ad_priv_to_post"
         )

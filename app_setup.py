@@ -10,7 +10,7 @@ from libs.mailer import MailerException
 from sqlalchemy import exc
 from dotenv import load_dotenv
 from libs.strings import gettext
-from libs.image_helper import IMAGE_SET
+from libs.file_helper import IMAGE_SET
 from db import db
 from ma import ma
 import os
@@ -118,7 +118,8 @@ def jwt_error_handler(jwt):
         )
 
     @jwt.unauthorized_loader
-    def missing_token_callback():
+    def missing_token_callback(error):
+        print(error)
         return (
             jsonify(
                 {
@@ -142,7 +143,6 @@ def jwt_error_handler(jwt):
             401,
         )
 
-
 def mash_err_handler(app):
     @app.errorhandler(ValidationError)
     def handle_marshmallow_validation(err):
@@ -163,4 +163,4 @@ def create_and_config_app(app, route_path):
     db.init_app(app)
     ma.init_app(app)
     migrate = Migrate(app=app, db=db)
-    return app, cors, jwt, api
+    return app, cors, jwt, api, db, ma, migrate

@@ -43,6 +43,6 @@ class ProductSchema(ma.SQLAlchemyAutoSchema):
         #     "productsubcat_id",
         #     "size_id",
         # )
-        dump_only = "is_available"
+        # dump_only = "is_available"
         include_fk = True
         include_relationships = True

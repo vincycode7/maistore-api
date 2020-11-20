@@ -19,14 +19,15 @@ class ProductSizeList(Resource):
 
 # class to add product sizes
 class ProductSize(Resource):
-    def get(self, size_id):
+    @classmethod
+    def get(cls, size_id):
         productsize = ProductSizeModel.find_by_id(id=size_id)
         if productsize:
             return {"productsize": schema.dump(productsize)}, 201
         return {"message": gettext("product_size_not_found")}, 404
 
     @jwt_required
-    def post(self):
+    def post(cls):
         claim = get_jwt_claims()
         data = schema.load(ProductSizeModel.get_data_())
 
@@ -49,8 +50,9 @@ class ProductSize(Resource):
             }, 500  # Internal server error
         return schema.dump(productsize), 201
 
+    @classmethod
     @jwt_required
-    def put(self, size_id):
+    def put(cls, size_id):
         claim = get_jwt_claims()
         data = schema.load(ProductSizeModel.get_data_())
 
@@ -83,8 +85,9 @@ class ProductSize(Resource):
             "message": gettext("product_size_not_found")
         }, 404  # 400 is for bad request
 
+    @classmethod
     @jwt_required
-    def delete(self, size_id):
+    def delete(cls, size_id):
         msg, status_code, _ = cls.auth_by_admin_root(
             get_err="product_color_req_ad_priv_to_post"
         )

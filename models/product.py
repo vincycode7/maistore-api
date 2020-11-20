@@ -6,15 +6,6 @@ def create_id(context):
     return "PRODUCT-V1-" + uuid4().hex
 
 
-# helper functions
-def is_avail(context):
-    quantity = context.current_parameters.get("quantity", 0)
-    if quantity > 0:
-        return True
-    else:
-        return False
-
-
 class ProductModel(db.Model, ModelsHelper):
     __tablename__ = "product"
 
@@ -22,10 +13,8 @@ class ProductModel(db.Model, ModelsHelper):
         db.String(50), primary_key=True, unique=True, default=create_id, nullable=False
     )
     productname = db.Column(db.String(40), nullable=False)
-    price = db.Column(db.Float(precision=2), nullable=False)
-    discount = db.Column(db.Float(precision=2), nullable=False, default=0)
-    quantity = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(200), nullable=True)
+    avatar = db.Column(db.String, nullable=True, default=None)
     store_id = db.Column(
         db.String(50),
         db.ForeignKey("store.id"),
@@ -48,28 +37,13 @@ class ProductModel(db.Model, ModelsHelper):
         nullable=False,
         default=None,
     )
-    size_id = db.Column(
-        db.Integer,
-        db.ForeignKey("productsize.id"),
-        index=False,
-        unique=False,
-        nullable=False,
-        default=None,
-    )
+
     used = db.Column(
         db.Boolean,
         index=False,
         unique=False,
         nullable=False,
         default=True,
-    )
-    is_available = db.Column(
-        db.Boolean,
-        index=False,
-        unique=False,
-        nullable=False,
-        default=is_avail,
-        onupdate=is_avail,
     )
 
     # merge
@@ -83,6 +57,12 @@ class ProductModel(db.Model, ModelsHelper):
         backref="product",
         cascade="all, delete-orphan",
     )
+
+    @property
+    def is_available(self):
+        if self.quantity > 0:
+            return True
+        return False
 
     @classmethod
     def find_by_name(cls, productname=None):
@@ -103,12 +83,11 @@ class ProductModel(db.Model, ModelsHelper):
         productsubcat = cls.find_productsubcat_by_id(
             productsubcat_id=product_data.get("productsubcat_id", None)
         )
-        size = cls.find_size_by_id(size_id=product_data.get("size_id", None))
-        return store, productcat, productsubcat, size
+        return store, productcat, productsubcat
 
     @classmethod
     def post_unique_already_exist(cls, claim, product_data):
-        store, productcat, productsubcat, size = cls.check_unique_inputs(
+        store, productcat, productsubcat = cls.check_unique_inputs(
             product_data=product_data
         )
 
@@ -133,11 +112,6 @@ class ProductModel(db.Model, ModelsHelper):
         if not productsubcat:
             return {"message": gettext("product_subcat_not_found")}, 404
 
-        # check if size is valid
-        # check if size exist
-        if not size:
-            return {"message": gettext("product_subcat_size_not_found")}, 404
-
         # check if productsubcat is in product cat
         if productsubcat.productcat.id != productcat.id:
             return {"message": gettext("product_subcat_not_found_in_cat")}, 404
@@ -149,7 +123,7 @@ class ProductModel(db.Model, ModelsHelper):
     def put_unique_already_exist(cls, product_id, product_data):
         # check user permission, edit and parse data
         product = cls.find_by_id(id=product_id)
-        store, productcat, productsubcat, size = cls.check_unique_inputs(
+        store, productcat, productsubcat = cls.check_unique_inputs(
             product_data=product_data
         )
 
@@ -193,10 +167,6 @@ class ProductModel(db.Model, ModelsHelper):
         if not productsubcat:
             return None, {"message": gettext("product_subcat_not_found")}, 404
 
-        # check if size is valid
-        # check if size exist
-        if not size:
-            return None, {"message": gettext("product_subcat_size_not_found")}, 404
 
         # check if productsubcat is in product cat
         if productsubcat.productcat.id != productcat.id:

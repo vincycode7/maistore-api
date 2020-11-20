@@ -18,7 +18,7 @@ from routes import *
 # create app
 # set up config for app, jwt and api
 app = Flask(__name__)
-app, cors, jwt, api = create_and_config_app(app=app, route_path=route_path)
+app, cors, jwt, api, db, ma, migrate = create_and_config_app(app=app, route_path=route_path)
 
 if __name__ == "__main__":
 

@@ -15,7 +15,9 @@ class TranslatorException(Exception):
     def __init__(self, message: str):
         super().__init__(message)
 
-
+class TRANSERRKEYNOTFOUND(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
 default_locale = "en-us"
 cached_strings = {}
 
@@ -38,9 +40,10 @@ def refresh():
 
 def gettext(get_err):
     try:
-        return cached_strings.get(get_err)
-    except:
-        raise TranslatorException(cached_strings.get("err_key_not_found"))
+        return cached_strings[get_err]
+    except Exception as e:
+        print(e)
+        raise TRANSERRKEYNOTFOUND(cached_strings.get("err_key_not_found"))
 
 
 refresh()
