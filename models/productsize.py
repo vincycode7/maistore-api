@@ -2,7 +2,7 @@ from models.models_helper import *
 
 
 class ProductSizeModel(db.Model, ModelsHelper):
-    __tablename__ = "size"
+    __tablename__ = "productsize"
 
     # class variables
     id = db.Column(db.Integer, primary_key=True, unique=True)
@@ -15,12 +15,12 @@ class ProductSizeModel(db.Model, ModelsHelper):
     desc = db.Column(db.String(256), nullable=False)
 
     # merge
-    # products = db.relationship(
-    #     "ProductModel",
-    #     lazy="dynamic",
-    #     backref="productsize",
-    #     cascade="all, delete-orphan",
-    # )
+    products = db.relationship(
+        "ProductModel",
+        lazy="dynamic",
+        backref="productsize",
+        cascade="all, delete-orphan",
+    )
 
     @classmethod
     def find_by_sizedesc(
