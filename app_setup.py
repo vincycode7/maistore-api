@@ -58,7 +58,7 @@ def create_usr_from_root(app):
     except Exception as e:
         root_usr.delete_from_db()
         confirmation.delete_from_db()
-        print(gettext("err_confirming_root_usr").format(e))
+        # print(gettext("err_confirming_root_usr").format(e))
         UserModel.rollback_error()
         return
 
@@ -119,7 +119,7 @@ def jwt_error_handler(jwt):
 
     @jwt.unauthorized_loader
     def missing_token_callback(error):
-        print(error)
+        # print(error)
         return (
             jsonify(
                 {
