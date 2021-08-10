@@ -14,6 +14,7 @@ image_schema = ImageSchema()
 USER_AVATAR_PATH = "Users/user_{}/avatar/"
 STORE_AVATAR_PATH = "Stores/store_{}/avatar/"
 PRODUCT_AVATAR_PATH = "Products/product_{}/avatar/"
+PRODUCTCAT_AVATAR_PATH = "Productcats/productcat_{}/avatar/"
 
 
 class UserAvatar(Resource):
@@ -186,7 +187,7 @@ class UserAvatar(Resource):
 
 class StoreAvatar(Resource):
     @classmethod
-    def get(cls, store_id: int):
+    def get(cls, store_id: str):
         avatar_4_store = ModelsHelper.find_store_by_id(store_id=store_id)
         folder = STORE_AVATAR_PATH.format(store_id)  # Stores/store_1/avatar/
         avatar_folder_path = file_helper.get_path(
@@ -357,7 +358,7 @@ class StoreAvatar(Resource):
 
 class ProductAvatar(Resource):
     @classmethod
-    def get(cls, product_id: int):
+    def get(cls, product_id: str):
         avatar_4_product = ModelsHelper.find_product_by_id(
             product_id=product_id)
         folder = PRODUCT_AVATAR_PATH.format(
@@ -471,7 +472,8 @@ class ProductAvatar(Resource):
         It uses JWT to retrieve user information and then delete 
         the image from the user's folder.
         """
-        delete_4_product = ModelsHelper.find_product_by_id(product_id=product_id)
+        delete_4_product = ModelsHelper.find_product_by_id(
+            product_id=product_id)
         if not delete_4_product:
             return {"message": gettext("product_not_found")}, 404
 
@@ -529,23 +531,24 @@ class ProductAvatar(Resource):
                 "message": gettext("Internal_server_error")
             }, 500  # Internal server error
 
+
 class ProductCatAvatar(Resource):
     @classmethod
     def get(cls, productcat_id: int):
-        avatar_4_product = ModelsHelper.find_product_by_id(
-            product_id=product_id)
-        folder = PRODUCT_AVATAR_PATH.format(
-            product_id)  # Stores/store_1/avatar/
+        avatar_4_productcat = ModelsHelper.find_productcat_by_id(
+            productcat_id=productcat_id)
+        folder = PRODUCTCAT_AVATAR_PATH.format(
+            productcat_id)  # Productcats/productcat_1/avatar/
         avatar_folder_path = file_helper.get_path(
-            filename="", folder=folder)  # static/Products/product_1/avatar/
+            filename="", folder=folder)  # static/Productcats/productcat_1/avatar/
 
-        if not avatar_4_product:
-            return {"message": gettext("product_not_found")}, 404
+        if not avatar_4_productcat:
+            return {"message": gettext("product_cat_not_found")}, 404
 
-        if not avatar_4_product.avatar:
+        if not avatar_4_productcat.avatar:
             return {"message": gettext("avatar_not_found")}, 404
         try:
-            return send_user_file(filename=avatar_4_product.avatar, folder=avatar_folder_path)
+            return send_user_file(filename=avatar_4_productcat.avatar, folder=avatar_folder_path)
         except FileNotFoundError:
             return {"message": gettext("avatar_not_found")}, 404
         except:
@@ -553,34 +556,33 @@ class ProductCatAvatar(Resource):
 
     @classmethod
     @jwt_required
-    def put(cls, product_id: str = None):
+    def put(cls, productcat_id: int = None):
         """
         Used to upload an image file.
         It uses JWT to retrieve user information and then saves 
         the image to the user's folder. If there is a filename 
         conflict, it appends a number at the end.
         """
-
         data = image_schema.load(request.files)  # {"image":FileStorage}
         filename = data["image"].filename
 
-        upload_4_product = ModelsHelper.find_product_by_id(
-            product_id=product_id)
-        if not upload_4_product:
-            return {"message": gettext("product_not_found")}, 404
+        upload_4_productcat = ModelsHelper.find_productcat_by_id(
+            productcat_id=productcat_id)
+        if not upload_4_productcat:
+            return {"message": gettext("product_cat_not_found")}, 404
 
         # check user permission to acces resource
         try:
-            err_msg, status_code, _ = ModelsHelper.auth_by_admin_root_or_user(
-                user_id=upload_4_product.store.user_id, get_err="user_req_ad_priv_to_upload_product_avatar")
+            err_msg, status_code, _ = ModelsHelper.auth_by_admin_root(
+                get_err="user_req_ad_priv_to_upload_product_cat_avatar")
         except Exception as e:
             return {"message": gettext("Internal_server_error")}, 500
 
         if status_code != 200:
             return {"message": err_msg}, status_code
 
-        folder = PRODUCT_AVATAR_PATH.format(
-            product_id)  # Products/product_1/avatar/
+        folder = PRODUCTCAT_AVATAR_PATH.format(
+            productcat_id)  # Productcats/productcat_1/avatar/
         avatar_folder_path = file_helper.get_path(filename="", folder=folder)
         # save the image on disk
         try:
@@ -611,11 +613,11 @@ class ProductCatAvatar(Resource):
                 print(gettext("avatar_err_deleting_file").format(e))
 
             # save image to database
-            upload_4_product.__setattr__("avatar", basename)
+            upload_4_productcat.__setattr__("avatar", basename)
 
             # save to db
             try:
-                upload_4_product.save_to_db()
+                upload_4_productcat.save_to_db()
             except Exception as e:
                 # delete avatar locally
                 try:
@@ -639,45 +641,40 @@ class ProductCatAvatar(Resource):
 
     @classmethod
     @jwt_required
-    def delete(cls, product_id=None):
+    def delete(cls, productcat_id: int = None):
         """
         Used to delete an image file.
         It uses JWT to retrieve user information and then delete 
         the image from the user's folder.
         """
-        delete_4_product = ModelsHelper.find_product_by_id(product_id=product_id)
-        if not delete_4_product:
-            return {"message": gettext("product_not_found")}, 404
+        delete_4_productcat = ModelsHelper.find_productcat_by_id(
+            productcat_id=productcat_id)
+        if not delete_4_productcat:
+            return {"message": gettext("product_cat_not_found")}, 404
 
         # check user permission to acces resource
         try:
-            err_msg, status_code, _ = ModelsHelper.auth_by_admin_root_or_user(
-                user_id=delete_4_product.store.user_id, get_err="user_req_ad_priv_to_delete_store_avatar")
+            err_msg, status_code, _ = ModelsHelper.auth_by_admin_root(
+                get_err="user_req_ad_priv_to_delete_product_cat_avatar")
         except Exception as e:
             return {"message": gettext("Internal_server_error")}, 500
 
         if status_code != 200:
             return {"message": err_msg}, status_code
 
-        delete_4_user = ModelsHelper.find_user_by_id(
-            user_id=delete_4_product.store.user_id)
-        if not delete_4_user:
-            return {"message": gettext("user_not_found")}, 404
-
-        folder = PRODUCT_AVATAR_PATH.format(
-            delete_4_product.id)  # Products/product_1/avatar/
+        folder = PRODUCTCAT_AVATAR_PATH.format(
+            delete_4_productcat.id)  # Productcats/productcat_1/avatar/
         avatar_folder_path = file_helper.get_path(
-            filename="", folder=folder)  # static/Products/product_1/avatar/
+            filename="", folder=folder)  # static/Productcats/productcat_1/avatar/
 
         # delete the image on disk
         try:
             # delete avatar locally
             try:
-                if not delete_4_product.avatar:
+                if not delete_4_productcat.avatar:
                     return {"message": gettext("avatar_not_found")}, 404
-                print(avatar_folder_path, delete_4_product.avatar)
                 avatar_path = file_helper.delete_file_in_dir(
-                    folder_path=avatar_folder_path, filename=delete_4_product.avatar)
+                    folder_path=avatar_folder_path, filename=delete_4_productcat.avatar)
             except FileNotFoundError:
                 return {"message": gettext("avatar_not_found")}, 404
             except Exception as e:
@@ -686,11 +683,11 @@ class ProductCatAvatar(Resource):
             basename = file_helper.get_basename(avatar_path)
 
             # delete image from database
-            delete_4_product.__setattr__("avatar", None)
+            delete_4_productcat.__setattr__("avatar", None)
 
             # save to db
             try:
-                delete_4_product.save_to_db()
+                delete_4_productcat.save_to_db()
             except Exception as e:
                 print(e)
                 return {

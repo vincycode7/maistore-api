@@ -131,7 +131,6 @@ class UserModel(db.Model, ModelsHelper):
     def send_confirmation_digit_toemail(
         self, get_err="user_err_sending_confirmation_digit"
     ):
-        from_ = "akinwandegbengavincent@gmail.com"
         confirmation = self.most_recent_confirmation
         if not confirmation:
             raise UserException(gettext("user_err_no_confirmation_for_user"))
@@ -172,7 +171,6 @@ class UserModel(db.Model, ModelsHelper):
     def send_forgotpassword_digit_toemail(
         self, get_err="user_err_sending_forgot_password_digit"
     ):
-        from_ = "MAISTORE"
         forgotpassword = self.most_recent_forgotpassword
         if not forgotpassword:
             raise UserException(gettext("user_err_no_forgotpassreq_for_user"))
@@ -369,12 +367,15 @@ class UserModel(db.Model, ModelsHelper):
 
     @classmethod
     def post_unique_already_exist(cls, user_data):
-        user_by_phoneno = cls.find_by_phoneno(phoneno=user_data.get("phoneno"))
-        user_by_email = cls.find_by_email(email=user_data.get("email"))
-
-        # check if phone number already exist for another user
+        
+        phoneno = user_data.get("phoneno")
+        email = user_data.get("email")
+        user_by_phoneno = cls.find_by_phoneno(phoneno=phoneno)
+        user_by_email = cls.find_by_email(email=email)
+        
+        # check if email already exist for another user
         unique_input_error, status = cls.post_email_already_exist(
-            user_by_email=user_by_email
+            user_by_email=user_by_email, email=email
         )
 
         if unique_input_error:
@@ -382,7 +383,7 @@ class UserModel(db.Model, ModelsHelper):
 
         # check if phone number already exist for another user
         unique_input_error, status = cls.post_phoneno_already_exist(
-            user_by_phoneno=user_by_phoneno
+            user_by_phoneno=user_by_phoneno, phoneno=phoneno
         )
 
         if unique_input_error:
@@ -390,18 +391,18 @@ class UserModel(db.Model, ModelsHelper):
         return False, 200
 
     @classmethod
-    def post_email_already_exist(cls, user_by_email):
+    def post_email_already_exist(cls, user_by_email,email):
         if user_by_email:
             return {
-                "message": gettext("user_email_exist").format(user_by_email)
+                "message": gettext("user_email_exist").format(email)
             }, 400  # 400 is for bad request
         return None, 200
 
     @classmethod
-    def post_phoneno_already_exist(cls, user_by_phoneno):
+    def post_phoneno_already_exist(cls, user_by_phoneno,phoneno):
         if user_by_phoneno:
             return {
-                "message": gettext("user_phoneno_exist").format(user_by_phoneno)
+                "message": gettext("user_phoneno_exist").format(phoneno)
             }, 400  # 400 is for bad request
         return None, 200
 
@@ -512,6 +513,10 @@ class UserModel(db.Model, ModelsHelper):
         if status_code != 200:
             return msg, status_code
 
+        # check if user is using the same email
+        if old_email == new_email:
+            return {"message": gettext("same_email_nothing_to_change")}, 200
+
         user_by_id = cls.find_by_id(id=user_id)
         user_by_email = cls.find_by_email(email=new_email)
         user, unique_input_error, status = cls.put_email_already_exist(
@@ -610,19 +615,25 @@ class UserModel(db.Model, ModelsHelper):
             return {"message": gettext("user_not_found")}, 404
 
         if not forgot_old_password:
+            # check if current user has permission to change password
             msg, status_code, _ = UserModel.auth_by_admin_root_or_user(
                 user_id=user_id, get_err="user_req_ad_priv_to_change_password"
             )
+
             if status_code != 200:
                 return msg, status_code
 
-            # if user already exist update the dictionary
+            # if old password is not provided
             if old_password == None:
                 return {"message": gettext("old_password_parameter_not_found")}, 404
 
+            # if password in database does not match old password
             if user.password != old_password:
                 return {"message": gettext("user_incorrect_password")}, 401
 
+            # check if old and new password are the same
+            if old_password == new_password:
+                return {"message": gettext("same_password_nothing_to_change")}, 200
         user.__setattr__("password", new_password)
         # save
         try:

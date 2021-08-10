@@ -4,3 +4,8 @@ data.db
 .env
 Pipfile
 Pipfile.lock
+/static/*
+
+
+# Exceptions in a folder to not ignore
+!/static/.gitkeep

@@ -8,6 +8,7 @@ class ProductCatModel(db.Model, ModelsHelper):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     desc = db.Column(db.String(256), unique=True, nullable=False)
     avatar = db.Column(db.String, nullable=True, default=None)
+    
     # merge
     products = db.relationship(
         "ProductModel",

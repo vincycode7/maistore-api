@@ -12,7 +12,10 @@ from resources.users import (
     Change_User_Root_Status,
     Change_User_Admin_Status,
 )
-from resources.image import UserAvatar, StoreAvatar, ProductAvatar
+from resources.image import (
+    UserAvatar, StoreAvatar, ProductAvatar,
+    ProductCatAvatar
+)
 from resources.forgot_password import (
     RequestForgotPasswordDigit,
     GetForgotPasswordId,
@@ -105,7 +108,8 @@ route_path = [
     ],  # https://maistore.com/productsizes
     [
         ProductSize,
-        [api_version + "/productsize", api_version + "/productsize/<string:size_id>"],
+        [api_version + "/productsize", api_version + \
+            "/productsize/<string:size_id>"],
     ],  # https://maistore.com/productsize
     [ColorList, [api_version + "/colors"]],  # https://maistore.com/colors
     [
@@ -176,14 +180,18 @@ route_path = [
         ],
     ],  # https://maistore.com/reset_password/1
     [
-        UserAvatar, [api_version + "/user_avatar/<string:user_id>",]
-    ],
+        UserAvatar, [api_version + "/user_avatar/<string:user_id>", ]
+    ],  # https://maistore.com/user_avatar/1
     [
-        StoreAvatar, [api_version + "/store_avatar/<string:store_id>",]
-    ],
+        StoreAvatar, [api_version + "/store_avatar/<string:store_id>", ]
+    ],  # https://maistore.com/store_avatar/1
     [
-        ProductAvatar, [api_version + "/product_avatar/<string:product_id>",]
-    ]
+        ProductAvatar, [api_version + "/product_avatar/<string:product_id>", ]
+    ],  # https://maistore.com/product_avatar/1
+    [
+        ProductCatAvatar, [api_version + \
+                           "/productcat_avatar/<int:productcat_id>", ]
+    ]  # https://maistore.com/productcat_avatar/1
 ]
 
 # i want to comment all the Resources i have created

@@ -14,6 +14,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
             "id",
             "confirmation",
         )
+        exclude = ("avatar",)
         include_fk = True
         include_relationships = True
 

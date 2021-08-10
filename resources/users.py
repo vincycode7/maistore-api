@@ -39,9 +39,10 @@ class UserRegister(Resource):
     @jwt_optional
     def post(cls):
         data = usr_reg_schema.load(UserModel.get_data_())
+        print("data before in: ", data)
 
         # check if data already exist
-        unique_input_error, status = UserModel.post_unique_already_exist(data)
+        unique_input_error, status = UserModel.post_unique_already_exist(user_data=data)
         if unique_input_error:
             return unique_input_error, status
 

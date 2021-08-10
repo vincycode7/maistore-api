@@ -6,9 +6,10 @@ Back-end for a web/mobile app store. Where each user has a store of list of pers
 ## Installation
 
 ```
-cd maistore/backend/
+cd maistore
 
-pip install -r requirements.txt
+1. pip install -r requirements.txt
+2. 
 python3 app.py
 
 ```

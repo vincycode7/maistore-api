@@ -15,5 +15,6 @@ class StoreSchema(ma.SQLAlchemyAutoSchema):
         model = StoreModel
         # load_only = ("user_id",)
         dump_only = ("id",)
+        exclude = ("avatar",)
         include_fk = True
         include_relationships = True

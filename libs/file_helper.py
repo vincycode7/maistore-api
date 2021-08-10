@@ -1,5 +1,5 @@
 """
-    Library that contains functions to manioulate images.
+    Library that contains functions to manipulate images.
 """
 
 import os
@@ -123,6 +123,7 @@ class CloudinaryHelper:
 class S3BucketHelper:
     pass
 
+# function to choose the file format
 def choose_format_exception(file_type, err=None):
     file_type = file_type.lower()
     if file_type in TYPE_EXEPTION_DICT.keys():
@@ -130,13 +131,14 @@ def choose_format_exception(file_type, err=None):
     else:
         raise INVALIDFILETYPE
 
+# function to send user a file
 def send_user_file(folder: str, filename: str, name: str = None):
     if name:
         return send_file(filename_or_fp=name)
     name = folder+filename
     return send_file(filename_or_fp=name)
 
-
+# save a file in db
 def _save_file(file_: FileStorage, folder: str = None, name: str = None, file_type: str ="image") -> str:
     """ Takes a filestorage and saves it to a folder"""
     file_type = file_type.lower()
@@ -145,18 +147,21 @@ def _save_file(file_: FileStorage, folder: str = None, name: str = None, file_ty
     else:
         raise INVALIDFILETYPE
 
+# get a path to a file
 def get_path(filename: str = None, folder: str = None, file_type: str ="image") -> str:
-    """ Takes an file name, folder and returns a full path"""
+    """ Takes a file name, folder and returns a full path"""
+
     file_type = file_type.lower()
     if file_type in TYPESET_DICT.keys():
         return globals()[f"{TYPESET_DICT[file_type]}_SET"].path(filename, folder)
     else:
         raise INVALIDFILETYPE
 
+# find all files in a directory
 def find_all_files_in_dir(folder_path: str) -> Union[str, None]:
     return os.listdir(folder_path)
 
-
+# delete a file in the dir
 def delete_file_in_dir(folder_path: str, filename: str, file_type: str ="image"):
     filename = get_basename(str(filename))
     file_path = folder_path+filename
@@ -170,7 +175,7 @@ def delete_file_in_dir(folder_path: str, filename: str, file_type: str ="image")
         choose_format_exception(file_type=file_type,err=e)
     return file_path
 
-
+# delete all file in a dir
 def delete_all_file_in_dir(folder_path: str, file_type: str ="image") -> None:
     all_files = find_all_files_in_dir(folder_path=folder_path)
 
@@ -181,7 +186,7 @@ def delete_all_file_in_dir(folder_path: str, file_type: str ="image") -> None:
             choose_format_exception(file_type=file_type,err=e)
     return folder_path
 
-
+# delete all file in a dir except
 def delete_all_file_in_dir_except(folder_path: str, filename: str, file_type: str ="image"):
     all_files = find_all_files_in_dir(folder_path=folder_path)
     file_path = folder_path+filename

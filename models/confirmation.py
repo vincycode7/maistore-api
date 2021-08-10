@@ -27,7 +27,7 @@ class ConfirmationModel(db.Model, ModelsHelper):
         self.user_id = user_id
         self.id = uuid4().hex
         self.expire_at = int(time()) + CONFIRMATION_EXPIRATION_DELTA
-        self.eight_digit = str(randint(00000000, 99999999))
+        self.eight_digit = str(randint(10000000, 99999999))
 
     @property
     def expired(self) -> bool:
