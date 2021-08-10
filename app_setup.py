@@ -36,7 +36,7 @@ def create_usr_from_root(app):
     # check if data already exist
     unique_input_error, _ = UserModel.post_unique_already_exist(data_usr)
     if unique_input_error:
-        print(f"{gettext('err_creating_root_usr').format(unique_input_error)}")
+        # print(f"{gettext('err_creating_root_usr').format(unique_input_error)}")
         return
 
     try:
