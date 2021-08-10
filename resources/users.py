@@ -39,7 +39,6 @@ class UserRegister(Resource):
     @jwt_optional
     def post(cls):
         data = usr_reg_schema.load(UserModel.get_data_())
-        print("data before in: ", data)
 
         # check if data already exist
         unique_input_error, status = UserModel.post_unique_already_exist(user_data=data)
@@ -50,7 +49,7 @@ class UserRegister(Resource):
         try:
             msg, status_code = UserModel.create_user_send_confirmation_digit(data=data)
         except Exception as e:
-            print(e)
+            print(f"check this {e}")
             return {"message": gettext("Internal_server_error")}, 500
         if status_code != 201:
             return msg, status_code
