@@ -161,7 +161,7 @@
   "user_req_ad_priv_to_delete_product_cat_avatar": "Admin priviledge required to delete avatar for product category.",
   "user_req_ad_priv_to_delete_store_image": "Admin priviledge required to delete store avatar.",
   "user_req_ad_priv_to_delete_store_avatar": "Admin priviledge required to delete store avatar.",
-  "user_phoneno_exist": "user phoneno {} already exisit",
+  "user_phoneno_exist": "Phone Number {} already exisit",
 
   "user_success_register_link": "Account created successfuly, an email with your confirmation link has been sent to this <{}> email address, please check.",
   "user_success_register_digit": "Account created successfuly, an email with your 8-digit confirmation code has been sent to this <{}> email address, please check.",
