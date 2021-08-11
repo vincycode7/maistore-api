@@ -227,7 +227,7 @@ class ModelsHelper:
             claim = get_jwt_claims()
             if (
                 not claim["is_admin"]
-                and not claim["is_root"]
+                and not claim["is_root"]root_usr
                 and claim["userid"] != user_id
             ):
                 return {"message": gettext(get_err)}, 401, claim

@@ -35,8 +35,9 @@ def create_usr_from_root(app):
     # creat root user
     # check if data already exist
     unique_input_error, _ = UserModel.post_unique_already_exist(data_usr)
+    print("checing error: ", unique_input_error)
     if unique_input_error:
-        print(f"{gettext('err_creating_root_usr').format(unique_input_error)}")
+        print(f"33: {gettext('err_creating_root_usr').format(unique_input_error)}")
         return
 
     try:
@@ -58,7 +59,7 @@ def create_usr_from_root(app):
     except Exception as e:
         root_usr.delete_from_db()
         confirmation.delete_from_db()
-        print(gettext("err_confirming_root_usr").format(e))
+        print("44: ", gettext("err_confirming_root_usr").format(e))
         UserModel.rollback_error()
         return
 
