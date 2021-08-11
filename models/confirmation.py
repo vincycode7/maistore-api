@@ -18,7 +18,7 @@ class ConfirmationModel(db.Model, ModelsHelper):
     expire_at = db.Column(db.Integer, unique=False, nullable=False)
     user_id = db.Column(db.String(50), db.ForeignKey("users.id"), nullable=False)
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
-    eight_digit = db.Column(db.String(8), nullable=False)
+    # eight_digit = db.Column(db.String(8), nullable=False)
 
     # merge (for sqlalchemy to link tables)
 
