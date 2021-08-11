@@ -10,7 +10,7 @@ cd maistore
 
 1. pip install -r requirements.txt
 2. python3 app.py to run locally
-3. To migrate, first do the init using `flask db init` and then migrate using `flask db migrate -m "Migrate-message-should-come-here"` and upgrade using `flask db upgrade` locally then push to server and do `heroku run flask db upgrade` to upgrade database
+3. To migrate, first do the init using `flask db init` and then migrate using `flask db migrate -m "Migrate-message-should-come-here"` and upgrade using `flask db upgrade` locally then push to server and do `heroku run flask db upgrade` to upgrade database. To delect alembic_version table in database use `drop table alembic_version;` locally and `drop table public.alembic_version;` on postgres database.
 
 ```
 
