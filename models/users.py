@@ -152,9 +152,10 @@ class UserModel(db.Model, ModelsHelper):
                 200,
             )
         except Exception as e:
-            raise UserException(gettext(get_err).format(e))
-        except:
-            raise UserException(gettext(get_err))
+            try:
+                raise UserException(gettext(get_err).format(e))
+            except:
+                raise UserException(gettext(get_err))
 
     def request_new_forgot_password(self):
         """

@@ -91,7 +91,7 @@ class ModelsHelper:
             try:
                 raise ModelHelperException(gettext(get_err).format(e))
             except:
-                raise ModelHelperException(gettext(get_err))
+                raise ModelHelperException(gettext(get_err).format(e))
 
     @classmethod
     def rollback_error(cls, get_err="Internal_server_error"):
